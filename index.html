@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#6C5CE7">
+    <title>UniGuide</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/pages.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen" class="auth-screen">
+        <div class="auth-container">
+            <div class="auth-logo">
+                <div class="logo-icon">🎓</div>
+                <h1>UniBoard</h1>
+                <p>Tu compañera universitaria</p>
+            </div>
+
+            <div id="login-form" class="auth-form">
+                <h2>Iniciar sesión</h2>
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" placeholder="tu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Contraseña</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required>
+                </div>
+                <button id="btn-login" class="btn btn-primary btn-full">Iniciar sesión</button>
+                <p class="auth-switch">¿No tienes cuenta? <a href="#" id="show-register">Regístrate</a></p>
+                <div id="login-error" class="error-msg hidden"></div>
+            </div>
+
+            <div id="register-form" class="auth-form hidden">
+                <h2>Crear cuenta</h2>
+                <div class="form-group">
+                    <label for="reg-name">Nombre</label>
+                    <input type="text" id="reg-name" placeholder="Tu nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-email">Email</label>
+                    <input type="email" id="reg-email" placeholder="tu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Contraseña</label>
+                    <input type="password" id="reg-password" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-university">Universidad</label>
+                    <input type="text" id="reg-university" placeholder="Nombre de tu universidad">
+                </div>
+                <div class="form-group">
+                    <label for="reg-degree">Grado</label>
+                    <input type="text" id="reg-degree" placeholder="Ej: Ingeniería Informática">
+                </div>
+                <button id="btn-register" class="btn btn-primary btn-full">Crear cuenta</button>
+                <p class="auth-switch">¿Ya tienes cuenta? <a href="#" id="show-login">Inicia sesión</a></p>
+                <div id="register-error" class="error-msg hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="app" class="app hidden">
+        <!-- SIDEBAR -->
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon-sm">🎓</div>
+                <span class="logo-text">Uniboard</span>
+                <button id="close-sidebar" class="btn-icon mobile-only">✕</button>
+            </div>
+
+            <div class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-label">Inicio</span>
+                </a>
+                <a href="#" class="nav-item" data-page="calendar">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-label">Calendario</span>
+                </a>
+                <a href="#" class="nav-item" data-page="subjects">
+                    <span class="nav-icon">📚</span>
+                    <span class="nav-label">Asignaturas</span>
+                </a>
+                <a href="#" class="nav-item" data-page="tasks">
+                    <span class="nav-icon">✅</span>
+                    <span class="nav-label">Tareas</span>
+                </a>
+                <a href="#" class="nav-item" data-page="exams">
+                    <span class="nav-icon">📝</span>
+                    <span class="nav-label">Exámenes</span>
+                </a>
+                <a href="#" class="nav-item" data-page="study">
+                    <span class="nav-icon">📖</span>
+                    <span class="nav-label">Planificador</span>
+                </a>
+                <a href="#" class="nav-item" data-page="timer">
+                    <span class="nav-icon">⏱️</span>
+                    <span class="nav-label">Temporizador</span>
+                </a>
+                <a href="#" class="nav-item" data-page="documents">
+                    <span class="nav-icon">📄</span>
+                    <span class="nav-label">Documentos</span>
+                </a>
+                <a href="#" class="nav-item" data-page="finances">
+                    <span class="nav-icon">💰</span>
+                    <span class="nav-label">Finanzas</span>
+                </a>
+                <a href="#" class="nav-item" data-page="uni-life">
+                    <span class="nav-icon">🎒</span>
+                    <span class="nav-label">Vida universitaria</span>
+                </a>
+                <a href="#" class="nav-item" data-page="progress">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">Progreso</span>
+                </a>
+                <a href="#" class="nav-item" data-page="goals">
+                    <span class="nav-icon">🎯</span>
+                    <span class="nav-label">Objetivos</span>
+                </a>
+                <a href="#" class="nav-item" data-page="reminders">
+                    <span class="nav-icon">🔔</span>
+                    <span class="nav-label">Recordatorios</span>
+                </a>
+                <a href="#" class="nav-item" data-page="contacts">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-label">Contactos</span>
+                </a>
+            </div>
+
+            <div class="sidebar-footer">
+                <a href="#" class="nav-item" data-page="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-label">Ajustes</span>
+                </a>
+                <a href="#" class="nav-item" id="btn-logout">
+                    <span class="nav-icon">🚪</span>
+                    <span class="nav-label">Cerrar sesión</span>
+                </a>
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar">👤</div>
+                    <span class="user-name" id="user-name">Usuario</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <header class="top-bar">
+                <button id="open-sidebar" class="btn-icon mobile-only">☰</button>
+                <h2 id="page-title">Inicio</h2>
+                <div class="top-bar-actions">
+                    <span id="current-time" class="current-time"></span>
+                </div>
+            </header>
+
+            <div id="page-content" class="page-content">
+                <!-- Pages will be loaded here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title"></h3>
+                <button class="btn-icon modal-close">✕</button>
+            </div>
+            <div id="modal-body" class="modal-body"></div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost modal-close">Cancelar</button>
+                <button id="modal-confirm" class="btn btn-primary">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+    <!-- App Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/pages/dashboard.js"></script>
+    <script src="js/pages/calendar.js"></script>
+    <script src="js/pages/subjects.js"></script>
+    <script src="js/pages/tasks.js"></script>
+    <script src="js/pages/exams.js"></script>
+    <script src="js/pages/study.js"></script>
+    <script src="js/pages/timer.js"></script>
+    <script src="js/pages/documents.js"></script>
+    <script src="js/pages/finances.js"></script>
+    <script src="js/pages/uni-life.js"></script>
+    <script src="js/pages/progress.js"></script>
+    <script src="js/pages/goals.js"></script>
+    <script src="js/pages/reminders.js"></script>
+    <script src="js/pages/contacts.js"></script>
+    <script src="js/pages/settings.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
