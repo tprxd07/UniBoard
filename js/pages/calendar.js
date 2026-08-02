@@ -102,18 +102,23 @@ const CalendarPage = {
 
     eventOnDate(event, date) {
         const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-        if (event.repeat === 'daily') return true;
-        if (event.repeat === 'weekly') return event.repeatDays && event.repeatDays.includes(date.getDay());
+        if (event.repeat === 'daily') {
+            return dateStr >= event.date;
+        }
+        if (event.repeat === 'weekly') {
+            const eventDate = new Date(event.date);
+            return date.getDay() === eventDate.getDay() && dateStr >= event.date;
+        }
         if (event.repeat === 'monthly') {
             const eventDate = new Date(event.date);
-            return date.getDate() === eventDate.getDate();
+            return date.getDate() === eventDate.getDate() && dateStr >= event.date;
         }
         if (event.repeat === 'yearly') {
             const eventDate = new Date(event.date);
-            return date.getDate() === eventDate.getDate() && date.getMonth() === eventDate.getMonth();
+            return date.getDate() === eventDate.getDate() && date.getMonth() === eventDate.getMonth() && dateStr >= event.date;
         }
         if (event.repeat === 'custom') {
-            return event.repeatDays && event.repeatDays.includes(date.getDay());
+            return event.repeatDays && event.repeatDays.includes(date.getDay()) && dateStr >= event.date;
         }
         return event.date === dateStr;
     },
