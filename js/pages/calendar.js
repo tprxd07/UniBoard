@@ -18,8 +18,8 @@ const CalendarPage = {
                 </div>
                 <div class="calendar-topbar-right">
                     <div class="calendar-topbar-buttons">
-                        <button class="btn btn-ghost btn-sm" id="btn-add-event">+ Añadir evento</button>
-                        <button class="btn btn-ghost btn-sm" id="btn-manage-groups">Modificar grupo</button>
+                        <button class="btn btn-primary btn-sm" id="btn-add-event">+ Añadir evento</button>
+                        <button class="btn btn-primary btn-sm" id="btn-manage-groups">Modificar grupo</button>
                     </div>
                     <button class="btn btn-primary btn-sm" id="cal-today">Hoy</button>
                 </div>

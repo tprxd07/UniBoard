@@ -151,7 +151,8 @@
 
 .calendar-topbar-buttons {
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .calendar-page .tabs {
