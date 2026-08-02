@@ -228,10 +228,16 @@
     background: var(--primary-bg);
 }
 
-.calendar-day.today {
+.calendar-day.today .calendar-day-number {
     background: var(--primary);
     color: white;
     font-weight: 700;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .calendar-day.other-month {
