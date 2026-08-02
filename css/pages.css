@@ -133,7 +133,7 @@
 
 .calendar-topbar {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     flex-shrink: 0;
 }
@@ -153,6 +153,7 @@
     display: flex;
     flex-direction: row;
     gap: 8px;
+    justify-content: flex-end;
 }
 
 .calendar-page .tabs {
