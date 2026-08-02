@@ -5,26 +5,28 @@ const CalendarPage = {
 
     render() {
         return `
-        <div class="tabs" style="max-width: 300px;">
-            <button class="tab active" data-view="month">Mes</button>
-            <button class="tab" data-view="week">Semana</button>
-            <button class="tab" data-view="day">Día</button>
-        </div>
-
-        <div class="calendar-header">
-            <div class="calendar-nav">
-                <button class="btn-icon" id="cal-prev">◀</button>
-                <h3 id="cal-title"></h3>
-                <button class="btn-icon" id="cal-next">▶</button>
+        <div class="calendar-page">
+            <div class="tabs" style="max-width: 300px;">
+                <button class="tab active" data-view="month">Mes</button>
+                <button class="tab" data-view="week">Semana</button>
+                <button class="tab" data-view="day">Día</button>
             </div>
-            <button class="btn btn-primary btn-sm" id="cal-today">Hoy</button>
-        </div>
 
-        <div id="calendar-container"></div>
+            <div class="calendar-header">
+                <div class="calendar-nav">
+                    <button class="btn-icon" id="cal-prev">◀</button>
+                    <h3 id="cal-title"></h3>
+                    <button class="btn-icon" id="cal-next">▶</button>
+                </div>
+                <button class="btn btn-primary btn-sm" id="cal-today">Hoy</button>
+            </div>
 
-        <div style="margin-top: 20px;">
-            <h3 class="section-title" style="margin-bottom: 12px;">Eventos del día</h3>
-            <div id="day-events"></div>
+            <div id="calendar-container" class="calendar-container"></div>
+
+            <div class="calendar-events-section">
+                <h3 class="section-title" style="margin-bottom: 12px;">Eventos del día</h3>
+                <div id="day-events"></div>
+            </div>
         </div>`;
     },
 
