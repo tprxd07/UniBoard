@@ -19,6 +19,8 @@ const Auth = {
         document.getElementById('btn-login').addEventListener('click', () => this.login());
         document.getElementById('btn-register').addEventListener('click', () => this.register());
         document.getElementById('btn-logout').addEventListener('click', () => this.logout());
+        document.getElementById('btn-google-login').addEventListener('click', () => this.loginWithGoogle());
+        document.getElementById('btn-apple-login').addEventListener('click', () => this.loginWithApple());
 
         // Enter key support
         document.getElementById('login-password').addEventListener('keypress', (e) => {
@@ -31,20 +33,42 @@ const Auth = {
         // Listen for auth state changes
         auth.onAuthStateChanged(async (user) => {
             if (user) {
-                // Load profile from Firestore to get name
+                // Load profile from Firestore, create if first social login
                 try {
                     const doc = await db.collection('users').doc(user.uid).get();
-                    const profile = doc.data();
+                    let profile = doc.data();
+
+                    // First time social login - create profile
+                    if (!profile) {
+                        const defaultProfile = {
+                            name: user.displayName || user.email.split('@')[0],
+                            email: user.email || '',
+                            university: '',
+                            degree: '',
+                            provider: user.providerData[0]?.providerId || 'password',
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            settings: {
+                                theme: 'light',
+                                accentColor: '#6C5CE7',
+                                pomodoroWork: 25,
+                                pomodoroBreak: 5,
+                                pomodoroLongBreak: 15
+                            }
+                        };
+                        await db.collection('users').doc(user.uid).set(defaultProfile);
+                        profile = defaultProfile;
+                    }
+
                     this.currentUser = {
                         uid: user.uid,
                         email: user.email,
-                        displayName: profile?.name || user.email.split('@')[0]
+                        displayName: profile?.name || user.displayName || user.email.split('@')[0]
                     };
                 } catch (e) {
                     this.currentUser = {
                         uid: user.uid,
                         email: user.email,
-                        displayName: user.email.split('@')[0]
+                        displayName: user.displayName || user.email.split('@')[0]
                     };
                 }
                 this.onLogin(this.currentUser);
@@ -116,6 +140,7 @@ const Auth = {
                 email: email,
                 university: university || '',
                 degree: degree || '',
+                provider: 'password',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 settings: {
                     theme: 'light',
@@ -135,6 +160,46 @@ const Auth = {
             errorEl.classList.remove('hidden');
         } finally {
             document.getElementById('btn-register').disabled = false;
+        }
+    },
+
+    async loginWithGoogle() {
+        try {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            await auth.signInWithPopup(provider);
+        } catch (error) {
+            let msg = 'Error al iniciar sesión con Google';
+            if (error.code === 'auth/popup-closed-by-user') msg = 'Cancelado';
+            if (error.code === 'auth/popup-blocked') msg = 'Popup bloqueado. Permite popups para este sitio';
+            if (error.code === 'auth/account-exists-with-different-credential') {
+                msg = 'Ya existe una cuenta con este email usando otro método de inicio de sesión';
+            }
+            if (msg !== 'Cancelado') {
+                const errorEl = document.getElementById('login-error');
+                errorEl.textContent = msg;
+                errorEl.classList.remove('hidden');
+            }
+        }
+    },
+
+    async loginWithApple() {
+        try {
+            const provider = new firebase.auth.OAuthProvider('apple.com');
+            provider.addScope('email');
+            provider.addScope('name');
+            await auth.signInWithPopup(provider);
+        } catch (error) {
+            let msg = 'Error al iniciar sesión con Apple';
+            if (error.code === 'auth/popup-closed-by-user') msg = 'Cancelado';
+            if (error.code === 'auth/popup-blocked') msg = 'Popup bloqueado. Permite popups para este sitio';
+            if (error.code === 'auth/account-exists-with-different-credential') {
+                msg = 'Ya existe una cuenta con este email usando otro método de inicio de sesión';
+            }
+            if (msg !== 'Cancelado') {
+                const errorEl = document.getElementById('login-error');
+                errorEl.textContent = msg;
+                errorEl.classList.remove('hidden');
+            }
         }
     },
 
