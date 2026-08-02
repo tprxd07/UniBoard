@@ -181,7 +181,7 @@ const SubjectsPage = {
         ${subject.guideUrl ? `<a href="${subject.guideUrl}" target="_blank" class="btn btn-ghost btn-full" style="margin-top: 8px;">📄 Ver guía docente</a>` : ''}
 
         <div style="display: flex; gap: 8px; margin-top: 16px;">
-            <button class="btn btn-ghost" style="flex: 1;" onclick="SubjectsPage.showAddModal(SubjectsPage.selectedSubject); Utils.closeModal();">✏️ Editar</button>
+            <button class="btn btn-ghost" style="flex: 1;" onclick="SubjectsPage.showAddModal(SubjectsPage.selectedSubject); Utils.closeModal();"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> Editar</button>
             <button class="btn btn-danger" style="flex: 1;" onclick="SubjectsPage.deleteSubject('${id}')">🗑️ Eliminar</button>
         </div>`;
 

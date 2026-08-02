@@ -161,7 +161,7 @@ const CalendarPage = {
                 const emoji = group && group.emoji ? group.emoji + ' ' : '';
                 eventsHtml += `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${e.title}">
                     <span class="calendar-event-text">${emoji}${e.title}</span>
-                    <button class="calendar-event-edit" onclick="event.stopPropagation(); CalendarPage.openEventModal('${e.id}')">✏️</button>
+                    <button class="calendar-event-edit" onclick="event.stopPropagation(); CalendarPage.openEventModal('${e.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
                 </div>`;
             });
 
@@ -211,7 +211,7 @@ const CalendarPage = {
                     const group = this.getGroupForEvent(e);
                     const color = group ? group.color : 'var(--primary)';
                     const emoji = group && group.emoji ? group.emoji + ' ' : '';
-                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer; position: relative;" onclick="CalendarPage.openEventModal('${e.id}')">${emoji}${e.title}<button class="calendar-event-edit-inline" onclick="event.stopPropagation(); CalendarPage.openEventModal('${e.id}')">✏️</button></div>`;
+                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer; position: relative;" onclick="CalendarPage.openEventModal('${e.id}')">${emoji}${e.title}<button class="calendar-event-edit-inline" onclick="event.stopPropagation(); CalendarPage.openEventModal('${e.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button></div>`;
                 });
                 html += '</td>';
             });
@@ -242,7 +242,7 @@ const CalendarPage = {
                 const group = this.getGroupForEvent(e);
                 const color = group ? group.color : 'var(--primary)';
                 const emoji = group && group.emoji ? group.emoji + ' ' : '';
-                html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer; position: relative;" onclick="CalendarPage.openEventModal('${e.id}')">${emoji}${e.title} (${e.startTime} - ${e.endTime || ''})<button class="calendar-event-edit-inline" onclick="event.stopPropagation(); CalendarPage.openEventModal('${e.id}')">✏️</button></div>`;
+                html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer; position: relative;" onclick="CalendarPage.openEventModal('${e.id}')">${emoji}${e.title} (${e.startTime} - ${e.endTime || ''})<button class="calendar-event-edit-inline" onclick="event.stopPropagation(); CalendarPage.openEventModal('${e.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button></div>`;
             });
             html += '</td></tr>';
         });
@@ -425,7 +425,7 @@ const CalendarPage = {
                 <span class="group-list-emoji">${g.emoji || ''}</span>
                 <span class="group-list-name">${g.name}</span>
                 ${g.isDefault ? '<span class="badge badge-ghost" style="margin-left: auto; font-size: 11px;">Por defecto</span>' : ''}
-                <button class="btn-icon btn-sm" onclick="CalendarPage.openGroupForm('${g.id}')">✏️</button>
+                <button class="btn-icon btn-sm" onclick="CalendarPage.openGroupForm('${g.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
             </div>
         `).join('');
 
