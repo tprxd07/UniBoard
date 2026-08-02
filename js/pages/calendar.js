@@ -150,11 +150,11 @@ const CalendarPage = {
         }
 
         const hours = [];
-        for (let h = 8; h <= 20; h++) {
+        for (let h = 0; h <= 23; h++) {
             hours.push(h);
         }
 
-        let html = '<div class="table-container"><table class="table"><thead><tr><th>Hora</th>';
+        let html = '<div class="calendar-scroll-container"><div class="table-container"><table class="table"><thead><tr><th>Hora</th>';
         days.forEach(d => {
             const isToday = Utils.isToday(d);
             html += `<th style="${isToday ? 'color: var(--primary); font-weight: 700;' : ''}">${Utils.getDayName(d, true)} ${d.getDate()}</th>`;
@@ -162,7 +162,7 @@ const CalendarPage = {
         html += '</tr></thead><tbody>';
 
         hours.forEach(h => {
-            html += `<tr><td style="font-weight: 600;">${h}:00</td>`;
+            html += `<tr><td style="font-weight: 600;">${String(h).padStart(2, '0')}:00</td>`;
             days.forEach(d => {
                 const dayEvents = events.filter(e => this.eventOnDate(e, d) && this.eventAtHour(e, h));
                 html += `<td style="padding: 4px;">`;
@@ -175,7 +175,7 @@ const CalendarPage = {
             html += '</tr>';
         });
 
-        html += '</tbody></table></div>';
+        html += '</tbody></table></div></div>';
         container.innerHTML = html;
     },
 
@@ -183,28 +183,26 @@ const CalendarPage = {
         title.textContent = Utils.formatDate(this.currentDate, 'long');
 
         const dayEvents = events.filter(e => this.eventOnDate(e, this.currentDate));
-
-        if (dayEvents.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📅</div><h3>Sin eventos</h3><p>No hay nada programado para este día</p></div>';
-            return;
+        const hours = [];
+        for (let h = 0; h <= 23; h++) {
+            hours.push(h);
         }
 
-        let html = '';
-        dayEvents.sort((a, b) => (a.startHour || '').localeCompare(b.startHour || ''));
+        let html = '<div class="calendar-scroll-container"><div class="table-container"><table class="table"><thead><tr><th>Hora</th><th>Eventos</th></tr></thead><tbody>';
 
-        dayEvents.forEach(e => {
-            const icon = e.type === 'class' ? '📚' : e.type === 'exam' ? '📝' : '✅';
-            const color = e.type === 'class' ? 'var(--primary)' : e.type === 'exam' ? 'var(--danger)' : 'var(--success)';
-            html += `
-                <div class="list-item">
-                    <div class="list-item-icon" style="background: ${color}15; color: ${color};">${icon}</div>
-                    <div class="list-item-content">
-                        <div class="list-item-title">${e.subject || e.name || e.title}</div>
-                        <div class="list-item-subtitle">${e.startHour || ''} ${e.startHour ? '- ' + e.endHour : ''} ${e.room ? '· ' + e.room : ''}</div>
-                    </div>
-                </div>`;
+        hours.forEach(h => {
+            const hourEvents = dayEvents.filter(e => this.eventAtHour(e, h));
+            html += `<tr><td style="font-weight: 600; white-space: nowrap;">${String(h).padStart(2, '0')}:00</td>`;
+            html += '<td style="padding: 4px;">';
+            hourEvents.forEach(e => {
+                const icon = e.type === 'class' ? '📚' : e.type === 'exam' ? '📝' : '✅';
+                const color = e.type === 'class' ? 'var(--primary)' : e.type === 'exam' ? 'var(--danger)' : 'var(--success)';
+                html += `<div style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer;">${icon} ${e.subject || e.name || e.title}</div>`;
+            });
+            html += '</td></tr>';
         });
 
+        html += '</tbody></table></div></div>';
         container.innerHTML = html;
     },
 

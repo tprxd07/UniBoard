@@ -171,6 +171,12 @@
     flex: 1;
 }
 
+.calendar-scroll-container {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
 .calendar-day-header {
     text-align: center;
     font-size: 11px;
