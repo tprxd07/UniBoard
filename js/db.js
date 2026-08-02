@@ -396,6 +396,111 @@ const DB = {
         await this.collection('reminders').doc(id).delete();
     },
 
+    // ============ CALENDAR EVENTS ============
+    async getEvents() {
+        if (this.isDemo()) return this._getStore('events');
+        const snap = await this.collection('events').get();
+        return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+
+    async addEvent(event) {
+        if (this.isDemo()) {
+            const items = this._getStore('events');
+            const id = Utils.generateId();
+            items.push({ id, ...event, createdAt: new Date().toISOString() });
+            this._setStore('events', items);
+            return id;
+        }
+        const ref = await this.collection('events').add({
+            ...event,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        return ref.id;
+    },
+
+    async updateEvent(id, data) {
+        if (this.isDemo()) {
+            const items = this._getStore('events');
+            const idx = items.findIndex(i => i.id === id);
+            if (idx > -1) items[idx] = { ...items[idx], ...data };
+            this._setStore('events', items);
+            return;
+        }
+        await this.collection('events').doc(id).update(data);
+    },
+
+    async deleteEvent(id) {
+        if (this.isDemo()) {
+            const items = this._getStore('events').filter(i => i.id !== id);
+            this._setStore('events', items);
+            return;
+        }
+        await this.collection('events').doc(id).delete();
+    },
+
+    async deleteEventsByGroup(groupId) {
+        const events = await this.getEvents();
+        const toDelete = events.filter(e => e.groupId === groupId);
+        for (const e of toDelete) {
+            await this.deleteEvent(e.id);
+        }
+    },
+
+    // ============ CALENDAR GROUPS ============
+    async getGroups() {
+        if (this.isDemo()) return this._getStore('groups');
+        const snap = await this.collection('groups').get();
+        return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+
+    async addGroup(group) {
+        if (this.isDemo()) {
+            const items = this._getStore('groups');
+            const id = Utils.generateId();
+            items.push({ id, ...group, createdAt: new Date().toISOString() });
+            this._setStore('groups', items);
+            return id;
+        }
+        const ref = await this.collection('groups').add({
+            ...group,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        return ref.id;
+    },
+
+    async updateGroup(id, data) {
+        if (this.isDemo()) {
+            const items = this._getStore('groups');
+            const idx = items.findIndex(i => i.id === id);
+            if (idx > -1) items[idx] = { ...items[idx], ...data };
+            this._setStore('groups', items);
+            return;
+        }
+        await this.collection('groups').doc(id).update(data);
+    },
+
+    async deleteGroup(id) {
+        await this.deleteEventsByGroup(id);
+        if (this.isDemo()) {
+            const items = this._getStore('groups').filter(i => i.id !== id);
+            this._setStore('groups', items);
+            return;
+        }
+        await this.collection('groups').doc(id).delete();
+    },
+
+    async initDefaultGroups() {
+        const existing = await this.getGroups();
+        if (existing.length > 0) return;
+        const defaults = [
+            { name: 'Cumpleaños', color: '#E84393', emoji: '🎂', isDefault: true },
+            { name: 'Festivos', color: '#00B894', emoji: '🎉', isDefault: true }
+        ];
+        for (const g of defaults) {
+            await this.addGroup(g);
+        }
+    },
+
     // ============ SETTINGS ============
     async getSettings() {
         if (this.isDemo()) return JSON.parse(localStorage.getItem('uniguide_settings') || '{}');

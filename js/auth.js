@@ -43,8 +43,6 @@ const Auth = {
                         const defaultProfile = {
                             name: user.displayName || user.email.split('@')[0],
                             email: user.email || '',
-                            university: '',
-                            degree: '',
                             provider: user.providerData[0]?.providerId || 'password',
                             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                             settings: {
@@ -56,6 +54,7 @@ const Auth = {
                             }
                         };
                         await db.collection('users').doc(user.uid).set(defaultProfile);
+                        await DB.initDefaultGroups();
                         profile = defaultProfile;
                     }
 
@@ -146,6 +145,8 @@ const Auth = {
                     pomodoroLongBreak: 15
                 }
             });
+
+            await DB.initDefaultGroups();
 
         } catch (error) {
             let msg = 'Error al crear la cuenta';
