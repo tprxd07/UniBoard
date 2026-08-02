@@ -233,7 +233,7 @@ const TimerPage = {
         if (el) el.textContent = display;
 
         // Update page title
-        document.title = `${display} - UniGuide`;
+        document.title = `${display} - UniBoard`;
     },
 
     updateStats() {

@@ -1,6 +1,6 @@
 {
-    "name": "UniGuide",
-    "short_name": "UniGuide",
+    "name": "UniBoard",
+    "short_name": "UniBoard",
     "description": "Tu compañera universitaria",
     "start_url": "/",
     "display": "standalone",

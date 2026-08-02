@@ -1,4 +1,4 @@
-# 🎓 UniGuide - Tu Compañera Universitaria
+# 🎓 UniBoard - Tu Compañera Universitaria
 
 Una aplicación web completa para organizar tu vida universitaria, sincronizada entre Mac y iPhone.
 
