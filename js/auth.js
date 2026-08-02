@@ -112,12 +112,10 @@ const Auth = {
         const name = document.getElementById('reg-name').value;
         const email = document.getElementById('reg-email').value;
         const password = document.getElementById('reg-password').value;
-        const university = document.getElementById('reg-university').value;
-        const degree = document.getElementById('reg-degree').value;
         const errorEl = document.getElementById('register-error');
 
         if (!name || !email || !password) {
-            errorEl.textContent = 'Por favor, rellena nombre, email y contraseña';
+            errorEl.textContent = 'Por favor, rellena todos los campos';
             errorEl.classList.remove('hidden');
             return;
         }
@@ -138,8 +136,6 @@ const Auth = {
             await db.collection('users').doc(cred.user.uid).set({
                 name: name,
                 email: email,
-                university: university || '',
-                degree: degree || '',
                 provider: 'password',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 settings: {
