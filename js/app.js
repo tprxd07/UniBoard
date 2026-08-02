@@ -11,6 +11,7 @@ const App = {
         this.setupNavigation();
         this.setupSidebar();
         this.setupProfileModal();
+        this.loadSidebarAvatar();
         this.startClock();
         this.loadPage('dashboard');
         this.loadSettings();
@@ -66,11 +67,35 @@ const App = {
             this.loadPage('settings');
         });
 
-        // Profile click opens modal
-        document.getElementById('btn-profile')?.addEventListener('click', (e) => {
+        // Profile name click opens modal
+        const userNameEl = document.getElementById('user-name');
+        userNameEl?.addEventListener('click', (e) => {
             e.stopPropagation();
             sidebar.classList.remove('open');
             this.openProfileModal();
+        });
+
+        // Avatar click opens file picker
+        const avatarInput = document.getElementById('sidebar-avatar-input');
+        const avatarEl = document.getElementById('user-avatar');
+
+        avatarEl?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            avatarInput?.click();
+        });
+
+        avatarInput?.addEventListener('change', (e) => {
+            if (e.target.files[0]) this.handleSidebarAvatar(e.target.files[0]);
+        });
+
+        // Drag & drop on avatar
+        avatarEl?.addEventListener('dragover', (e) => { e.preventDefault(); avatarEl.classList.add('drag-over'); });
+        avatarEl?.addEventListener('dragleave', () => avatarEl.classList.remove('drag-over'));
+        avatarEl?.addEventListener('drop', (e) => {
+            e.preventDefault();
+            avatarEl.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) this.handleSidebarAvatar(file);
         });
     },
 
@@ -126,7 +151,10 @@ const App = {
             const display = document.getElementById('profile-photo-display');
             display.innerHTML = `<img src="${dataURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
 
-            // Save to Firestore
+            // Sync sidebar avatar
+            const avatarEl = document.getElementById('user-avatar');
+            avatarEl.innerHTML = `<img src="${dataURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+
             try {
                 await DB.updateProfile({ photoURL: dataURL });
                 Utils.showToast('Foto actualizada', 'success');
@@ -135,6 +163,33 @@ const App = {
             }
         };
         reader.readAsDataURL(file);
+    },
+
+    handleSidebarAvatar(file) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const dataURL = e.target.result;
+            const avatarEl = document.getElementById('user-avatar');
+            avatarEl.innerHTML = `<img src="${dataURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+
+            try {
+                await DB.updateProfile({ photoURL: dataURL });
+                Utils.showToast('Foto actualizada', 'success');
+            } catch (err) {
+                Utils.showToast('Error al guardar foto', 'error');
+            }
+        };
+        reader.readAsDataURL(file);
+    },
+
+    async loadSidebarAvatar() {
+        try {
+            const profile = await DB.getProfile();
+            if (profile.photoURL) {
+                const avatarEl = document.getElementById('user-avatar');
+                avatarEl.innerHTML = `<img src="${profile.photoURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            }
+        } catch (e) {}
     },
 
     async saveProfileFromModal() {
