@@ -146,13 +146,13 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 8px;
+    gap: 6px;
 }
 
 .calendar-topbar-buttons {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
+    flex-direction: row;
+    gap: 8px;
 }
 
 .calendar-page .tabs {
