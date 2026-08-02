@@ -113,7 +113,7 @@ const DashboardPage = {
             if (!container) return;
 
             if (todayTasks.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 13px;">¡Todo al día! 🎉</p>';
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 13px;">¡Tienes el día libre! 🎉</p>';
                 return;
             }
 
