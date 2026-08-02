@@ -17,8 +17,10 @@ const CalendarPage = {
                     <button class="tab" data-view="day">Día</button>
                 </div>
                 <div class="calendar-topbar-right">
-                    <button class="btn btn-ghost btn-sm" id="btn-add-event">+ Añadir evento</button>
-                    <button class="btn btn-ghost btn-sm" id="btn-manage-groups">Modificar grupo</button>
+                    <div class="calendar-topbar-buttons">
+                        <button class="btn btn-ghost btn-sm" id="btn-add-event">+ Añadir evento</button>
+                        <button class="btn btn-ghost btn-sm" id="btn-manage-groups">Modificar grupo</button>
+                    </div>
                     <button class="btn btn-primary btn-sm" id="cal-today">Hoy</button>
                 </div>
             </div>
@@ -280,7 +282,7 @@ const CalendarPage = {
             <div class="modal-body">
                 <div class="form-group">
                     <label>Título</label>
-                    <input type="text" id="ev-title" value="${ev.title || ''}" placeholder="Nombre del evento">
+                    <input type="text" id="ev-title" value="${ev.title || ''}" placeholder="Nombre del evento" ${isEdit ? '' : ''}>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
