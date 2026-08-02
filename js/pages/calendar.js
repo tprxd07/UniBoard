@@ -256,6 +256,7 @@ const CalendarPage = {
         this.editingEvent = eventId ? this.events.find(e => e.id === eventId) : null;
         const isEdit = !!this.editingEvent;
         const ev = this.editingEvent || {};
+        const today = new Date().toISOString().split('T')[0];
         const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
         const dayChecks = [1, 2, 3, 4, 5, 6, 0].map(d => {
             const checked = ev.repeatDays && ev.repeatDays.includes(d) ? 'checked' : '';
@@ -275,12 +276,12 @@ const CalendarPage = {
                 <label>Título</label>
                 <input type="text" id="ev-title" value="${ev.title || ''}" placeholder="Nombre del evento">
             </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Fecha</label>
-                    <input type="date" id="ev-date" value="${ev.date || ''}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fecha</label>
+                        <input type="date" id="ev-date" value="${ev.date || ''}" min="${today}">
+                    </div>
                 </div>
-            </div>
             <div class="form-row">
                 <div class="form-group">
                     <label>Hora inicio</label>
