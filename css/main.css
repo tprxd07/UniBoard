@@ -78,8 +78,9 @@ body {
     background: var(--bg);
     color: var(--text);
     line-height: 1.6;
-    overflow-x: hidden;
-    min-height: 100vh;
+    overflow: hidden;
+    height: 100vh;
+    margin: 0;
 }
 
 a {
