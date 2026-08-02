@@ -8,30 +8,23 @@ const DashboardPage = {
         return `
         <div class="dashboard-greeting">
             <h2>${greeting}, ${name}</h2>
-            <p>Aquí tienes tu resumen de los próximos días</p>
+            <p>Aquí tienes tu resumen de la semana</p>
         </div>
 
         <div class="dashboard-events-section">
             <div class="card" style="margin-bottom: 16px;">
                 <div class="card-header">
-                    <span class="card-title">📅 Calendario</span>
-                </div>
-                <div id="mini-calendar"></div>
-            </div>
-
-            <div class="card" style="margin-bottom: 16px;">
-                <div class="card-header">
-                    <span class="card-title">📌 Eventos</span>
-                </div>
-                <div id="dashboard-events"></div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
                     <span class="card-title">✅ Tareas de hoy</span>
                     <a href="#" onclick="App.loadPage('tasks'); return false;" class="badge badge-primary">Ver todas</a>
                 </div>
                 <div id="dashboard-tasks"></div>
+            </div>
+
+            <div class="card dashboard-events-scroll">
+                <div class="card-header">
+                    <span class="card-title">📌 Eventos de la semana</span>
+                </div>
+                <div id="dashboard-events"></div>
             </div>
         </div>`;
     },
@@ -45,42 +38,8 @@ const DashboardPage = {
         }
         // Re-render with name
         document.getElementById('page-content').innerHTML = this.render();
-        this.loadMiniCalendar();
         this.loadEvents();
         this.loadTodayTasks();
-    },
-
-    loadMiniCalendar() {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth();
-        const today = now.getDate();
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-        const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-        const dayNames = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'];
-
-        let html = `
-            <div class="mini-cal-header">
-                <span class="mini-cal-title">${monthNames[month]} ${year}</span>
-            </div>
-            <div class="mini-cal-grid">
-                ${dayNames.map(d => `<div class="mini-cal-day-name">${d}</div>`).join('')}
-        `;
-
-        const startOffset = (firstDay + 6) % 7;
-        for (let i = 0; i < startOffset; i++) {
-            html += `<div class="mini-cal-day empty"></div>`;
-        }
-
-        for (let d = 1; d <= daysInMonth; d++) {
-            const isToday = d === today;
-            html += `<div class="mini-cal-day${isToday ? ' today' : ''}">${d}</div>`;
-        }
-
-        html += `</div>`;
-        document.getElementById('mini-calendar').innerHTML = html;
     },
 
     async loadEvents() {
@@ -88,12 +47,12 @@ const DashboardPage = {
             const events = await DB.getEvents();
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const twoDaysLater = new Date(today);
-            twoDaysLater.setDate(twoDaysLater.getDate() + 3);
+            const nextWeek = new Date(today);
+            nextWeek.setDate(nextWeek.getDate() + 7);
 
             const upcoming = events.filter(e => {
                 const eventDate = new Date(e.date);
-                return eventDate >= today && eventDate < twoDaysLater;
+                return eventDate >= today && eventDate < nextWeek;
             }).sort((a, b) => new Date(a.date) - new Date(b.date));
 
             const container = document.getElementById('dashboard-events');

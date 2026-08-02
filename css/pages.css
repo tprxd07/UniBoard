@@ -23,6 +23,18 @@
     flex-direction: column;
 }
 
+.dashboard-events-scroll {
+    max-height: 340px;
+    overflow-y: auto;
+}
+
+.dashboard-events-scroll .card-header {
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 1;
+}
+
 /* Mini Calendar */
 .mini-cal-header {
     text-align: center;
