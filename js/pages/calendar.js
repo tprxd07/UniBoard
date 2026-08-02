@@ -34,9 +34,7 @@ const CalendarPage = {
             </div>
 
             <div id="calendar-container" class="calendar-container"></div>
-        </div>
-
-        <div id="calendar-modal-container"></div>`;
+        </div>`;
     },
 
     async init() {
@@ -272,67 +270,79 @@ const CalendarPage = {
         const groupEnabled = ev.groupId ? 'yes' : 'no';
         const deleteBtn = isEdit ? `<button class="btn btn-danger btn-sm" onclick="CalendarPage.confirmDeleteEvent('${ev.id}')">Eliminar</button>` : '';
 
-        const html = `
-        <div class="modal-overlay" onclick="CalendarPage.closeModal()"></div>
-        <div class="modal-content modal-lg">
-            <div class="modal-header">
-                <h3>${isEdit ? 'Editar evento' : 'Añadir evento'}</h3>
-                <button class="btn-icon modal-close" onclick="CalendarPage.closeModal()">✕</button>
+        const bodyHtml = `
+            <div class="form-group">
+                <label>Título</label>
+                <input type="text" id="ev-title" value="${ev.title || ''}" placeholder="Nombre del evento">
             </div>
-            <div class="modal-body">
+            <div class="form-row">
                 <div class="form-group">
-                    <label>Título</label>
-                    <input type="text" id="ev-title" value="${ev.title || ''}" placeholder="Nombre del evento" ${isEdit ? '' : ''}>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Fecha</label>
-                        <input type="date" id="ev-date" value="${ev.date || ''}">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Hora inicio</label>
-                        <input type="time" id="ev-start" value="${ev.startTime || ''}">
-                    </div>
-                    <div class="form-group">
-                        <label>Hora fin</label>
-                        <input type="time" id="ev-end" value="${ev.endTime || ''}">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>¿Agrupar?</label>
-                    <div class="pill-selector">
-                        <button class="pill ${groupEnabled === 'no' ? 'active' : ''}" data-group-toggle="no" onclick="CalendarPage.toggleGroupSection('no')">No</button>
-                        <button class="pill ${groupEnabled === 'yes' ? 'active' : ''}" data-group-toggle="yes" onclick="CalendarPage.toggleGroupSection('yes')">Sí</button>
-                    </div>
-                </div>
-                <div class="form-group" id="group-select-wrapper" style="display: ${groupEnabled === 'yes' ? 'block' : 'none'};">
-                    <label>Grupo</label>
-                    <select id="ev-group"><option value="">Sin grupo</option>${groupOptions}</select>
-                </div>
-                <div class="form-group">
-                    <label>Notas</label>
-                    <textarea id="ev-notes" rows="3" placeholder="Detalles del evento...">${ev.notes || ''}</textarea>
-                </div>
-                <div class="form-group">
-                    <label>Repetir</label>
-                    <select id="ev-repeat" onchange="CalendarPage.toggleRepeatDays()">${repeatSelect}</select>
-                </div>
-                <div class="form-group" id="repeat-days-wrapper" style="display: ${ev.repeat === 'custom' ? 'flex' : 'none'};">
-                    ${dayChecks}
+                    <label>Fecha</label>
+                    <input type="date" id="ev-date" value="${ev.date || ''}">
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Hora inicio</label>
+                    <input type="time" id="ev-start" value="${ev.startTime || ''}">
+                </div>
+                <div class="form-group">
+                    <label>Hora fin</label>
+                    <input type="time" id="ev-end" value="${ev.endTime || ''}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>¿Agrupar?</label>
+                <div class="pill-selector">
+                    <button class="pill ${groupEnabled === 'no' ? 'active' : ''}" data-group-toggle="no" onclick="CalendarPage.toggleGroupSection('no')">No</button>
+                    <button class="pill ${groupEnabled === 'yes' ? 'active' : ''}" data-group-toggle="yes" onclick="CalendarPage.toggleGroupSection('yes')">Sí</button>
+                </div>
+            </div>
+            <div class="form-group" id="group-select-wrapper" style="display: ${groupEnabled === 'yes' ? 'block' : 'none'};">
+                <label>Grupo</label>
+                <select id="ev-group"><option value="">Sin grupo</option>${groupOptions}</select>
+            </div>
+            <div class="form-group">
+                <label>Notas</label>
+                <textarea id="ev-notes" rows="3" placeholder="Detalles del evento...">${ev.notes || ''}</textarea>
+            </div>
+            <div class="form-group">
+                <label>Repetir</label>
+                <select id="ev-repeat" onchange="CalendarPage.toggleRepeatDays()">${repeatSelect}</select>
+            </div>
+            <div class="form-group" id="repeat-days-wrapper" style="display: ${ev.repeat === 'custom' ? 'flex' : 'none'};">
+                ${dayChecks}
+            </div>
+            <div class="modal-custom-footer">
                 ${deleteBtn}
                 <div class="modal-footer-right">
-                    <button class="btn btn-ghost" onclick="CalendarPage.closeModal()">Cancelar</button>
+                    <button class="btn btn-ghost modal-close" onclick="Utils.closeModal()">Cancelar</button>
                     <button class="btn btn-primary" onclick="CalendarPage.saveEvent()">Guardar</button>
                 </div>
-            </div>
-        </div>`;
+            </div>`;
 
-        document.getElementById('calendar-modal-container').innerHTML = html;
+        const modal = document.getElementById('modal');
+        document.getElementById('modal-title').textContent = isEdit ? 'Editar evento' : 'Añadir evento';
+        document.getElementById('modal-body').innerHTML = bodyHtml;
+        document.getElementById('modal-confirm').classList.add('hidden');
+        document.querySelector('.modal-footer .btn-ghost').classList.add('hidden');
+        modal.classList.remove('hidden');
+
+        modal.querySelectorAll('.modal-close').forEach(btn => {
+            btn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                this.resetModalFooter();
+            });
+        });
+        modal.querySelector('.modal-overlay').addEventListener('click', () => {
+            modal.classList.add('hidden');
+            this.resetModalFooter();
+        });
+    },
+
+    resetModalFooter() {
+        document.getElementById('modal-confirm').classList.remove('hidden');
+        document.querySelector('.modal-footer .btn-ghost').classList.remove('hidden');
     },
 
     toggleGroupSection(val) {
@@ -372,7 +382,8 @@ const CalendarPage = {
                 await DB.addEvent(data);
                 Utils.showToast('Evento creado', 'success');
             }
-            this.closeModal();
+            document.getElementById('modal').classList.add('hidden');
+            this.resetModalFooter();
             await this.renderCalendar();
         } catch (e) {
             Utils.showToast('Error al guardar', 'error');
@@ -380,29 +391,26 @@ const CalendarPage = {
     },
 
     confirmDeleteEvent(eventId) {
-        const html = `
-        <div class="modal-overlay" onclick="CalendarPage.closeModal()"></div>
-        <div class="modal-content modal-sm">
-            <div class="modal-header">
-                <h3>Eliminar evento</h3>
-                <button class="btn-icon modal-close" onclick="CalendarPage.closeModal()">✕</button>
-            </div>
-            <div class="modal-body" style="text-align: center;">
-                <p>¿Estás seguro de que quieres eliminar este evento?</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-ghost" onclick="CalendarPage.closeModal()">Cancelar</button>
-                <button class="btn btn-danger" onclick="CalendarPage.deleteEvent('${eventId}')">Eliminar</button>
-            </div>
-        </div>`;
-        document.getElementById('calendar-modal-container').innerHTML = html;
+        const modal = document.getElementById('modal');
+        document.getElementById('modal-title').textContent = 'Eliminar evento';
+        document.getElementById('modal-body').innerHTML = `
+            <p style="text-align: center;">¿Estás seguro de que quieres eliminar este evento?</p>
+            <div class="modal-custom-footer">
+                <div class="modal-footer-right">
+                    <button class="btn btn-ghost modal-close" onclick="Utils.closeModal(); CalendarPage.openEventModal('${eventId}')">Cancelar</button>
+                    <button class="btn btn-danger" onclick="CalendarPage.deleteEvent('${eventId}')">Eliminar</button>
+                </div>
+            </div>`;
+        document.getElementById('modal-confirm').classList.add('hidden');
+        document.querySelector('.modal-footer .btn-ghost').classList.add('hidden');
     },
 
     async deleteEvent(id) {
         try {
             await DB.deleteEvent(id);
             Utils.showToast('Evento eliminado', 'success');
-            this.closeModal();
+            document.getElementById('modal').classList.add('hidden');
+            this.resetModalFooter();
             await this.renderCalendar();
         } catch (e) {
             Utils.showToast('Error al eliminar', 'error');
@@ -421,23 +429,32 @@ const CalendarPage = {
             </div>
         `).join('');
 
-        const html = `
-        <div class="modal-overlay" onclick="CalendarPage.closeModal()"></div>
-        <div class="modal-content modal-lg">
-            <div class="modal-header">
-                <h3>Modificar grupo</h3>
-                <button class="btn-icon modal-close" onclick="CalendarPage.closeModal()">✕</button>
-            </div>
-            <div class="modal-body">
-                <button class="btn btn-primary btn-sm" style="margin-bottom: 16px;" onclick="CalendarPage.openGroupForm()">+ Añadir grupo</button>
-                <div class="group-list">${groupList}</div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-ghost" onclick="CalendarPage.closeModal()">Cerrar</button>
-            </div>
-        </div>`;
+        const bodyHtml = `
+            <button class="btn btn-primary btn-sm" style="margin-bottom: 16px;" onclick="CalendarPage.openGroupForm()">+ Añadir grupo</button>
+            <div class="group-list">${groupList}</div>
+            <div class="modal-custom-footer">
+                <div class="modal-footer-right">
+                    <button class="btn btn-ghost modal-close" onclick="Utils.closeModal()">Cerrar</button>
+                </div>
+            </div>`;
 
-        document.getElementById('calendar-modal-container').innerHTML = html;
+        const modal = document.getElementById('modal');
+        document.getElementById('modal-title').textContent = 'Modificar grupo';
+        document.getElementById('modal-body').innerHTML = bodyHtml;
+        document.getElementById('modal-confirm').classList.add('hidden');
+        document.querySelector('.modal-footer .btn-ghost').classList.add('hidden');
+        modal.classList.remove('hidden');
+
+        modal.querySelectorAll('.modal-close').forEach(btn => {
+            btn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                this.resetModalFooter();
+            });
+        });
+        modal.querySelector('.modal-overlay').addEventListener('click', () => {
+            modal.classList.add('hidden');
+            this.resetModalFooter();
+        });
     },
 
     openGroupForm(groupId) {
@@ -463,55 +480,62 @@ const CalendarPage = {
 
         const deleteBtn = isEdit && !gr.isDefault ? `<button class="btn btn-danger btn-sm" onclick="CalendarPage.confirmDeleteGroup('${gr.id}')">Eliminar</button>` : '';
 
-        const html = `
-        <div class="modal-overlay" onclick="CalendarPage.closeModal()"></div>
-        <div class="modal-content modal-lg">
-            <div class="modal-header">
-                <h3>${isEdit ? 'Editar grupo' : 'Añadir grupo'}</h3>
-                <button class="btn-icon modal-close" onclick="CalendarPage.closeModal()">✕</button>
+        const bodyHtml = `
+            <div class="form-group">
+                <label>Nombre del grupo</label>
+                <input type="text" id="grp-name" value="${gr.name || ''}" placeholder="Nombre del grupo">
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Nombre del grupo</label>
-                    <input type="text" id="grp-name" value="${gr.name || ''}" placeholder="Nombre del grupo">
-                </div>
-                <div class="form-group">
-                    <label>Color</label>
-                    <div class="color-options" id="grp-colors">${colorOptions}</div>
-                    <input type="hidden" id="grp-color" value="${gr.color || colors[0]}">
-                </div>
-                <div class="form-group">
-                    <label>Opcionales</label>
-                </div>
-                <div class="form-group">
-                    <label>¿Emoji representativo?</label>
-                    <div class="pill-selector">
-                        <button class="pill ${hasEmoji === 'no' ? 'active' : ''}" data-emoji-toggle="no" onclick="CalendarPage.toggleEmojiSection('no')">No</button>
-                        <button class="pill ${hasEmoji === 'yes' ? 'active' : ''}" data-emoji-toggle="yes" onclick="CalendarPage.toggleEmojiSection('yes')">Sí</button>
-                    </div>
-                </div>
-                <div class="form-group" id="emoji-select-wrapper" style="display: ${hasEmoji === 'yes' ? 'flex' : 'none'}; flex-wrap: wrap; gap: 6px;">
-                    ${emojiGrid}
-                </div>
-                <input type="hidden" id="grp-emoji" value="${gr.emoji || ''}">
-                <div class="form-group">
-                    <label>Repetición por defecto</label>
-                    <select id="grp-repeat" onchange="CalendarPage.toggleGroupRepeatDays()">${repeatSelect}</select>
-                </div>
-                <div class="form-group" id="group-repeat-days-wrapper" style="display: ${gr.defaultRepeat === 'custom' ? 'flex' : 'none'};">
-                    ${dayChecks}
+            <div class="form-group">
+                <label>Color</label>
+                <div class="color-options" id="grp-colors">${colorOptions}</div>
+                <input type="hidden" id="grp-color" value="${gr.color || colors[0]}">
+            </div>
+            <div class="form-group">
+                <label style="font-size: 12px; color: var(--text-muted);">Opcionales</label>
+            </div>
+            <div class="form-group">
+                <label>¿Emoji representativo?</label>
+                <div class="pill-selector">
+                    <button class="pill ${hasEmoji === 'no' ? 'active' : ''}" data-emoji-toggle="no" onclick="CalendarPage.toggleEmojiSection('no')">No</button>
+                    <button class="pill ${hasEmoji === 'yes' ? 'active' : ''}" data-emoji-toggle="yes" onclick="CalendarPage.toggleEmojiSection('yes')">Sí</button>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="form-group" id="emoji-select-wrapper" style="display: ${hasEmoji === 'yes' ? 'flex' : 'none'}; flex-wrap: wrap; gap: 6px;">
+                ${emojiGrid}
+            </div>
+            <input type="hidden" id="grp-emoji" value="${gr.emoji || ''}">
+            <div class="form-group">
+                <label>Repetición por defecto</label>
+                <select id="grp-repeat" onchange="CalendarPage.toggleGroupRepeatDays()">${repeatSelect}</select>
+            </div>
+            <div class="form-group" id="group-repeat-days-wrapper" style="display: ${gr.defaultRepeat === 'custom' ? 'flex' : 'none'};">
+                ${dayChecks}
+            </div>
+            <div class="modal-custom-footer">
                 ${deleteBtn}
                 <div class="modal-footer-right">
-                    <button class="btn btn-ghost" onclick="CalendarPage.openGroupModal()">Volver</button>
+                    <button class="btn btn-ghost modal-close" onclick="CalendarPage.openGroupModal()">Volver</button>
                     <button class="btn btn-primary" onclick="CalendarPage.saveGroup()">Guardar</button>
                 </div>
-            </div>
-        </div>`;
+            </div>`;
 
-        document.getElementById('calendar-modal-container').innerHTML = html;
+        const modal = document.getElementById('modal');
+        document.getElementById('modal-title').textContent = isEdit ? 'Editar grupo' : 'Añadir grupo';
+        document.getElementById('modal-body').innerHTML = bodyHtml;
+        document.getElementById('modal-confirm').classList.add('hidden');
+        document.querySelector('.modal-footer .btn-ghost').classList.add('hidden');
+        modal.classList.remove('hidden');
+
+        modal.querySelectorAll('.modal-close').forEach(btn => {
+            btn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                this.resetModalFooter();
+            });
+        });
+        modal.querySelector('.modal-overlay').addEventListener('click', () => {
+            modal.classList.add('hidden');
+            this.resetModalFooter();
+        });
     },
 
     selectGroupColor(color) {
@@ -554,10 +578,6 @@ const CalendarPage = {
         try {
             if (this.editingGroup) {
                 await DB.updateGroup(this.editingGroup.id, data);
-                const events = this.events.filter(e => e.groupId === this.editingGroup.id);
-                for (const e of events) {
-                    await DB.updateEvent(e.id, { groupId: e.groupId });
-                }
                 Utils.showToast('Grupo actualizado', 'success');
             } else {
                 await DB.addGroup(data);
@@ -574,23 +594,22 @@ const CalendarPage = {
     confirmDeleteGroup(groupId) {
         const group = this.groups.find(g => g.id === groupId);
         const eventCount = this.events.filter(e => e.groupId === groupId).length;
-        const html = `
-        <div class="modal-overlay" onclick="CalendarPage.closeModal()"></div>
-        <div class="modal-content modal-sm">
-            <div class="modal-header">
-                <h3>Eliminar grupo</h3>
-                <button class="btn-icon modal-close" onclick="CalendarPage.closeModal()">✕</button>
-            </div>
-            <div class="modal-body" style="text-align: center;">
-                <p>¿Estás seguro de que quieres eliminar el grupo "<strong>${group.name}</strong>"?</p>
-                ${eventCount > 0 ? `<p style="color: var(--danger); font-size: 13px; margin-top: 8px;">Se eliminarán ${eventCount} evento(s) asociado(s).</p>` : ''}
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-ghost" onclick="CalendarPage.openGroupForm('${groupId}')">Cancelar</button>
-                <button class="btn btn-danger" onclick="CalendarPage.deleteGroup('${groupId}')">Eliminar</button>
-            </div>
-        </div>`;
-        document.getElementById('calendar-modal-container').innerHTML = html;
+
+        const bodyHtml = `
+            <p style="text-align: center;">¿Estás seguro de que quieres eliminar el grupo "<strong>${group.name}</strong>"?</p>
+            ${eventCount > 0 ? `<p style="color: var(--danger); font-size: 13px; margin-top: 8px; text-align: center;">Se eliminarán ${eventCount} evento(s) asociado(s).</p>` : ''}
+            <div class="modal-custom-footer">
+                <div class="modal-footer-right">
+                    <button class="btn btn-ghost modal-close" onclick="CalendarPage.openGroupForm('${groupId}')">Cancelar</button>
+                    <button class="btn btn-danger" onclick="CalendarPage.deleteGroup('${groupId}')">Eliminar</button>
+                </div>
+            </div>`;
+
+        const modal = document.getElementById('modal');
+        document.getElementById('modal-title').textContent = 'Eliminar grupo';
+        document.getElementById('modal-body').innerHTML = bodyHtml;
+        document.getElementById('modal-confirm').classList.add('hidden');
+        document.querySelector('.modal-footer .btn-ghost').classList.add('hidden');
     },
 
     async deleteGroup(id) {
@@ -599,14 +618,11 @@ const CalendarPage = {
             Utils.showToast('Grupo eliminado', 'success');
             this.groups = await DB.getGroups();
             this.events = await DB.getEvents();
-            this.closeModal();
+            document.getElementById('modal').classList.add('hidden');
+            this.resetModalFooter();
             await this.renderCalendar();
         } catch (e) {
             Utils.showToast('Error al eliminar', 'error');
         }
-    },
-
-    closeModal() {
-        document.getElementById('calendar-modal-container').innerHTML = '';
     }
 };
