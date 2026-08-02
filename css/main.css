@@ -420,9 +420,10 @@ a {
 .main-content {
     flex: 1;
     margin-left: 260px;
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .top-bar {
@@ -432,8 +433,7 @@ a {
     padding: 16px 24px;
     background: var(--bg-card);
     border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
+    flex-shrink: 0;
     z-index: 50;
 }
 
@@ -459,6 +459,7 @@ a {
     flex: 1;
     padding: 24px;
     overflow-y: auto;
+    min-height: 0;
 }
 
 /* ============================================

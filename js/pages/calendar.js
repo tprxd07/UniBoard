@@ -22,11 +22,6 @@ const CalendarPage = {
             </div>
 
             <div id="calendar-container" class="calendar-container"></div>
-
-            <div class="calendar-events-section">
-                <h3 class="section-title" style="margin-bottom: 12px;">Eventos del día</h3>
-                <div id="day-events"></div>
-            </div>
         </div>`;
     },
 
@@ -91,8 +86,6 @@ const CalendarPage = {
         } else {
             this.renderDay(container, title, events);
         }
-
-        this.showDayEvents(events);
     },
 
     renderMonth(container, title, events) {
@@ -237,26 +230,5 @@ const CalendarPage = {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelector('.tab[data-view="day"]').classList.add('active');
         this.renderCalendar();
-    },
-
-    async showDayEvents(events) {
-        const container = document.getElementById('day-events');
-        const todayEvents = events.filter(e => this.eventOnDate(e, this.currentDate));
-
-        if (todayEvents.length === 0) {
-            container.innerHTML = '<p style="color: var(--text-secondary); font-size: 13px; text-align: center; padding: 16px;">Sin eventos hoy</p>';
-            return;
-        }
-
-        container.innerHTML = todayEvents.map(e => {
-            const icon = e.type === 'class' ? '📚' : e.type === 'exam' ? '📝' : '✅';
-            return `<div class="list-item">
-                <div class="list-item-icon">${icon}</div>
-                <div class="list-item-content">
-                    <div class="list-item-title">${e.subject || e.name || e.title}</div>
-                    <div class="list-item-subtitle">${e.startHour || ''} ${e.room ? '· ' + e.room : ''}</div>
-                </div>
-            </div>`;
-        }).join('');
     }
 };
