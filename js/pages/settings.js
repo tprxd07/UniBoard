@@ -8,25 +8,6 @@ const SettingsPage = {
 
         <div class="card" style="margin-bottom: 20px;">
             <div class="card-header">
-                <span class="card-title">👤 Perfil</span>
-            </div>
-            <div class="form-group">
-                <label>Nombre</label>
-                <input type="text" id="settings-name" placeholder="Tu nombre">
-            </div>
-            <div class="form-group">
-                <label>Universidad</label>
-                <input type="text" id="settings-university" placeholder="Nombre de tu universidad">
-            </div>
-            <div class="form-group">
-                <label>Grado</label>
-                <input type="text" id="settings-degree" placeholder="Ej: Ingeniería Informática">
-            </div>
-            <button class="btn btn-primary btn-sm" id="save-profile">Guardar perfil</button>
-        </div>
-
-        <div class="card" style="margin-bottom: 20px;">
-            <div class="card-header">
                 <span class="card-title">🎨 Apariencia</span>
             </div>
 
@@ -117,7 +98,7 @@ const SettingsPage = {
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" style="margin-bottom: 20px;">
             <div class="card-header">
                 <span class="card-title">ℹ️ Acerca de</span>
             </div>
@@ -127,6 +108,12 @@ const SettingsPage = {
                 <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Tu compañera universitaria</p>
                 <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Versión 1.0.0</p>
             </div>
+        </div>
+
+        <div class="card">
+            <button class="btn btn-danger" id="btn-logout-settings" style="width: 100%;">
+                🚪 Cerrar sesión
+            </button>
         </div>`;
     },
 
@@ -155,9 +142,9 @@ const SettingsPage = {
             });
         });
 
-        document.getElementById('save-profile').addEventListener('click', () => this.saveProfile());
         document.getElementById('save-timer').addEventListener('click', () => this.saveTimerSettings());
         document.getElementById('export-data').addEventListener('click', () => this.exportData());
+        document.getElementById('btn-logout-settings').addEventListener('click', () => Auth.logout());
     },
 
     async loadSettings() {
@@ -177,10 +164,7 @@ const SettingsPage = {
                 document.querySelector(`.color-option[data-color="${settings.accentColor}"]`)?.classList.add('active');
             }
 
-            // Load profile
-            document.getElementById('settings-name').value = profile.name || '';
-            document.getElementById('settings-university').value = profile.university || '';
-            document.getElementById('settings-degree').value = profile.degree || '';
+            // Load email
             document.getElementById('user-email').textContent = Auth.currentUser?.email || '—';
 
             // Firebase status
@@ -209,20 +193,6 @@ const SettingsPage = {
             await DB.updateSettings(settings);
         } catch (e) {
             console.error('Error saving setting:', e);
-        }
-    },
-
-    async saveProfile() {
-        try {
-            await DB.updateProfile({
-                name: document.getElementById('settings-name').value,
-                university: document.getElementById('settings-university').value,
-                degree: document.getElementById('settings-degree').value
-            });
-            document.getElementById('user-name').textContent = document.getElementById('settings-name').value || Auth.currentUser?.email.split('@')[0];
-            Utils.showToast('Perfil actualizado', 'success');
-        } catch (e) {
-            Utils.showToast('Error al guardar', 'error');
         }
     },
 
@@ -262,7 +232,7 @@ const SettingsPage = {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `uniguide-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `uniboard-backup-${new Date().toISOString().split('T')[0]}.json`;
             a.click();
             URL.revokeObjectURL(url);
 

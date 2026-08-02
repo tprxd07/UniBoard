@@ -9,6 +9,14 @@ const DocumentsPage = {
             <button class="btn btn-primary btn-sm" id="add-doc-btn">+ Añadir</button>
         </div>
 
+        <div class="doc-dropzone" id="doc-dropzone">
+            <div class="doc-dropzone-content">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <p>Arrastra archivos aquí para añadirlos</p>
+            </div>
+            <input type="file" id="doc-file-input" multiple class="hidden" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.csv,.zip,.rar,image/*">
+        </div>
+
         <div class="tabs" style="max-width: 400px; margin-bottom: 20px;">
             <button class="tab active" data-view="folders">Carpetas</button>
             <button class="tab" data-view="all">Todos</button>
@@ -28,7 +36,70 @@ const DocumentsPage = {
             });
         });
 
+        this.setupDropzone();
         this.loadDocuments();
+    },
+
+    setupDropzone() {
+        const dropzone = document.getElementById('doc-dropzone');
+        const input = document.getElementById('doc-file-input');
+
+        if (!dropzone) return;
+
+        dropzone.addEventListener('click', () => input?.click());
+
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('drag-over');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('drag-over');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('drag-over');
+            const files = Array.from(e.dataTransfer.files);
+            if (files.length > 0) this.handleDroppedFiles(files);
+        });
+
+        input?.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) this.handleDroppedFiles(files);
+        });
+    },
+
+    async handleDroppedFiles(files) {
+        let added = 0;
+        for (const file of files) {
+            try {
+                const data = {
+                    name: file.name.replace(/\.[^.]+$/, ''),
+                    subject: '',
+                    type: this.guessType(file.name),
+                    url: '',
+                    fileName: file.name,
+                    fileSize: file.size,
+                    fileType: file.type
+                };
+                await DB.addDocument(data);
+                added++;
+            } catch (e) {
+                console.error('Error adding file:', e);
+            }
+        }
+        if (added > 0) {
+            Utils.showToast(`${added} archivo(s) añadido(s)`, 'success');
+            this.loadDocuments();
+        }
+    },
+
+    guessType(filename) {
+        const ext = filename.split('.').pop().toLowerCase();
+        if (ext === 'pdf') return 'pdf';
+        if (['ppt', 'pptx'].includes(ext)) return 'presentation';
+        return 'notes';
     },
 
     async loadDocuments() {
@@ -44,7 +115,6 @@ const DocumentsPage = {
         const container = document.getElementById('docs-content');
 
         if (view === 'folders') {
-            // Group by subject
             const groups = {};
             this.documents.forEach(doc => {
                 const key = doc.subject || 'Sin asignatura';
@@ -53,7 +123,7 @@ const DocumentsPage = {
             });
 
             if (Object.keys(groups).length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📄</div><h3>Sin documentos</h3><p>Añade tu primer documento o carpeta</p></div>';
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📄</div><h3>Sin documentos</h3><p>Añade tu primer documento o arrastra archivos aquí</p></div>';
                 return;
             }
 

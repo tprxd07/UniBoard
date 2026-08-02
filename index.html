@@ -144,17 +144,12 @@
             </div>
 
             <div class="sidebar-footer">
-                <a href="#" class="nav-item" data-page="settings">
-                    <span class="nav-icon">⚙️</span>
-                    <span class="nav-label">Ajustes</span>
-                </a>
-                <a href="#" class="nav-item" id="btn-logout">
-                    <span class="nav-icon">🚪</span>
-                    <span class="nav-label">Cerrar sesión</span>
-                </a>
-                <div class="user-info">
+                <div class="user-info" id="btn-profile" style="cursor: pointer;">
                     <div class="user-avatar" id="user-avatar">👤</div>
                     <span class="user-name" id="user-name">Usuario</span>
+                    <button class="btn-icon btn-sm" id="btn-settings" title="Ajustes" style="margin-left: auto;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
                 </div>
             </div>
         </nav>
@@ -188,6 +183,43 @@
             <div class="modal-footer">
                 <button class="btn btn-ghost modal-close">Cancelar</button>
                 <button id="modal-confirm" class="btn btn-primary">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profile-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Mi Perfil</h3>
+                <button class="btn-icon modal-close" onclick="document.getElementById('profile-modal').classList.add('hidden')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="profile-photo-section">
+                    <div class="profile-photo-wrapper" id="profile-photo-wrapper">
+                        <div class="profile-photo" id="profile-photo-display">👤</div>
+                        <div class="profile-photo-overlay">📷</div>
+                    </div>
+                    <p class="profile-photo-hint">Arrastra una imagen o haz clic para cambiar</p>
+                    <input type="file" id="profile-photo-input" accept="image/*" class="hidden">
+                </div>
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="profile-name" placeholder="Tu nombre">
+                </div>
+                <div class="form-group">
+                    <label>Universidad</label>
+                    <input type="text" id="profile-university" placeholder="Nombre de tu universidad">
+                </div>
+                <div class="form-group">
+                    <label>Grado</label>
+                    <input type="text" id="profile-degree" placeholder="Ej: Ingeniería Informática">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost modal-close" onclick="document.getElementById('profile-modal').classList.add('hidden')">Cancelar</button>
+                <button class="btn btn-primary" id="save-profile-modal">Guardar</button>
             </div>
         </div>
     </div>

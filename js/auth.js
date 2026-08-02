@@ -18,7 +18,6 @@ const Auth = {
 
         document.getElementById('btn-login').addEventListener('click', () => this.login());
         document.getElementById('btn-register').addEventListener('click', () => this.register());
-        document.getElementById('btn-logout').addEventListener('click', () => this.logout());
         document.getElementById('btn-google-login').addEventListener('click', () => this.loginWithGoogle());
         document.getElementById('btn-apple-login').addEventListener('click', () => this.loginWithApple());
 
