@@ -488,6 +488,10 @@ const CalendarPage = {
             <div class="form-group">
                 <label>Color</label>
                 <div class="color-options" id="grp-colors">${colorOptions}</div>
+                <div class="color-custom">
+                    <input type="color" id="grp-color-picker" value="${gr.color || colors[0]}" onchange="CalendarPage.selectGroupColor(this.value)">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Color personalizado</span>
+                </div>
                 <input type="hidden" id="grp-color" value="${gr.color || colors[0]}">
             </div>
             <div class="form-group">
@@ -540,8 +544,10 @@ const CalendarPage = {
 
     selectGroupColor(color) {
         document.querySelectorAll('#grp-colors .color-option').forEach(o => o.classList.remove('active'));
-        document.querySelector(`#grp-colors .color-option[data-color="${color}"]`).classList.add('active');
+        const match = document.querySelector(`#grp-colors .color-option[data-color="${color}"]`);
+        if (match) match.classList.add('active');
         document.getElementById('grp-color').value = color;
+        document.getElementById('grp-color-picker').value = color;
     },
 
     toggleEmojiSection(val) {
