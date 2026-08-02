@@ -456,6 +456,12 @@ a {
     gap: 12px;
 }
 
+.current-date {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
 .current-time {
     font-size: 13px;
     color: var(--text-secondary);
