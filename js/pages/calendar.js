@@ -468,16 +468,6 @@ const CalendarPage = {
         const emojis = ['📚', '🎉', '🎂', '💪', '❤️', '⭐', '🔥', '🎯', '✈️', '🏃', '🎵', '💡', '📌', '🏆', '🌟', '🎓'];
         const emojiGrid = emojis.map(e => `<button class="emoji-option ${gr.emoji === e ? 'active' : ''}" onclick="CalendarPage.selectEmoji('${e}')">${e}</button>`).join('');
 
-        const repeatOptions = ['none', 'daily', 'weekly', 'monthly', 'yearly', 'custom'];
-        const repeatLabels = { none: 'No repetir', daily: 'Diariamente', weekly: 'Semanalmente', monthly: 'Mensualmente', yearly: 'Anualmente', custom: 'Personalizado' };
-        const repeatSelect = repeatOptions.map(r => `<option value="${r}" ${gr.defaultRepeat === r ? 'selected' : ''}>${repeatLabels[r]}</option>`).join('');
-
-        const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        const dayChecks = [1, 2, 3, 4, 5, 6, 0].map(d => {
-            const checked = gr.defaultRepeatDays && gr.defaultRepeatDays.includes(d) ? 'checked' : '';
-            return `<label class="day-check"><input type="checkbox" value="${d}" class="group-repeat-day" ${checked}><span>${dayNames[d]}</span></label>`;
-        }).join('');
-
         const deleteBtn = isEdit && !gr.isDefault ? `<button class="btn btn-danger btn-sm" onclick="CalendarPage.confirmDeleteGroup('${gr.id}')">Eliminar</button>` : '';
 
         const bodyHtml = `
@@ -508,13 +498,6 @@ const CalendarPage = {
                 ${emojiGrid}
             </div>
             <input type="hidden" id="grp-emoji" value="${gr.emoji || ''}">
-            <div class="form-group">
-                <label>Repetición por defecto</label>
-                <select id="grp-repeat" onchange="CalendarPage.toggleGroupRepeatDays()">${repeatSelect}</select>
-            </div>
-            <div class="form-group" id="group-repeat-days-wrapper" style="display: ${gr.defaultRepeat === 'custom' ? 'flex' : 'none'};">
-                ${dayChecks}
-            </div>
             <div class="modal-custom-footer">
                 ${deleteBtn}
                 <div class="modal-footer-right">
@@ -563,23 +546,13 @@ const CalendarPage = {
         document.getElementById('grp-emoji').value = emoji;
     },
 
-    toggleGroupRepeatDays() {
-        const val = document.getElementById('grp-repeat').value;
-        document.getElementById('group-repeat-days-wrapper').style.display = val === 'custom' ? 'flex' : 'none';
-    },
-
     async saveGroup() {
         const name = document.getElementById('grp-name').value.trim();
         const color = document.getElementById('grp-color').value;
         const emoji = document.getElementById('grp-emoji').value || null;
-        const defaultRepeat = document.getElementById('grp-repeat').value;
-        const defaultRepeatDays = defaultRepeat === 'custom'
-            ? Array.from(document.querySelectorAll('.group-repeat-day:checked')).map(c => parseInt(c.value))
-            : [];
-
         if (!name) { Utils.showToast('Introduce un nombre', 'error'); return; }
 
-        const data = { name, color, emoji, defaultRepeat, defaultRepeatDays };
+        const data = { name, color, emoji };
 
         try {
             if (this.editingGroup) {
