@@ -464,7 +464,7 @@ a {
 
 .page-content {
     flex: 1;
-    padding: 24px;
+    padding: 0 24px 24px;
     overflow: hidden;
     min-height: 0;
 }
