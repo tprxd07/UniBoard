@@ -18,6 +18,76 @@
     font-size: 14px;
 }
 
+.dashboard-events-section {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Mini Calendar */
+.mini-cal-header {
+    text-align: center;
+    padding: 8px 0;
+}
+
+.mini-cal-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.mini-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    padding: 4px 8px 8px;
+}
+
+.mini-cal-day-name {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 4px 0;
+}
+
+.mini-cal-day {
+    text-align: center;
+    font-size: 12px;
+    padding: 5px 0;
+    border-radius: 50%;
+    color: var(--text);
+    cursor: default;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mini-cal-day.empty {
+    visibility: hidden;
+}
+
+.mini-cal-day.today {
+    background: var(--primary);
+    color: white;
+    font-weight: 700;
+}
+
+/* Event date labels */
+.event-date-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    padding: 8px 0 4px;
+    letter-spacing: 0.5px;
+}
+
+.event-date-label:not(:first-child) {
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+}
+
 .dashboard-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
