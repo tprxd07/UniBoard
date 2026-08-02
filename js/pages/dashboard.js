@@ -1,11 +1,13 @@
 // Dashboard Page
 const DashboardPage = {
-    async render() {
-        const userName = (await DB.getProfile()).name || Auth.currentUser?.displayName || '';
+    userName: '',
+
+    render() {
+        const name = this.userName;
         const greeting = Utils.getGreeting();
         return `
         <div class="dashboard-greeting">
-            <h2>${greeting}, ${userName}</h2>
+            <h2>${greeting}, ${name}</h2>
             <p>Aquí tienes tu resumen de los próximos días</p>
         </div>
 
@@ -35,6 +37,14 @@ const DashboardPage = {
     },
 
     async init() {
+        try {
+            const profile = await DB.getProfile();
+            this.userName = profile.name || Auth.currentUser?.displayName || '';
+        } catch (e) {
+            this.userName = Auth.currentUser?.displayName || '';
+        }
+        // Re-render with name
+        document.getElementById('page-content').innerHTML = this.render();
         this.loadMiniCalendar();
         this.loadEvents();
         this.loadTodayTasks();
@@ -59,7 +69,6 @@ const DashboardPage = {
                 ${dayNames.map(d => `<div class="mini-cal-day-name">${d}</div>`).join('')}
         `;
 
-        // Fill empty cells (Monday = 0)
         const startOffset = (firstDay + 6) % 7;
         for (let i = 0; i < startOffset; i++) {
             html += `<div class="mini-cal-day empty"></div>`;
@@ -88,6 +97,7 @@ const DashboardPage = {
             }).sort((a, b) => new Date(a.date) - new Date(b.date));
 
             const container = document.getElementById('dashboard-events');
+            if (!container) return;
 
             if (upcoming.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 13px;">No hay eventos próximos</p>';
@@ -111,7 +121,7 @@ const DashboardPage = {
                     lastDate = dateKey;
                 }
 
-                const timeStr = event.startTime ? `${event.startTime}` : '';
+                const timeStr = event.startTime || '';
                 const groupColor = event.groupColor || 'var(--primary)';
                 html += `
                     <div class="list-item" style="margin-bottom: 6px;">
@@ -141,6 +151,7 @@ const DashboardPage = {
             }).slice(0, 5);
 
             const container = document.getElementById('dashboard-tasks');
+            if (!container) return;
 
             if (todayTasks.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 13px;">¡Todo al día! 🎉</p>';
