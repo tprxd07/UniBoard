@@ -44,52 +44,82 @@ const DashboardPage = {
 
     async loadEvents() {
         try {
-            const events = await DB.getEvents();
+            const [events, groups] = await Promise.all([DB.getEvents(), DB.getGroups()]);
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const nextWeek = new Date(today);
             nextWeek.setDate(nextWeek.getDate() + 7);
 
-            const upcoming = events.filter(e => {
-                const eventDate = new Date(e.date);
-                return eventDate >= today && eventDate < nextWeek;
-            }).sort((a, b) => new Date(a.date) - new Date(b.date));
+            const dayMs = 1000 * 60 * 60 * 24;
+
+            // Expand recurring events for the next 7 days
+            const expanded = [];
+            events.forEach(event => {
+                for (let d = new Date(today); d < nextWeek; d.setDate(d.getDate() + 1)) {
+                    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                    const eventDate = new Date(event.date);
+                    const diffFromStart = Math.round((d - eventDate) / dayMs);
+                    if (diffFromStart < 0) continue;
+
+                    let match = false;
+                    if (event.repeat === 'daily') match = true;
+                    else if (event.repeat === 'weekly') match = d.getDay() === eventDate.getDay();
+                    else if (event.repeat === 'monthly') match = d.getDate() === eventDate.getDate();
+                    else if (event.repeat === 'yearly') match = d.getDate() === eventDate.getDate() && d.getMonth() === eventDate.getMonth();
+                    else if (event.repeat === 'custom' && event.repeatDays) match = event.repeatDays.includes(d.getDay());
+                    else match = dateStr === event.date;
+
+                    if (match) {
+                        expanded.push({ ...event, _displayDate: dateStr });
+                    }
+                }
+            });
 
             const container = document.getElementById('dashboard-events');
             if (!container) return;
 
-            if (upcoming.length === 0) {
+            if (expanded.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 13px;">No hay eventos próximos</p>';
                 return;
             }
 
-            const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-            const dayLabels = { 0: 'Hoy', 1: 'Mañana' };
+            const dayLabels = { 0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado' };
+            const todayLabel = 'Hoy';
+            const tomorrowLabel = 'Mañana';
 
             let html = '';
             let lastDate = '';
 
-            upcoming.forEach(event => {
-                const eventDate = new Date(event.date);
-                const dateKey = eventDate.toDateString();
-                const diffDays = Math.round((eventDate - today) / (1000 * 60 * 60 * 24));
-                const label = dayLabels[diffDays] || dayNames[eventDate.getDay()];
+            expanded.forEach(event => {
+                const dateKey = event._displayDate;
+                if (dateKey === lastDate) return;
 
-                if (dateKey !== lastDate) {
-                    html += `<div class="event-date-label">${label} · ${eventDate.getDate()} de ${['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][eventDate.getMonth()]}</div>`;
-                    lastDate = dateKey;
-                }
+                const d = new Date(dateKey + 'T00:00:00');
+                const diffDays = Math.round((d - today) / dayMs);
+                let label;
+                if (diffDays === 0) label = todayLabel;
+                else if (diffDays === 1) label = tomorrowLabel;
+                else label = dayLabels[d.getDay()];
 
-                const timeStr = event.startTime || '';
-                const groupColor = event.groupColor || 'var(--primary)';
-                html += `
-                    <div class="list-item" style="margin-bottom: 6px;">
-                        <div style="width: 4px; height: 32px; border-radius: 2px; background: ${groupColor}; flex-shrink: 0; margin-right: 10px;"></div>
-                        <div class="list-item-content">
-                            <div class="list-item-title" style="font-size: 14px;">${event.title}</div>
-                            <div class="list-item-subtitle" style="font-size: 12px;">${timeStr ? timeStr + ' · ' : ''}${event.group || ''}</div>
-                        </div>
-                    </div>`;
+                html += `<div class="event-date-label">${label} · ${d.getDate()} de ${['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][d.getMonth()]}</div>`;
+                lastDate = dateKey;
+
+                const dayEvents = expanded.filter(e => e._displayDate === dateKey);
+                dayEvents.forEach(ev => {
+                    const timeStr = ev.startTime || '';
+                    const group = groups.find(g => g.id === ev.groupId);
+                    const color = group ? group.color : 'var(--primary)';
+                    const groupName = group ? group.name : '';
+
+                    html += `
+                        <div class="list-item" style="margin-bottom: 6px;">
+                            <div style="width: 4px; height: 32px; border-radius: 2px; background: ${color}; flex-shrink: 0; margin-right: 10px;"></div>
+                            <div class="list-item-content">
+                                <div class="list-item-title" style="font-size: 14px;">${ev.title}</div>
+                                <div class="list-item-subtitle" style="font-size: 12px;">${timeStr ? timeStr + ' · ' : ''}${groupName}</div>
+                            </div>
+                        </div>`;
+                });
             });
 
             container.innerHTML = html;
@@ -105,7 +135,7 @@ const DashboardPage = {
 
             const todayTasks = tasks.filter(t => {
                 if (t.completed) return false;
-                if (!t.dueDate) return true;
+                if (!t.dueDate) return false;
                 return t.dueDate <= today;
             }).slice(0, 5);
 
