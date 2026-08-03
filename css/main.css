@@ -506,6 +506,15 @@ a {
     min-height: 0;
 }
 
+.page-content::-webkit-scrollbar {
+    display: none;
+}
+
+.page-content {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
 /* ============================================
    MODAL
    ============================================ */
@@ -629,6 +638,7 @@ a {
 
     .page-content {
         padding: 16px;
+        overflow-y: auto;
     }
 
     .top-bar {
