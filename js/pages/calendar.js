@@ -4,6 +4,7 @@ const CalendarPage = {
     view: 'month',
     events: [],
     groups: [],
+    tasks: [],
     editingEvent: null,
     editingGroup: null,
 
@@ -78,9 +79,10 @@ const CalendarPage = {
         const title = document.getElementById('cal-title');
 
         try {
-            [this.events, this.groups] = await Promise.all([
+            [this.events, this.groups, this.tasks] = await Promise.all([
                 DB.getEvents(),
-                DB.getGroups()
+                DB.getGroups(),
+                DB.getTasks()
             ]);
         } catch (e) {
             console.error('Error loading calendar data:', e);
@@ -127,6 +129,21 @@ const CalendarPage = {
         return this.events.filter(e => this.eventOnDate(e, date));
     },
 
+    tasksOnDate(date) {
+        const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        return this.tasks.filter(t => {
+            if (!t.dueDate || t.completed) return false;
+            const due = typeof t.dueDate === 'string' ? t.dueDate : new Date(t.dueDate.seconds ? t.dueDate.seconds * 1000 : t.dueDate).toISOString().split('T')[0];
+            return due === dateStr;
+        });
+    },
+
+    getTaskColor(priority) {
+        if (priority === 'high') return '#e74c3c';
+        if (priority === 'medium') return '#f39c12';
+        return '#a8e6cf';
+    },
+
     renderMonth(container, title) {
         const year = this.currentDate.getFullYear();
         const month = this.currentDate.getMonth();
@@ -155,6 +172,7 @@ const CalendarPage = {
             const date = new Date(year, month, day);
             const isToday = Utils.isToday(date);
             const dayEvents = this.eventsOnDate(date);
+            const dayTasks = this.tasksOnDate(date);
 
             let classes = 'calendar-day';
             if (isToday) classes += ' today';
@@ -166,7 +184,13 @@ const CalendarPage = {
                 const emoji = group && group.emoji ? group.emoji + ' ' : '';
                 eventsHtml += `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${e.title}">
                     <span class="calendar-event-text">${emoji}${e.title}</span>
-                    <button class="calendar-event-edit" onclick="event.stopPropagation(); CalendarPage.openEventModal('${e.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+                </div>`;
+            });
+
+            dayTasks.forEach(t => {
+                const color = this.getTaskColor(t.priority);
+                eventsHtml += `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${t.title} (Tarea)">
+                    <span class="calendar-event-text">📋 ${t.title}</span>
                 </div>`;
             });
 
@@ -211,12 +235,17 @@ const CalendarPage = {
                     const [eh] = e.startTime.split(':').map(Number);
                     return eh === h;
                 });
+                const dayTasks = h === 23 ? this.tasksOnDate(d) : [];
                 html += '<td style="padding: 4px;">';
                 hourEvents.forEach(e => {
                     const group = this.getGroupForEvent(e);
                     const color = group ? group.color : 'var(--primary)';
                     const emoji = group && group.emoji ? group.emoji + ' ' : '';
-                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer; position: relative;" onclick="CalendarPage.openEventModal('${e.id}')">${emoji}${e.title}<button class="calendar-event-edit-inline" onclick="event.stopPropagation(); CalendarPage.openEventModal('${e.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button></div>`;
+                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer; position: relative;" onclick="CalendarPage.openEventModal('${e.id}')">${emoji}${e.title}</div>`;
+                });
+                dayTasks.forEach(t => {
+                    const color = this.getTaskColor(t.priority);
+                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px;">📋 ${t.title}</div>`;
                 });
                 html += '</td>';
             });
@@ -230,6 +259,7 @@ const CalendarPage = {
     renderDay(container, title) {
         title.textContent = Utils.formatDate(this.currentDate, 'long');
         const dayEvents = this.eventsOnDate(this.currentDate);
+        const dayTasks = this.tasksOnDate(this.currentDate);
         const hours = [];
         for (let h = 0; h <= 23; h++) hours.push(h);
 
@@ -241,14 +271,21 @@ const CalendarPage = {
                 const [eh] = e.startTime.split(':').map(Number);
                 return eh === h;
             });
+            const showTasks = h === 23 && dayTasks.length > 0;
             html += `<tr><td style="font-weight: 600; white-space: nowrap;">${String(h).padStart(2, '0')}:00</td>`;
             html += '<td style="padding: 4px;">';
             hourEvents.forEach(e => {
                 const group = this.getGroupForEvent(e);
                 const color = group ? group.color : 'var(--primary)';
                 const emoji = group && group.emoji ? group.emoji + ' ' : '';
-                html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer; position: relative;" onclick="CalendarPage.openEventModal('${e.id}')">${emoji}${e.title} (${e.startTime} - ${e.endTime || ''})<button class="calendar-event-edit-inline" onclick="event.stopPropagation(); CalendarPage.openEventModal('${e.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button></div>`;
+                html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer; position: relative;" onclick="CalendarPage.openEventModal('${e.id}')">${emoji}${e.title} (${e.startTime} - ${e.endTime || ''})</div>`;
             });
+            if (showTasks) {
+                dayTasks.forEach(t => {
+                    const color = this.getTaskColor(t.priority);
+                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px;">📋 ${t.title} (Tarea - fecha límite)</div>`;
+                });
+            }
             html += '</td></tr>';
         });
 
