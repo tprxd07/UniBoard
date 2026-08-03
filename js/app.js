@@ -3,6 +3,8 @@ const App = {
     currentPage: 'dashboard',
     pages: {},
     initialized: false,
+    cropper: null,
+    pendingPhotoCallback: null,
 
     init() {
         if (this.initialized) return;
@@ -55,19 +57,16 @@ const App = {
         openBtn?.addEventListener('click', () => sidebar.classList.add('open'));
         closeBtn?.addEventListener('click', () => sidebar.classList.remove('open'));
 
-        // Close sidebar on nav click (mobile)
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', () => sidebar.classList.remove('open'));
         });
 
-        // Settings gear button
         document.getElementById('btn-settings')?.addEventListener('click', (e) => {
             e.stopPropagation();
             sidebar.classList.remove('open');
             this.loadPage('settings');
         });
 
-        // Profile name click opens modal
         const userNameEl = document.getElementById('user-name');
         userNameEl?.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -75,7 +74,6 @@ const App = {
             this.openProfileModal();
         });
 
-        // Avatar click opens file picker
         const avatarInput = document.getElementById('sidebar-avatar-input');
         const avatarEl = document.getElementById('user-avatar');
 
@@ -85,48 +83,134 @@ const App = {
         });
 
         avatarInput?.addEventListener('change', (e) => {
-            if (e.target.files[0]) this.handleSidebarAvatar(e.target.files[0]);
+            if (e.target.files[0]) this.openCropper(e.target.files[0], (dataURL) => this.applyAvatar(dataURL));
         });
 
-        // Drag & drop on avatar
         avatarEl?.addEventListener('dragover', (e) => { e.preventDefault(); avatarEl.classList.add('drag-over'); });
         avatarEl?.addEventListener('dragleave', () => avatarEl.classList.remove('drag-over'));
         avatarEl?.addEventListener('drop', (e) => {
             e.preventDefault();
             avatarEl.classList.remove('drag-over');
             const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) this.handleSidebarAvatar(file);
+            if (file && file.type.startsWith('image/')) this.openCropper(file, (dataURL) => this.applyAvatar(dataURL));
         });
     },
 
     setupProfileModal() {
         const wrapper = document.getElementById('profile-photo-wrapper');
         const input = document.getElementById('profile-photo-input');
-        const display = document.getElementById('profile-photo-display');
 
-        // Click to upload
         wrapper?.addEventListener('click', () => input?.click());
 
-        // File input change
         input?.addEventListener('change', (e) => {
-            if (e.target.files[0]) this.handleProfilePhoto(e.target.files[0]);
+            if (e.target.files[0]) this.openCropper(e.target.files[0], (dataURL) => this.applyProfilePhoto(dataURL));
         });
 
-        // Drag & drop on photo
         wrapper?.addEventListener('dragover', (e) => { e.preventDefault(); wrapper.classList.add('drag-over'); });
         wrapper?.addEventListener('dragleave', () => wrapper.classList.remove('drag-over'));
         wrapper?.addEventListener('drop', (e) => {
             e.preventDefault();
             wrapper.classList.remove('drag-over');
             const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) this.handleProfilePhoto(file);
+            if (file && file.type.startsWith('image/')) this.openCropper(file, (dataURL) => this.applyProfilePhoto(dataURL));
         });
 
-        // Save profile
         document.getElementById('save-profile-modal')?.addEventListener('click', () => this.saveProfileFromModal());
+
+        // Crop controls
+        document.getElementById('crop-rotate-left')?.addEventListener('click', () => {
+            if (this.cropper) this.cropper.rotate(-90);
+        });
+        document.getElementById('crop-rotate-right')?.addEventListener('click', () => {
+            if (this.cropper) this.cropper.rotate(90);
+        });
+        document.getElementById('crop-flip-h')?.addEventListener('click', () => {
+            if (this.cropper) this.cropper.scaleX(this.cropper.getData().scaleX === -1 ? 1 : -1);
+        });
+        document.getElementById('crop-cancel')?.addEventListener('click', () => this.closeCropper());
+        document.getElementById('crop-confirm')?.addEventListener('click', () => this.confirmCrop());
+    },
+
+    openCropper(file, callback) {
+        this.pendingPhotoCallback = callback;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const cropContainer = document.getElementById('crop-container');
+            const photoSection = document.querySelector('.profile-photo-section');
+            const cropImage = document.getElementById('crop-image');
+
+            cropImage.src = e.target.result;
+            cropContainer.classList.remove('hidden');
+            photoSection.style.display = 'none';
+
+            if (this.cropper) this.cropper.destroy();
+            this.cropper = new Cropper(cropImage, {
+                aspectRatio: 1,
+                viewMode: 1,
+                dragMode: 'move',
+                autoCropArea: 0.9,
+                responsive: true,
+                background: false,
+                guides: false,
+                highlight: false,
+                cropBoxResizable: true
+            });
+        };
+        reader.readAsDataURL(file);
+    },
+
+    confirmCrop() {
+        if (!this.cropper) return;
+        const canvas = this.cropper.getCroppedCanvas({ width: 400, height: 400 });
+        const dataURL = canvas.toDataURL('image/jpeg', 0.85);
+        if (this.pendingPhotoCallback) this.pendingPhotoCallback(dataURL);
+        this.closeCropper();
+    },
+
+    closeCropper() {
+        if (this.cropper) { this.cropper.destroy(); this.cropper = null; }
+        this.pendingPhotoCallback = null;
+        const cropContainer = document.getElementById('crop-container');
+        const photoSection = document.querySelector('.profile-photo-section');
+        cropContainer.classList.add('hidden');
+        photoSection.style.display = '';
+        // Reset file input
+        const input = document.getElementById('profile-photo-input');
+        if (input) input.value = '';
+        const sidebarInput = document.getElementById('sidebar-avatar-input');
+        if (sidebarInput) sidebarInput.value = '';
+    },
+
+    closeProfileModal() {
+        this.closeCropper();
+        document.getElementById('profile-modal').classList.add('hidden');
+    },
+
+    applyProfilePhoto(dataURL) {
+        const display = document.getElementById('profile-photo-display');
+        display.innerHTML = `<img src="${dataURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        this._pendingPhoto = dataURL;
+    },
+
+    applyAvatar(dataURL) {
+        const avatarEl = document.getElementById('user-avatar');
+        avatarEl.innerHTML = `<img src="${dataURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        this._pendingPhoto = dataURL;
+        // Auto-save from sidebar
+        this.savePhotoToProfile(dataURL);
+    },
+
+    async savePhotoToProfile(dataURL) {
+        try {
+            await DB.updateProfile({ photoURL: dataURL });
+            Utils.showToast('Foto actualizada', 'success');
+        } catch (err) {
+            Utils.showToast('Error al guardar foto', 'error');
+        }
     },
 
     async openProfileModal() {
+        this._pendingPhoto = null;
         const modal = document.getElementById('profile-modal');
         modal.classList.remove('hidden');
 
@@ -135,7 +219,6 @@ const App = {
         document.getElementById('profile-university').value = profile.university || '';
         document.getElementById('profile-degree').value = profile.degree || '';
 
-        // Load photo
         const display = document.getElementById('profile-photo-display');
         if (profile.photoURL) {
             display.innerHTML = `<img src="${profile.photoURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
@@ -144,42 +227,27 @@ const App = {
         }
     },
 
-    handleProfilePhoto(file) {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const dataURL = e.target.result;
-            const display = document.getElementById('profile-photo-display');
-            display.innerHTML = `<img src="${dataURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+    async saveProfileFromModal() {
+        const name = document.getElementById('profile-name').value;
+        const university = document.getElementById('profile-university').value;
+        const degree = document.getElementById('profile-degree').value;
 
-            // Sync sidebar avatar
-            const avatarEl = document.getElementById('user-avatar');
-            avatarEl.innerHTML = `<img src="${dataURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        try {
+            const updates = { name, university, degree };
+            if (this._pendingPhoto) updates.photoURL = this._pendingPhoto;
+            await DB.updateProfile(updates);
 
-            try {
-                await DB.updateProfile({ photoURL: dataURL });
-                Utils.showToast('Foto actualizada', 'success');
-            } catch (err) {
-                Utils.showToast('Error al guardar foto', 'error');
+            document.getElementById('user-name').textContent = name || Auth.currentUser?.email.split('@')[0];
+            if (this._pendingPhoto) {
+                const avatarEl = document.getElementById('user-avatar');
+                avatarEl.innerHTML = `<img src="${this._pendingPhoto}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
             }
-        };
-        reader.readAsDataURL(file);
-    },
-
-    handleSidebarAvatar(file) {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const dataURL = e.target.result;
-            const avatarEl = document.getElementById('user-avatar');
-            avatarEl.innerHTML = `<img src="${dataURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-
-            try {
-                await DB.updateProfile({ photoURL: dataURL });
-                Utils.showToast('Foto actualizada', 'success');
-            } catch (err) {
-                Utils.showToast('Error al guardar foto', 'error');
-            }
-        };
-        reader.readAsDataURL(file);
+            this._pendingPhoto = null;
+            this.closeProfileModal();
+            Utils.showToast('Perfil actualizado', 'success');
+        } catch (e) {
+            Utils.showToast('Error al guardar', 'error');
+        }
     },
 
     async loadSidebarAvatar() {
@@ -192,31 +260,14 @@ const App = {
         } catch (e) {}
     },
 
-    async saveProfileFromModal() {
-        const name = document.getElementById('profile-name').value;
-        const university = document.getElementById('profile-university').value;
-        const degree = document.getElementById('profile-degree').value;
-
-        try {
-            await DB.updateProfile({ name, university, degree });
-            document.getElementById('user-name').textContent = name || Auth.currentUser?.email.split('@')[0];
-            document.getElementById('profile-modal').classList.add('hidden');
-            Utils.showToast('Perfil actualizado', 'success');
-        } catch (e) {
-            Utils.showToast('Error al guardar', 'error');
-        }
-    },
-
     loadPage(pageName) {
         this.currentPage = pageName;
         const page = this.pages[pageName];
 
-        // Update nav
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.toggle('active', item.dataset.page === pageName);
         });
 
-        // Update title
         const titles = {
             dashboard: 'Inicio',
             calendar: 'Calendario',
@@ -236,7 +287,6 @@ const App = {
         };
         document.getElementById('page-title').textContent = titles[pageName] || pageName;
 
-        // Render page
         if (page && page.render) {
             document.getElementById('page-content').innerHTML = page.render();
             if (page.init) page.init();
@@ -277,7 +327,6 @@ const App = {
     }
 };
 
-// Initialize auth on load
 document.addEventListener('DOMContentLoaded', () => {
     Auth.init();
 });

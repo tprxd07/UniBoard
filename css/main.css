@@ -706,6 +706,68 @@ a {
 }
 
 /* ============================================
+   CROP UI
+   ============================================ */
+.crop-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.crop-image-wrapper {
+    width: 100%;
+    max-width: 320px;
+    max-height: 320px;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: #000;
+    margin-bottom: 12px;
+}
+
+.crop-image-wrapper img {
+    display: block;
+    max-width: 100%;
+}
+
+.crop-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.crop-actions .btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    transition: var(--transition);
+}
+
+.crop-actions .btn:hover {
+    background: var(--primary-bg);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.crop-actions .btn-primary {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.crop-actions .btn-primary:hover {
+    opacity: 0.9;
+    color: white;
+}
+
+/* ============================================
    DOCUMENTS DROPZONE
    ============================================ */
 .doc-dropzone {
