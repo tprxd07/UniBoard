@@ -139,14 +139,41 @@ const DashboardPage = {
 
             const pending = tasks.filter(t => !t.completed);
 
-            const groups = {};
+            // Expand recurring tasks for next 7 days
+            const expanded = [];
+            const maxDays = 7;
             pending.forEach(task => {
-                if (!task.dueDate) {
+                if (task.repeat && task.dueDate) {
+                    for (let i = 0; i < maxDays; i++) {
+                        const d = new Date(today);
+                        d.setDate(d.getDate() + i);
+                        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                        const taskDate = new Date(task.dueDate + 'T00:00:00');
+                        const diffFromStart = Math.round((d - taskDate) / dayMs);
+                        if (diffFromStart < 0) continue;
+
+                        let match = false;
+                        if (task.repeat === 'daily') match = true;
+                        else if (task.repeat === 'weekly') match = d.getDay() === taskDate.getDay();
+                        else if (task.repeat === 'monthly') match = d.getDate() === taskDate.getDate();
+                        else if (task.repeat === 'custom' && task.repeatDays) match = task.repeatDays.includes(d.getDay());
+
+                        if (match) expanded.push({ ...task, _displayDate: dateStr });
+                    }
+                } else {
+                    expanded.push(task);
+                }
+            });
+
+            const groups = {};
+            expanded.forEach(task => {
+                const dateStr = task._displayDate || task.dueDate;
+                if (!dateStr) {
                     if (!groups['no-date']) groups['no-date'] = { label: 'Sin fecha', order: 9999, tasks: [] };
                     groups['no-date'].tasks.push(task);
                     return;
                 }
-                const due = new Date(task.dueDate + 'T00:00:00');
+                const due = new Date(dateStr + 'T00:00:00');
                 const diffDays = Math.round((due - today) / dayMs);
                 let label, order;
                 if (diffDays < 0) { label = 'Atrasadas'; order = -1; }
@@ -154,8 +181,8 @@ const DashboardPage = {
                 else if (diffDays === 1) { label = 'Mañana'; order = 1; }
                 else { label = `${dayNames[due.getDay()]}, ${due.getDate()} ${monthNames[due.getMonth()]}`; order = diffDays; }
 
-                if (!groups[task.dueDate]) groups[task.dueDate] = { label, order, tasks: [] };
-                groups[task.dueDate].tasks.push(task);
+                if (!groups[dateStr]) groups[dateStr] = { label, order, tasks: [] };
+                groups[dateStr].tasks.push(task);
             });
 
             const pOrder = { high: 0, medium: 1, low: 2 };

@@ -131,9 +131,24 @@ const CalendarPage = {
 
     tasksOnDate(date) {
         const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        const dayMs = 1000 * 60 * 60 * 24;
+
         return this.tasks.filter(t => {
             if (!t.dueDate || t.completed) return false;
             const due = typeof t.dueDate === 'string' ? t.dueDate : new Date(t.dueDate.seconds ? t.dueDate.seconds * 1000 : t.dueDate).toISOString().split('T')[0];
+
+            if (t.repeat) {
+                const taskDate = new Date(due + 'T00:00:00');
+                const diffFromStart = Math.round((date - taskDate) / dayMs);
+                if (diffFromStart < 0) return false;
+
+                if (t.repeat === 'daily') return true;
+                if (t.repeat === 'weekly') return date.getDay() === taskDate.getDay();
+                if (t.repeat === 'monthly') return date.getDate() === taskDate.getDate();
+                if (t.repeat === 'custom' && t.repeatDays) return t.repeatDays.includes(date.getDay());
+                return false;
+            }
+
             return due === dateStr;
         });
     },
