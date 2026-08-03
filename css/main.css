@@ -538,8 +538,7 @@ a {
     border-radius: var(--radius-lg);
     width: 100%;
     max-width: 500px;
-    max-height: 80vh;
-    overflow-y: auto;
+    max-height: 85vh;
     box-shadow: var(--shadow-lg);
 }
 
