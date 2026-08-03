@@ -70,8 +70,13 @@ const DB = {
     // ============ TASKS ============
     async getTasks() {
         if (this.isDemo()) return this._getStore('tasks');
-        const snap = await this.collection('tasks').orderBy('dueDate').get();
-        return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        try {
+            const snap = await this.collection('tasks').get();
+            return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (e) {
+            console.error('Error getting tasks:', e);
+            return [];
+        }
     },
 
     async addTask(task) {

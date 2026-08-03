@@ -131,12 +131,14 @@ const DashboardPage = {
     async loadTodayTasks() {
         try {
             const tasks = await DB.getTasks();
-            const today = new Date().toISOString().split('T')[0];
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
             const todayTasks = tasks.filter(t => {
                 if (t.completed) return false;
                 if (!t.dueDate) return false;
-                return t.dueDate <= today;
+                const due = typeof t.dueDate === 'string' ? t.dueDate : new Date(t.dueDate.seconds ? t.dueDate.seconds * 1000 : t.dueDate).toISOString().split('T')[0];
+                return due <= todayStr;
             }).slice(0, 5);
 
             const container = document.getElementById('dashboard-tasks');
