@@ -78,8 +78,6 @@ const TasksPage = {
                     <div class="task-meta">
                         ${task.subject ? `<span>📚 ${task.subject}</span>` : ''}
                         ${task.dueDate ? `<span style="${overdue ? 'color: var(--danger); font-weight: 600;' : ''}">📅 ${Utils.formatDate(task.dueDate)}${daysLeft !== null && daysLeft >= 0 ? ' (' + daysLeft + 'd)' : ''}</span>` : ''}
-                        ${task.estimatedTime ? `<span>⏱️ ${task.estimatedTime}min</span>` : ''}
-                        ${task.recurring ? '<span>🔄 Repetitiva</span>' : ''}
                     </div>
                 </div>
                 <div class="list-item-actions">
@@ -117,20 +115,6 @@ const TasksPage = {
                     </select>
                 </div>
             </div>
-            <div class="grid-2">
-                <div class="form-group">
-                    <label>Tiempo estimado (min)</label>
-                    <input type="number" id="task-time" value="${task?.estimatedTime || ''}" placeholder="30">
-                </div>
-                <div class="form-group">
-                    <label>Repetitiva</label>
-                    <select id="task-recurring">
-                        <option value="">No</option>
-                        <option value="daily" ${task?.recurring === 'daily' ? 'selected' : ''}>Diaria</option>
-                        <option value="weekly" ${task?.recurring === 'weekly' ? 'selected' : ''}>Semanal</option>
-                    </select>
-                </div>
-            </div>
             <div class="form-group">
                 <label>Notas</label>
                 <textarea id="task-notes" rows="2" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--bg-input);color:var(--text);font-family:var(--font-family);">${task?.notes || ''}</textarea>
@@ -142,8 +126,6 @@ const TasksPage = {
                 subject: document.getElementById('task-subject').value,
                 dueDate: document.getElementById('task-due').value,
                 priority: document.getElementById('task-priority').value,
-                estimatedTime: parseInt(document.getElementById('task-time').value) || null,
-                recurring: document.getElementById('task-recurring').value || null,
                 notes: document.getElementById('task-notes').value
             };
 
