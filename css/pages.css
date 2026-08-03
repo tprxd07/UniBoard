@@ -1001,3 +1001,103 @@
         font-size: 12px;
     }
 }
+
+/* ============================================
+   TASK GROUPS & CARDS
+   ============================================ */
+.task-group {
+    margin-bottom: 8px;
+}
+
+.task-group-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--primary-bg);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    user-select: none;
+    transition: var(--transition);
+}
+
+.task-group-header:hover {
+    opacity: 0.85;
+}
+
+.task-group-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary);
+    flex: 1;
+}
+
+.task-group-count {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--bg);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.task-group-arrow {
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+}
+
+.task-group-items {
+    padding: 4px 0 0;
+}
+
+.task-card {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--bg-card);
+    border-radius: var(--radius-sm);
+    margin-bottom: 4px;
+    border: 1px solid var(--border);
+}
+
+.task-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+
+.task-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.task-card-subject {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 2px;
+}
+
+.task-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+}
+
+.task-card-time {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.task-card-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}

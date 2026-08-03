@@ -2,6 +2,7 @@
 const TasksPage = {
     tasks: [],
     filter: 'all',
+    collapsedDays: {},
 
     render() {
         return `
@@ -43,6 +44,60 @@ const TasksPage = {
         }
     },
 
+    groupTasksByDay(tasks) {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const dayMs = 1000 * 60 * 60 * 24;
+        const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const monthNames = ['de Enero', 'de Febrero', 'de Marzo', 'de Abril', 'de Mayo', 'de Junio', 'de Julio', 'de Agosto', 'de Septiembre', 'de Octubre', 'de Noviembre', 'de Diciembre'];
+
+        const groups = {};
+
+        tasks.forEach(task => {
+            if (!task.dueDate) {
+                const key = 'no-date';
+                if (!groups[key]) groups[key] = { label: 'Sin fecha', order: 9999, tasks: [] };
+                groups[key].tasks.push(task);
+                return;
+            }
+
+            const due = new Date(task.dueDate + 'T00:00:00');
+            const diffDays = Math.round((due - today) / dayMs);
+
+            let label, order;
+            if (diffDays < 0) {
+                label = 'Atrasadas';
+                order = -1;
+            } else if (diffDays === 0) {
+                label = 'Hoy';
+                order = 0;
+            } else if (diffDays === 1) {
+                label = 'Mañana';
+                order = 1;
+            } else {
+                label = `${dayNames[due.getDay()]}, ${due.getDate()} ${monthNames[due.getMonth()]}`;
+                order = diffDays;
+            }
+
+            if (!groups[task.dueDate]) groups[task.dueDate] = { label, order, tasks: [] };
+            groups[task.dueDate].tasks.push(task);
+        });
+
+        const pOrder = { high: 0, medium: 1, low: 2 };
+
+        return Object.entries(groups)
+            .map(([key, g]) => {
+                g.tasks.sort((a, b) => {
+                    if ((pOrder[a.priority] || 1) !== (pOrder[b.priority] || 1)) {
+                        return (pOrder[a.priority] || 1) - (pOrder[b.priority] || 1);
+                    }
+                    return (a.subject || 'zzz').localeCompare(b.subject || 'zzz');
+                });
+                return g;
+            })
+            .sort((a, b) => a.order - b.order);
+    },
+
     renderList() {
         const container = document.getElementById('tasks-list');
         let filtered = [...this.tasks];
@@ -50,42 +105,68 @@ const TasksPage = {
         if (this.filter === 'pending') filtered = filtered.filter(t => !t.completed);
         if (this.filter === 'completed') filtered = filtered.filter(t => t.completed);
 
-        // Sort: incomplete first, then by priority, then by due date
-        filtered.sort((a, b) => {
-            if (a.completed !== b.completed) return a.completed ? 1 : -1;
-            const pOrder = { high: 0, medium: 1, low: 2 };
-            if (pOrder[a.priority] !== pOrder[b.priority]) return (pOrder[a.priority] || 1) - (pOrder[b.priority] || 1);
-            return new Date(a.dueDate || '2099-01-01') - new Date(b.dueDate || '2099-01-01');
-        });
-
         if (filtered.length === 0) {
             container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div><h3>Sin tareas</h3><p>Añade tu primera tarea</p></div>';
             return;
         }
 
-        container.innerHTML = filtered.map(task => {
-            const priorityClass = task.priority === 'high' ? 'priority-high' : task.priority === 'medium' ? 'priority-medium' : 'priority-low';
-            const daysLeft = task.dueDate ? Utils.daysUntil(task.dueDate) : null;
-            const overdue = daysLeft !== null && daysLeft < 0 && !task.completed;
+        const grouped = this.groupTasksByDay(filtered);
 
-            return `
-            <div class="task-item ${priorityClass}" style="${task.completed ? 'opacity: 0.6;' : ''} ${overdue ? 'border-color: var(--danger);' : ''}">
-                <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="TasksPage.toggleTask('${task.id}')">
-                    ${task.completed ? '✓' : ''}
-                </div>
-                <div class="task-content">
-                    <div class="task-title" style="${task.completed ? 'text-decoration: line-through;' : ''}">${task.title}</div>
-                    <div class="task-meta">
-                        ${task.subject ? `<span>📚 ${task.subject}</span>` : ''}
-                        ${task.dueDate ? `<span style="${overdue ? 'color: var(--danger); font-weight: 600;' : ''}">📅 ${Utils.formatDate(task.dueDate)}${daysLeft !== null && daysLeft >= 0 ? ' (' + daysLeft + 'd)' : ''}</span>` : ''}
-                    </div>
-                </div>
-                <div class="list-item-actions">
-                    <button class="btn-icon" style="font-size: 14px;" onclick="TasksPage.showEditModal('${task.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
-                    <button class="btn-icon" style="font-size: 14px;" onclick="TasksPage.deleteTask('${task.id}')">🗑️</button>
-                </div>
-            </div>`;
-        }).join('');
+        const priorityColors = { high: '#e74c3c', medium: '#f39c12', low: '#a8e6cf' };
+        const priorityLabels = { high: 'Alta', medium: 'Media', low: 'Baja' };
+
+        let html = '';
+        grouped.forEach(group => {
+            const isCollapsed = this.collapsedDays[group.label];
+            const arrowSvg = isCollapsed
+                ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>'
+                : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>';
+
+            html += `<div class="task-group">
+                <div class="task-group-header" onclick="TasksPage.toggleGroup('${group.label}')">
+                    <span class="task-group-label">${group.label}</span>
+                    <span class="task-group-count">${group.tasks.length}</span>
+                    <span class="task-group-arrow">${arrowSvg}</span>
+                </div>`;
+
+            if (!isCollapsed) {
+                html += '<div class="task-group-items">';
+                group.tasks.forEach(task => {
+                    const color = priorityColors[task.priority] || priorityColors.medium;
+                    const completedStyle = task.completed ? 'opacity: 0.5;' : '';
+                    const lineStyle = task.completed ? 'text-decoration: line-through;' : '';
+                    const timeStr = task.dueTime || '';
+
+                    html += `
+                    <div class="task-card" style="${completedStyle} border-left: 4px solid ${color};">
+                        <div class="task-card-top">
+                            <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="TasksPage.toggleTask('${task.id}')">
+                                ${task.completed ? '✓' : ''}
+                            </div>
+                            <div class="task-card-info">
+                                <div class="task-card-subject" style="color: ${color};">${task.subject || 'Sin asignatura'}</div>
+                                <div class="task-card-title" style="${lineStyle}">${task.title}</div>
+                                ${timeStr ? `<div class="task-card-time">Hora de entrega: ${timeStr}</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="task-card-actions">
+                            <button class="btn-icon" onclick="TasksPage.showEditModal('${task.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+                            <button class="btn-icon" onclick="TasksPage.deleteTask('${task.id}')">🗑️</button>
+                        </div>
+                    </div>`;
+                });
+                html += '</div>';
+            }
+
+            html += '</div>';
+        });
+
+        container.innerHTML = html;
+    },
+
+    toggleGroup(label) {
+        this.collapsedDays[label] = !this.collapsedDays[label];
+        this.renderList();
     },
 
     showAddModal(task = null) {
@@ -107,13 +188,17 @@ const TasksPage = {
                     <input type="date" id="task-due" value="${task?.dueDate || ''}">
                 </div>
                 <div class="form-group">
-                    <label>Prioridad</label>
-                    <select id="task-priority">
-                        <option value="low" ${task?.priority === 'low' ? 'selected' : ''}>Baja</option>
-                        <option value="medium" ${task?.priority === 'medium' || !task ? 'selected' : ''}>Media</option>
-                        <option value="high" ${task?.priority === 'high' ? 'selected' : ''}>Alta</option>
-                    </select>
+                    <label>Hora de entrega</label>
+                    <input type="time" id="task-due-time" value="${task?.dueTime || ''}">
                 </div>
+            </div>
+            <div class="form-group">
+                <label>Prioridad</label>
+                <select id="task-priority">
+                    <option value="low" ${task?.priority === 'low' ? 'selected' : ''}>Baja</option>
+                    <option value="medium" ${task?.priority === 'medium' || !task ? 'selected' : ''}>Media</option>
+                    <option value="high" ${task?.priority === 'high' ? 'selected' : ''}>Alta</option>
+                </select>
             </div>
             <div class="form-group">
                 <label>Notas</label>
@@ -125,6 +210,7 @@ const TasksPage = {
                 title: document.getElementById('task-title').value,
                 subject: document.getElementById('task-subject').value,
                 dueDate: document.getElementById('task-due').value,
+                dueTime: document.getElementById('task-due-time').value,
                 priority: document.getElementById('task-priority').value,
                 notes: document.getElementById('task-notes').value
             };
@@ -148,7 +234,6 @@ const TasksPage = {
             }
         });
 
-        // Load subjects into select
         this.loadSubjectsSelect(task?.subject);
     },
 

@@ -131,38 +131,100 @@ const DashboardPage = {
     async loadTodayTasks() {
         try {
             const tasks = await DB.getTasks();
-            const today = new Date();
-            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const dayMs = 1000 * 60 * 60 * 24;
+            const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const monthNames = ['de Enero', 'de Febrero', 'de Marzo', 'de Abril', 'de Mayo', 'de Junio', 'de Julio', 'de Agosto', 'de Septiembre', 'de Octubre', 'de Noviembre', 'de Diciembre'];
 
-            const todayTasks = tasks.filter(t => {
-                if (t.completed) return false;
-                if (!t.dueDate) return false;
-                const due = typeof t.dueDate === 'string' ? t.dueDate : new Date(t.dueDate.seconds ? t.dueDate.seconds * 1000 : t.dueDate).toISOString().split('T')[0];
-                return due <= todayStr;
-            }).slice(0, 5);
+            const pending = tasks.filter(t => !t.completed);
+
+            const groups = {};
+            pending.forEach(task => {
+                if (!task.dueDate) {
+                    if (!groups['no-date']) groups['no-date'] = { label: 'Sin fecha', order: 9999, tasks: [] };
+                    groups['no-date'].tasks.push(task);
+                    return;
+                }
+                const due = new Date(task.dueDate + 'T00:00:00');
+                const diffDays = Math.round((due - today) / dayMs);
+                let label, order;
+                if (diffDays < 0) { label = 'Atrasadas'; order = -1; }
+                else if (diffDays === 0) { label = 'Hoy'; order = 0; }
+                else if (diffDays === 1) { label = 'Mañana'; order = 1; }
+                else { label = `${dayNames[due.getDay()]}, ${due.getDate()} ${monthNames[due.getMonth()]}`; order = diffDays; }
+
+                if (!groups[task.dueDate]) groups[task.dueDate] = { label, order, tasks: [] };
+                groups[task.dueDate].tasks.push(task);
+            });
+
+            const pOrder = { high: 0, medium: 1, low: 2 };
+            const priorityColors = { high: '#e74c3c', medium: '#f39c12', low: '#a8e6cf' };
+
+            const grouped = Object.entries(groups)
+                .map(([key, g]) => {
+                    g.tasks.sort((a, b) => {
+                        if ((pOrder[a.priority] || 1) !== (pOrder[b.priority] || 1)) return (pOrder[a.priority] || 1) - (pOrder[b.priority] || 1);
+                        return (a.subject || 'zzz').localeCompare(b.subject || 'zzz');
+                    });
+                    return g;
+                })
+                .sort((a, b) => a.order - b.order)
+                .slice(0, 5);
 
             const container = document.getElementById('dashboard-tasks');
             if (!container) return;
 
-            if (todayTasks.length === 0) {
+            if (grouped.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 13px;">¡Tienes el día libre! 🎉</p>';
                 return;
             }
 
-            container.innerHTML = todayTasks.map(task => `
-                <div class="list-item" style="margin-bottom: 6px;">
-                    <div class="list-item-content">
-                        <div class="list-item-title" style="font-size: 14px;">${task.title}</div>
-                        <div class="list-item-subtitle" style="font-size: 12px;">${task.subject || 'Sin asignatura'}${task.dueDate ? ' · ' + Utils.formatDate(task.dueDate) : ''}</div>
-                    </div>
-                    <span class="badge badge-${task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'success'}" style="font-size: 11px;">
-                        ${task.priority === 'high' ? 'Alta' : task.priority === 'medium' ? 'Media' : 'Baja'}
-                    </span>
-                </div>
-            `).join('');
+            let html = '';
+            grouped.forEach(group => {
+                const isCollapsed = DashboardPage._collapsedDays && DashboardPage._collapsedDays[group.label];
+                const arrowSvg = isCollapsed
+                    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>'
+                    : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>';
+
+                html += `<div class="task-group">
+                    <div class="task-group-header" onclick="DashboardPage.toggleTaskGroup('${group.label}')">
+                        <span class="task-group-label">${group.label}</span>
+                        <span class="task-group-count">${group.tasks.length}</span>
+                        <span class="task-group-arrow">${arrowSvg}</span>
+                    </div>`;
+
+                if (!isCollapsed) {
+                    html += '<div class="task-group-items">';
+                    group.tasks.forEach(task => {
+                        const color = priorityColors[task.priority] || priorityColors.medium;
+                        const timeStr = task.dueTime || '';
+                        html += `
+                        <div class="task-card" style="border-left: 4px solid ${color};">
+                            <div class="task-card-info">
+                                <div class="task-card-subject" style="color: ${color};">${task.subject || 'Sin asignatura'}</div>
+                                <div class="task-card-title">${task.title}</div>
+                                ${timeStr ? `<div class="task-card-time">Hora de entrega: ${timeStr}</div>` : ''}
+                            </div>
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+
+                html += '</div>';
+            });
+
+            container.innerHTML = html;
         } catch (e) {
             console.error('Error loading tasks:', e);
         }
+    },
+
+    _collapsedDays: {},
+
+    toggleTaskGroup(label) {
+        this._collapsedDays[label] = !this._collapsedDays[label];
+        this.loadTodayTasks();
     },
 
     destroy() {}
