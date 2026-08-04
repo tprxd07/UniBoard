@@ -292,12 +292,12 @@ const TasksPage = {
         this.loadSubjectsSelect(task?.subject);
 
         // Toggle day checks visibility
-        const repeatSelect = document.getElementById('task-repeat');
+        const repeatSelectEl = document.getElementById('task-repeat');
         const dayChecksGroup = document.getElementById('day-checks-group');
         const toggleDayChecks = () => {
-            dayChecksGroup.classList.toggle('hidden', repeatSelect.value !== 'custom');
+            dayChecksGroup.classList.toggle('hidden', repeatSelectEl.value !== 'custom');
         };
-        repeatSelect.addEventListener('change', toggleDayChecks);
+        repeatSelectEl.addEventListener('change', toggleDayChecks);
         toggleDayChecks();
     },
 
