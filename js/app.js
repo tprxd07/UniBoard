@@ -22,17 +22,13 @@ const App = {
     registerPages() {
         this.pages = {
             dashboard: DashboardPage,
+            activities: ActivitiesPage,
             calendar: CalendarPage,
             subjects: SubjectsPage,
             tasks: TasksPage,
             exams: ExamsPage,
             study: StudyPage,
             documents: DocumentsPage,
-            finances: FinancesPage,
-            'uni-life': UniLifePage,
-            progress: ProgressPage,
-            goals: GoalsPage,
-            reminders: RemindersPage,
             contacts: ContactsPage,
             friends: FriendsPage,
             settings: SettingsPage

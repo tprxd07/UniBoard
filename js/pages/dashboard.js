@@ -20,6 +20,14 @@ const DashboardPage = {
                 <div id="dashboard-tasks"></div>
             </div>
 
+            <div class="card" style="margin-bottom: 16px;">
+                <div class="card-header">
+                    <span class="card-title">📝 Exámenes próximos</span>
+                    <a href="#" onclick="App.loadPage('activities'); return false;" class="badge badge-primary">Ver todos</a>
+                </div>
+                <div id="dashboard-exams"></div>
+            </div>
+
             <div class="card dashboard-events-scroll">
                 <div class="card-header">
                     <span class="card-title">📌 Eventos de la semana</span>
@@ -40,6 +48,7 @@ const DashboardPage = {
         document.getElementById('page-content').innerHTML = this.render();
         this.loadEvents();
         this.loadTodayTasks();
+        this.loadUpcomingExams();
     },
 
     async loadEvents() {
@@ -254,6 +263,75 @@ const DashboardPage = {
     toggleTaskGroup(label) {
         this._collapsedDays[label] = !this._collapsedDays[label];
         this.loadTodayTasks();
+    },
+
+    async loadUpcomingExams() {
+        try {
+            const [exams, subjects] = await Promise.all([DB.getExams(), DB.getSubjects()]);
+            const subjectColors = {};
+            subjects.forEach(s => { subjectColors[s.name] = s.color || '#6C5CE7'; });
+
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const nextWeek = new Date(today);
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            const dayMs = 1000 * 60 * 60 * 24;
+
+            const upcoming = exams.filter(exam => {
+                if (!exam.date) return false;
+                const examDate = new Date(exam.date + 'T00:00:00');
+                return examDate >= today && examDate < nextWeek;
+            }).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            const container = document.getElementById('dashboard-exams');
+            if (!container) return;
+
+            if (upcoming.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 13px;">No hay exámenes esta semana</p>';
+                return;
+            }
+
+            let html = '';
+            let lastDate = '';
+            const dayLabels = { 0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado' };
+            const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+            upcoming.forEach(exam => {
+                const dateKey = exam.date;
+                const days = Math.round((new Date(dateKey + 'T00:00:00') - today) / dayMs);
+                let badge;
+                if (days === 0) badge = '<span class="badge" style="background: var(--danger, #e74c3c); color: white; font-size: 11px;">Hoy</span>';
+                else if (days === 1) badge = '<span class="badge" style="background: var(--warning, #f39c12); color: white; font-size: 11px;">Mañana</span>';
+                else badge = `<span class="badge badge-primary" style="font-size: 11px;">${days}d</span>`;
+
+                const color = subjectColors[exam.subject] || '#6C5CE7';
+
+                if (dateKey !== lastDate) {
+                    const d = new Date(dateKey + 'T00:00:00');
+                    const diffDays = Math.round((d - today) / dayMs);
+                    let label;
+                    if (diffDays === 0) label = 'Hoy';
+                    else if (diffDays === 1) label = 'Mañana';
+                    else label = dayLabels[d.getDay()];
+                    html += `<div class="event-date-label">${label} · ${d.getDate()} de ${monthNames[d.getMonth()]}</div>`;
+                    lastDate = dateKey;
+                }
+
+                html += `
+                    <div class="list-item" style="margin-bottom: 6px;">
+                        <div style="width: 4px; height: 32px; border-radius: 2px; background: ${color}; flex-shrink: 0; margin-right: 10px;"></div>
+                        <div class="list-item-content">
+                            <div class="list-item-title" style="font-size: 14px;">${exam.topics || exam.name || exam.subject}</div>
+                            <div class="list-item-subtitle" style="font-size: 12px;">${exam.subject || ''} ${exam.time ? '· ' + exam.time : ''} ${exam.room ? '· ' + exam.room : ''}</div>
+                        </div>
+                        ${badge}
+                    </div>`;
+            });
+
+            container.innerHTML = html;
+        } catch (e) {
+            console.error('Error loading upcoming exams:', e);
+        }
     },
 
     destroy() {}
