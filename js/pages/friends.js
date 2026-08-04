@@ -10,7 +10,7 @@ const FriendsPage = {
         <div class="friends-stats" id="friends-stats"></div>
 
         <div class="friends-search-bar">
-            <input type="text" id="friend-search-input" placeholder="Buscar por nombre o email..." class="input-field" style="flex:1;">
+            <input type="text" id="friend-search-input" placeholder="Buscar por @usuario, nombre o email..." class="input-field" style="flex:1;">
             <button class="btn btn-primary btn-sm" id="friend-search-btn">Buscar</button>
         </div>
         <div id="friends-search-results" class="friends-search-results"></div>
@@ -108,7 +108,7 @@ const FriendsPage = {
             } else if (requestSent) {
                 actionBtn = '<span class="badge" style="background:var(--border);color:var(--text-secondary);">Solicitud enviada</span>';
             } else {
-                actionBtn = `<button class="btn btn-primary btn-sm" onclick="FriendsPage.sendRequest('${user.uid}','${this.esc(user.name)}','${this.esc(user.email)}','${this.esc(user.photoURL || '')}')">Enviar solicitud</button>`;
+                actionBtn = `<button class="btn btn-primary btn-sm" onclick="FriendsPage.sendRequest('${user.uid}','${this.esc(user.name)}','${this.esc(user.email)}','${this.esc(user.photoURL || '')}','${this.esc(user.username || '')}')">Enviar solicitud</button>`;
             }
             const initial = (user.name || user.email || '?')[0].toUpperCase();
             html += `
@@ -116,7 +116,7 @@ const FriendsPage = {
                 <div class="friend-avatar">${user.photoURL ? `<img src="${user.photoURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : initial}</div>
                 <div class="friend-info">
                     <h4>${user.name || 'Sin nombre'}</h4>
-                    <p>${user.email || ''}</p>
+                    ${user.username ? `<p style="color:var(--primary);font-size:12px;">@${user.username}</p>` : `<p>${user.email || ''}</p>`}
                 </div>
                 <div class="friend-actions">${actionBtn}</div>
             </div>`;
@@ -125,9 +125,9 @@ const FriendsPage = {
         container.innerHTML = html;
     },
 
-    async sendRequest(uid, name, email, photoURL) {
+    async sendRequest(uid, name, email, photoURL, username) {
         try {
-            await DB.sendFriendRequest({ uid, name, email, photoURL });
+            await DB.sendFriendRequest({ uid, name, email, photoURL, username });
             Utils.showToast('Solicitud enviada', 'success');
             const sent = await DB.getSentRequests();
             this.sentRequests = sent;
@@ -155,7 +155,7 @@ const FriendsPage = {
                 <div class="friend-avatar">${req.fromPhotoURL ? `<img src="${req.fromPhotoURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : initial}</div>
                 <div class="friend-info">
                     <h4>${req.fromName || 'Sin nombre'}</h4>
-                    <p>${req.fromEmail || ''}</p>
+                    ${req.fromUsername ? `<p style="color:var(--primary);font-size:12px;">@${req.fromUsername}</p>` : `<p>${req.fromEmail || ''}</p>`}
                 </div>
                 <div class="friend-actions">
                     <button class="btn btn-primary btn-sm" onclick="FriendsPage.acceptRequest('${req.id}')">Aceptar</button>
@@ -208,7 +208,7 @@ const FriendsPage = {
                 <div class="friend-info">
                     <h4>${display}</h4>
                     ${friend.nickname && friend.name ? `<p class="friend-real-name">${friend.name}</p>` : ''}
-                    <p class="friend-email">${friend.email || ''}</p>
+                    ${friend.username ? `<p class="friend-email" style="color:var(--primary);">@${friend.username}</p>` : `<p class="friend-email">${friend.email || ''}</p>`}
                 </div>
                 <div class="friend-streak ${fireClass}">
                     <span class="friend-streak-icon">🔥</span>
@@ -258,7 +258,7 @@ const FriendsPage = {
                 </div>
                 <div class="form-group">
                     <label>Teléfono</label>
-                    <input type="tel" id="fp-phone" value="${friend.phone || ''}" placeholder="612 345 678">
+                    <input type="tel" id="fp-phone" value="${friend.phone || ''}" placeholder="Opcional">
                 </div>
             </div>
         </div>`;

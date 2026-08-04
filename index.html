@@ -262,6 +262,14 @@
                         <input type="text" id="profile-name" placeholder="Tu nombre">
                     </div>
                     <div class="form-group">
+                        <label>Usuario</label>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="color:var(--text-secondary);font-size:14px;">@</span>
+                            <input type="text" id="profile-username" placeholder="usuario_unico" style="flex:1;" maxlength="20">
+                        </div>
+                        <p id="username-status" style="font-size:11px;margin:4px 0 0;color:var(--text-secondary);"></p>
+                    </div>
+                    <div class="form-group">
                         <label>Descripción</label>
                         <textarea id="profile-bio" rows="2" placeholder="Cuéntanos algo sobre ti..." style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--bg-input);color:var(--text);font-family:var(--font-family);resize:none;"></textarea>
                     </div>
@@ -277,7 +285,7 @@
                     </div>
                     <div class="form-group">
                         <label>Teléfono</label>
-                        <input type="tel" id="profile-phone" placeholder="612 345 678">
+                        <input type="tel" id="profile-phone" placeholder="Opcional">
                     </div>
                 </div>
             </div>

@@ -237,10 +237,20 @@ const App = {
         const streak = DB.calculateStreakFromSessions(sessions);
 
         document.getElementById('profile-name').value = profile.name || '';
+        document.getElementById('profile-username').value = profile.username || '';
         document.getElementById('profile-bio').value = profile.bio || '';
         document.getElementById('profile-university').value = profile.university || '';
         document.getElementById('profile-degree').value = profile.degree || '';
         document.getElementById('profile-phone').value = profile.phone || '';
+
+        const usernameStatus = document.getElementById('username-status');
+        if (profile.username) {
+            usernameStatus.textContent = '@' + profile.username;
+            usernameStatus.style.color = 'var(--primary)';
+        } else {
+            usernameStatus.textContent = 'Obligatorio para añadir amigos';
+            usernameStatus.style.color = 'var(--text-secondary)';
+        }
 
         const display = document.getElementById('profile-photo-display');
         if (profile.photoURL) {
@@ -274,6 +284,41 @@ const App = {
             <div style="text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--primary);">🔥 ${streak}</div><div style="font-size:11px;color:var(--text-secondary);">Racha</div></div>`;
 
         this._setupBannerUpload();
+        this._setupUsernameValidation();
+    },
+
+    _setupUsernameValidation() {
+        const input = document.getElementById('profile-username');
+        const status = document.getElementById('username-status');
+        if (!input || !input._blurSet) {
+            if (input) {
+                input._blurSet = true;
+                input.addEventListener('blur', async () => {
+                    const val = input.value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+                    input.value = val;
+                    if (!val) {
+                        status.textContent = 'Obligatorio para añadir amigos';
+                        status.style.color = 'var(--text-secondary)';
+                        return;
+                    }
+                    if (val.length < 3) {
+                        status.textContent = 'Mínimo 3 caracteres';
+                        status.style.color = 'var(--danger, #ff3b30)';
+                        return;
+                    }
+                    status.textContent = 'Comprobando...';
+                    status.style.color = 'var(--text-secondary)';
+                    const available = await DB.checkUsernameAvailable(val, Auth.currentUser.uid);
+                    if (available) {
+                        status.textContent = '@' + val + ' — Disponible';
+                        status.style.color = 'var(--success, #00b894)';
+                    } else {
+                        status.textContent = '@' + val + ' — Ya está en uso';
+                        status.style.color = 'var(--danger, #ff3b30)';
+                    }
+                });
+            }
+        }
     },
 
     _setupBannerUpload() {
@@ -323,13 +368,25 @@ const App = {
 
     async saveProfileFromModal() {
         const name = document.getElementById('profile-name').value;
+        const username = document.getElementById('profile-username').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
         const bio = document.getElementById('profile-bio').value;
         const university = document.getElementById('profile-university').value;
         const degree = document.getElementById('profile-degree').value;
         const phone = document.getElementById('profile-phone').value;
 
+        if (!username || username.length < 3) {
+            Utils.showToast('El usuario debe tener al menos 3 caracteres', 'error');
+            return;
+        }
+
+        const available = await DB.checkUsernameAvailable(username, Auth.currentUser.uid);
+        if (!available) {
+            Utils.showToast('Ese usuario ya está en uso', 'error');
+            return;
+        }
+
         try {
-            const updates = { name, bio, university, degree, phone };
+            const updates = { name, username, bio, university, degree, phone };
             if (this._pendingPhoto) updates.photoURL = this._pendingPhoto;
             if (this._pendingBanner) {
                 updates.bannerURL = this._pendingBanner;

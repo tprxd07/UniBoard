@@ -219,7 +219,7 @@ const ContactsPage = {
         </div>
         <div class="form-group">
             <label>Teléfono</label>
-            <input type="tel" id="staff-phone" value="${contact.phone || ''}" placeholder="612 345 678">
+            <input type="tel" id="staff-phone" value="${contact.phone || ''}" placeholder="Opcional">
         </div>
         <div class="form-group">
             <label>Descripción (opcional)</label>
@@ -269,7 +269,7 @@ const ContactsPage = {
         </div>
         <div class="form-group">
             <label>Teléfono</label>
-            <input type="tel" id="fc-phone" value="${friend.phone || ''}" placeholder="612 345 678">
+            <input type="tel" id="fc-phone" value="${friend.phone || ''}" placeholder="Opcional">
         </div>`;
         Utils.showModal('Editar amigo', html, async () => {
             const nickname = document.getElementById('fc-nickname').value.trim();

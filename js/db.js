@@ -542,20 +542,48 @@ const DB = {
         if (!query || query.length < 2) return [];
         const q = query.toLowerCase().trim();
         if (this.isDemo()) return [];
+        const results = new Map();
+        const addResult = (doc) => {
+            if (doc.id !== Auth.currentUser.uid && !results.has(doc.id)) {
+                const d = doc.data();
+                results.set(doc.id, { uid: doc.id, name: d.name || '', email: d.email || '', photoURL: d.photoURL || '', username: d.username || '' });
+            }
+        };
+        // Search by username (exact prefix)
+        const usernameSnap = await db.collection('users')
+            .where('username', '>=', q).where('username', '<=', q + '\uf8ff')
+            .limit(10).get();
+        usernameSnap.docs.forEach(addResult);
+        // Search by name (prefix)
         const nameSnap = await db.collection('users')
             .where('name', '>=', q).where('name', '<=', q + '\uf8ff')
             .limit(10).get();
+        nameSnap.docs.forEach(addResult);
+        // Search by email (prefix)
         const emailSnap = await db.collection('users')
             .where('email', '>=', q).where('email', '<=', q + '\uf8ff')
             .limit(10).get();
-        const results = new Map();
-        [...nameSnap.docs, ...emailSnap.docs].forEach(doc => {
-            if (doc.id !== Auth.currentUser.uid) {
-                const d = doc.data();
-                results.set(doc.id, { uid: doc.id, name: d.name || '', email: d.email || '', photoURL: d.photoURL || '' });
-            }
-        });
+        emailSnap.docs.forEach(addResult);
         return Array.from(results.values());
+    },
+
+    async searchByUsername(username) {
+        if (!username) return null;
+        const q = username.toLowerCase().trim();
+        if (this.isDemo()) return null;
+        const snap = await db.collection('users').where('username', '==', q).limit(1).get();
+        if (snap.empty) return null;
+        const doc = snap.docs[0];
+        return { uid: doc.id, ...doc.data() };
+    },
+
+    async checkUsernameAvailable(username, currentUid) {
+        if (!username) return false;
+        const q = username.toLowerCase().trim();
+        if (this.isDemo()) return true;
+        const snap = await db.collection('users').where('username', '==', q).limit(1).get();
+        if (snap.empty) return true;
+        return snap.docs[0].id === currentUid;
     },
 
     // ============ FRIENDS ============
@@ -577,6 +605,7 @@ const DB = {
             name: friendData.name || '',
             email: friendData.email || '',
             photoURL: friendData.photoURL || '',
+            username: friendData.username || '',
             nickname: friendData.nickname || '',
             note: friendData.note || '',
             phone: friendData.phone || '',
@@ -633,6 +662,7 @@ const DB = {
             fromName: profile.name || Auth.currentUser.displayName || '',
             fromEmail: Auth.currentUser.email || '',
             fromPhotoURL: profile.photoURL || '',
+            fromUsername: profile.username || '',
             toUid: toUser.uid,
             toName: toUser.name || '',
             toEmail: toUser.email || '',
@@ -656,7 +686,8 @@ const DB = {
             uid: fromUser.fromUid,
             name: fromUser.fromName,
             email: fromUser.fromEmail,
-            photoURL: fromUser.fromPhotoURL || ''
+            photoURL: fromUser.fromPhotoURL || '',
+            username: fromUser.fromUsername || ''
         });
         if (this.isDemo()) {
             this._setStore('friendRequests', this._getStore('friendRequests').filter(r => r.id !== requestId));

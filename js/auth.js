@@ -41,6 +41,7 @@ const Auth = {
                     if (!profile) {
                         const defaultProfile = {
                             name: user.displayName || user.email.split('@')[0],
+                            username: (user.displayName || user.email.split('@')[0]).toLowerCase().replace(/[^a-z0-9_]/g, '').substring(0, 20),
                             email: user.email || '',
                             provider: user.providerData[0]?.providerId || 'password',
                             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -133,6 +134,7 @@ const Auth = {
             // Create user profile in Firestore
             await db.collection('users').doc(cred.user.uid).set({
                 name: name,
+                username: name.toLowerCase().replace(/[^a-z0-9_]/g, '').substring(0, 20),
                 email: email,
                 provider: 'password',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
