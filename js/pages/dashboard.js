@@ -130,7 +130,10 @@ const DashboardPage = {
 
     async loadTodayTasks() {
         try {
-            const tasks = await DB.getTasks();
+            const [tasks, subjects] = await Promise.all([DB.getTasks(), DB.getSubjects()]);
+            const subjectColors = {};
+            subjects.forEach(s => { subjectColors[s.name] = s.color || '#6C5CE7'; });
+
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const dayMs = 1000 * 60 * 60 * 24;
@@ -186,7 +189,6 @@ const DashboardPage = {
             });
 
             const pOrder = { high: 0, medium: 1, low: 2 };
-            const priorityColors = { high: '#e74c3c', medium: '#f39c12', low: '#a8e6cf' };
 
             const grouped = Object.entries(groups)
                 .map(([key, g]) => {
@@ -224,7 +226,7 @@ const DashboardPage = {
                 if (!isCollapsed) {
                     html += '<div class="task-group-items">';
                     group.tasks.forEach(task => {
-                        const color = priorityColors[task.priority] || priorityColors.medium;
+                        const color = subjectColors[task.subject] || '#6C5CE7';
                         const timeStr = task.dueTime || '';
                         html += `
                         <div class="task-card" style="border-left: 4px solid ${color};">

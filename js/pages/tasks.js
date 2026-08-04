@@ -35,9 +35,14 @@ const TasksPage = {
         this.loadTasks();
     },
 
+    subjects: {},
+
     async loadTasks() {
         try {
-            this.tasks = await DB.getTasks();
+            const [tasks, subjects] = await Promise.all([DB.getTasks(), DB.getSubjects()]);
+            this.tasks = tasks;
+            this.subjects = {};
+            subjects.forEach(s => { this.subjects[s.name] = s.color || '#6C5CE7'; });
             this.renderList();
         } catch (e) {
             console.error('Error loading tasks:', e);
@@ -136,7 +141,6 @@ const TasksPage = {
 
         const grouped = this.groupTasksByDay(filtered);
 
-        const priorityColors = { high: '#e74c3c', medium: '#f39c12', low: '#a8e6cf' };
         const priorityLabels = { high: 'Alta', medium: 'Media', low: 'Baja' };
 
         let html = '';
@@ -156,7 +160,7 @@ const TasksPage = {
             if (!isCollapsed) {
                 html += '<div class="task-group-items">';
                 group.tasks.forEach(task => {
-                    const color = priorityColors[task.priority] || priorityColors.medium;
+                    const color = this.subjects[task.subject] || '#6C5CE7';
                     const completedStyle = task.completed ? 'opacity: 0.5;' : '';
                     const lineStyle = task.completed ? 'text-decoration: line-through;' : '';
                     const timeStr = task.dueTime || '';

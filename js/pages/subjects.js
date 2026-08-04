@@ -34,73 +34,111 @@ const SubjectsPage = {
             return;
         }
 
-        grid.innerHTML = this.subjects.map((s, i) => `
+        grid.innerHTML = this.subjects.map(s => {
+            const periodLabel = this.getPeriodLabel(s);
+            return `
             <div class="subject-card" onclick="SubjectsPage.showDetail('${s.id}')">
                 <div class="subject-card-header">
-                    <div class="subject-color" style="background: ${s.color || Utils.getSubjectColor(i)};"></div>
+                    <div class="subject-color" style="background: ${s.color || '#6C5CE7'};"></div>
                     <span class="badge badge-primary">${s.credits || 0} créditos</span>
                 </div>
                 <h4>${s.name}</h4>
-                <p>${s.professor || 'Sin profesor'}</p>
-                <div class="subject-grade">
-                    <span style="color: ${Utils.getGradeColor(s.currentGrade || 0)}">${(s.currentGrade || 0).toFixed(1)}</span>
-                    <span style="font-size: 12px; color: var(--text-secondary);">Nota actual</span>
-                </div>
-            </div>
-        `).join('');
+                <p style="font-size: 12px; color: var(--text-secondary);">${s.professors && s.professors.length > 0 ? s.professors.join(', ') : (s.professor || 'Sin profesor')}</p>
+                ${periodLabel ? `<p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${periodLabel}</p>` : ''}
+            </div>`;
+        }).join('');
+    },
+
+    getPeriodLabel(s) {
+        if (!s.periodType) return '';
+        const typeLabel = s.periodType === 'trimestre' ? 'Trimestre' : 'Cuatrimestre';
+        return s.periodNumber ? `${typeLabel} ${s.periodNumber}` : typeLabel;
     },
 
     showAddModal(subject = null) {
         const isEdit = !!subject;
+        const s = subject || {};
+        const professors = (s.professors && s.professors.length > 0) ? s.professors.join(', ') : (s.professor || '');
+
+        const presetColors = ['#6C5CE7','#00B894','#E17055','#74B9FF','#FDCB6E','#FD79A8','#00CEC9','#A29BFE','#FF6B6B','#48DBFB','#FF9FF3','#54A0FF'];
+        const currentColor = s.color || '#6C5CE7';
+        const isPreset = presetColors.includes(currentColor);
+
         const html = `
             <div class="form-group">
                 <label>Nombre</label>
-                <input type="text" id="subj-name" value="${subject?.name || ''}" placeholder="Ej: Matemáticas II">
+                <input type="text" id="subj-name" value="${s.name || ''}" placeholder="Ej: Matemáticas II">
             </div>
             <div class="form-group">
-                <label>Profesor</label>
-                <input type="text" id="subj-professor" value="${subject?.professor || ''}" placeholder="Nombre del profesor">
+                <label>Profesores (separados por coma)</label>
+                <input type="text" id="subj-professors" value="${professors}" placeholder="Ej: Juan Pérez, María López">
             </div>
             <div class="form-group">
                 <label>Aula</label>
-                <input type="text" id="subj-room" value="${subject?.room || ''}" placeholder="Ej: Aula 301">
+                <input type="text" id="subj-room" value="${s.room || ''}" placeholder="Ej: Aula 301">
             </div>
             <div class="grid-2">
                 <div class="form-group">
                     <label>Créditos</label>
-                    <input type="number" id="subj-credits" value="${subject?.credits || ''}" placeholder="6">
+                    <input type="number" id="subj-credits" value="${s.credits || ''}" placeholder="6">
                 </div>
                 <div class="form-group">
-                    <label>Nota actual</label>
-                    <input type="number" id="subj-grade" value="${subject?.currentGrade || ''}" placeholder="7.5" step="0.1" min="0" max="10">
+                    <label>Período</label>
+                    <select id="subj-period-type">
+                        <option value="">Ninguno</option>
+                        <option value="trimestre" ${s.periodType === 'trimestre' ? 'selected' : ''}>Trimestre</option>
+                        <option value="cuatrimestre" ${s.periodType === 'cuatrimestre' ? 'selected' : ''}>Cuatrimestre</option>
+                    </select>
                 </div>
+            </div>
+            <div class="form-group" id="period-number-group" style="${s.periodType ? '' : 'display:none;'}">
+                <label>Número de período</label>
+                <select id="subj-period-number">
+                    <option value="">—</option>
+                    <option value="1" ${s.periodNumber == '1' ? 'selected' : ''}>Primero</option>
+                    <option value="2" ${s.periodNumber == '2' ? 'selected' : ''}>Segundo</option>
+                    <option value="3" ${s.periodNumber == '3' ? 'selected' : ''}>Tercero</option>
+                </select>
             </div>
             <div class="form-group">
                 <label>Guía docente (URL)</label>
-                <input type="url" id="subj-guide" value="${subject?.guideUrl || ''}" placeholder="https://...">
+                <input type="url" id="subj-guide" value="${s.guideUrl || ''}" placeholder="https://...">
             </div>
             <div class="form-group">
                 <label>Color</label>
                 <div class="color-options" id="subj-colors">
-                    ${['#6C5CE7','#00B894','#E17055','#74B9FF','#FDCB6E','#FD79A8','#00CEC9','#A29BFE'].map(c =>
-                        `<div class="color-option ${(subject?.color || '#6C5CE7') === c ? 'active' : ''}"
+                    ${presetColors.map(c =>
+                        `<div class="color-option ${currentColor === c ? 'active' : ''}"
                               style="background: ${c};"
                               onclick="document.querySelectorAll('#subj-colors .color-option').forEach(e=>e.classList.remove('active')); this.classList.add('active');"
                               data-color="${c}"></div>`
                     ).join('')}
                 </div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                    <label style="font-size: 12px; color: var(--text-secondary);">Custom:</label>
+                    <input type="color" id="subj-color-picker" value="${isPreset ? '#6C5CE7' : currentColor}"
+                        style="width: 32px; height: 32px; border: none; border-radius: 50%; cursor: pointer; padding: 0;">
+                </div>
             </div>`;
 
         Utils.showModal(isEdit ? 'Editar Asignatura' : 'Nueva Asignatura', html, async () => {
-            const colorEl = document.querySelector('#subj-colors .color-option.active');
+            const pickerVal = document.getElementById('subj-color-picker').value;
+            const activeColor = document.querySelector('#subj-colors .color-option.active');
+            const color = activeColor ? activeColor.dataset.color : pickerVal;
+
+            const professorsStr = document.getElementById('subj-professors').value;
+            const professorsList = professorsStr.split(',').map(p => p.trim()).filter(p => p);
+
             const data = {
                 name: document.getElementById('subj-name').value,
-                professor: document.getElementById('subj-professor').value,
+                professor: professorsList[0] || '',
+                professors: professorsList,
                 room: document.getElementById('subj-room').value,
                 credits: parseInt(document.getElementById('subj-credits').value) || 0,
-                currentGrade: parseFloat(document.getElementById('subj-grade').value) || 0,
+                periodType: document.getElementById('subj-period-type').value || null,
+                periodNumber: document.getElementById('subj-period-number').value || null,
                 guideUrl: document.getElementById('subj-guide').value,
-                color: colorEl?.dataset.color || '#6C5CE7'
+                color: color
             };
 
             if (!data.name) {
@@ -121,12 +159,26 @@ const SubjectsPage = {
                 Utils.showToast('Error al guardar', 'error');
             }
         });
+
+        // Toggle period number visibility
+        const periodType = document.getElementById('subj-period-type');
+        periodType.addEventListener('change', () => {
+            document.getElementById('period-number-group').style.display = periodType.value ? '' : 'none';
+        });
+
+        // Color picker deselects preset colors
+        document.getElementById('subj-color-picker').addEventListener('input', (e) => {
+            document.querySelectorAll('#subj-colors .color-option').forEach(o => o.classList.remove('active'));
+        });
     },
 
     async showDetail(id) {
         const subject = this.subjects.find(s => s.id === id);
         if (!subject) return;
         this.selectedSubject = subject;
+
+        const periodLabel = this.getPeriodLabel(subject) || '—';
+        const profList = (subject.professors && subject.professors.length > 0) ? subject.professors : (subject.professor ? [subject.professor] : []);
 
         const html = `
         <div style="margin-bottom: 20px;">
@@ -138,8 +190,8 @@ const SubjectsPage = {
                 <div class="stat-card">
                     <div class="stat-icon purple">👨‍🏫</div>
                     <div class="stat-info">
-                        <h4 style="font-size: 14px;">${subject.professor || '—'}</h4>
-                        <p>Profesor</p>
+                        <h4 style="font-size: 14px;">${profList.length > 0 ? profList.join(', ') : '—'}</h4>
+                        <p>Profesor${profList.length > 1 ? 'es' : ''}</p>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -150,10 +202,10 @@ const SubjectsPage = {
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon blue">📊</div>
+                    <div class="stat-icon blue">📅</div>
                     <div class="stat-info">
-                        <h4 style="font-size: 14px;">${(subject.currentGrade || 0).toFixed(1)}</h4>
-                        <p>Nota actual</p>
+                        <h4 style="font-size: 14px;">${periodLabel}</h4>
+                        <p>Período</p>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -166,18 +218,6 @@ const SubjectsPage = {
             </div>
         </div>
 
-        <div style="margin-bottom: 16px;">
-            <h4 style="font-size: 14px; margin-bottom: 8px; color: var(--text-secondary);">Calculadora de nota final</h4>
-            <div id="grade-calculator">
-                <div id="grade-inputs"></div>
-                <button class="btn btn-ghost btn-sm" onclick="SubjectsPage.addGradeInput()">+ Añadir evaluación</button>
-                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; justify-content: space-between;">
-                    <span style="font-weight: 600;">Nota final:</span>
-                    <span id="final-grade" style="font-weight: 700; color: var(--primary); font-size: 18px;">—</span>
-                </div>
-            </div>
-        </div>
-
         ${subject.guideUrl ? `<a href="${subject.guideUrl}" target="_blank" class="btn btn-ghost btn-full" style="margin-top: 8px;">📄 Ver guía docente</a>` : ''}
 
         <div style="display: flex; gap: 8px; margin-top: 16px;">
@@ -186,72 +226,6 @@ const SubjectsPage = {
         </div>`;
 
         Utils.showModal(subject.name, html);
-
-        // Initialize grade calculator
-        this.initGradeCalculator();
-    },
-
-    gradeInputs: [],
-
-    addGradeInput(name = '', grade = '', weight = '') {
-        const id = Utils.generateId();
-        this.gradeInputs.push({ id, name, grade, weight });
-        this.renderGradeInputs();
-    },
-
-    initGradeCalculator() {
-        this.gradeInputs = [];
-        this.addGradeInput('Evaluación 1', '', '');
-    },
-
-    renderGradeInputs() {
-        const container = document.getElementById('grade-inputs');
-        if (!container) return;
-
-        container.innerHTML = this.gradeInputs.map(g => `
-            <div style="display: grid; grid-template-columns: 1fr 80px 80px 30px; gap: 8px; margin-bottom: 8px; align-items: center;">
-                <input type="text" value="${g.name}" placeholder="Nombre" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: var(--bg-input); color: var(--text);"
-                    onchange="SubjectsPage.updateGrade('${g.id}', 'name', this.value)">
-                <input type="number" value="${g.grade}" placeholder="Nota" min="0" max="10" step="0.1" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: var(--bg-input); color: var(--text);"
-                    onchange="SubjectsPage.updateGrade('${g.id}', 'grade', this.value)">
-                <input type="number" value="${g.weight}" placeholder="%" min="0" max="100" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: var(--bg-input); color: var(--text);"
-                    onchange="SubjectsPage.updateGrade('${g.id}', 'weight', this.value)">
-                <button class="btn-icon" style="font-size: 14px;" onclick="SubjectsPage.removeGrade('${g.id}')">✕</button>
-            </div>
-        `).join('');
-
-        this.calculateFinalGrade();
-    },
-
-    updateGrade(id, field, value) {
-        const grade = this.gradeInputs.find(g => g.id === id);
-        if (grade) {
-            grade[field] = value;
-            this.calculateFinalGrade();
-        }
-    },
-
-    removeGrade(id) {
-        this.gradeInputs = this.gradeInputs.filter(g => g.id !== id);
-        this.renderGradeInputs();
-    },
-
-    calculateFinalGrade() {
-        const valid = this.gradeInputs.filter(g => g.grade !== '' && g.weight !== '');
-        if (valid.length === 0) {
-            document.getElementById('final-grade').textContent = '—';
-            return;
-        }
-
-        const totalWeight = valid.reduce((sum, g) => sum + parseFloat(g.weight), 0);
-        if (totalWeight === 0) {
-            document.getElementById('final-grade').textContent = '—';
-            return;
-        }
-
-        const weightedSum = valid.reduce((sum, g) => sum + (parseFloat(g.grade) * parseFloat(g.weight)), 0);
-        const finalGrade = weightedSum / totalWeight;
-        document.getElementById('final-grade').textContent = finalGrade.toFixed(2);
     },
 
     async deleteSubject(id) {
