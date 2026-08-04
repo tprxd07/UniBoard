@@ -23,10 +23,6 @@ const SettingsPage = {
         ).join('');
 
         return `
-        <div class="section-header">
-            <span class="section-title">Ajustes</span>
-        </div>
-
         <div class="card" style="margin-bottom: 20px;">
             <div class="card-header">
                 <span class="card-title">🎨 Apariencia</span>

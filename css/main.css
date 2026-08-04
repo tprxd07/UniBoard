@@ -577,7 +577,8 @@ a {
 .page-content {
     flex: 1;
     padding: 0 24px 24px;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     min-height: 0;
     scrollbar-width: none;
     -ms-overflow-style: none;
