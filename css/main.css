@@ -335,13 +335,15 @@ a {
 .sidebar.collapsed .nav-label,
 .sidebar.collapsed .user-name,
 .sidebar.collapsed .sidebar-footer .btn-icon,
-.sidebar.collapsed .sidebar-footer #btn-settings {
+.sidebar.collapsed .sidebar-footer #btn-settings,
+.sidebar.collapsed .logo-icon-sm {
     display: none;
 }
 
 .sidebar.collapsed .sidebar-header {
     padding: 16px 0;
     justify-content: center;
+    gap: 0;
 }
 
 .sidebar.collapsed .sidebar-nav {
