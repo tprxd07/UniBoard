@@ -549,17 +549,14 @@ const DB = {
                 results.set(doc.id, { uid: doc.id, name: d.name || '', email: d.email || '', photoURL: d.photoURL || '', username: d.username || '' });
             }
         };
-        // Search by username (exact prefix)
         const usernameSnap = await db.collection('users')
-            .where('username', '>=', q).where('username', '<=', q + '\uf8ff')
+            .where('usernameLower', '>=', q).where('usernameLower', '<=', q + '\uf8ff')
             .limit(10).get();
         usernameSnap.docs.forEach(addResult);
-        // Search by name (prefix)
         const nameSnap = await db.collection('users')
             .where('name', '>=', q).where('name', '<=', q + '\uf8ff')
             .limit(10).get();
         nameSnap.docs.forEach(addResult);
-        // Search by email (prefix)
         const emailSnap = await db.collection('users')
             .where('email', '>=', q).where('email', '<=', q + '\uf8ff')
             .limit(10).get();
@@ -571,7 +568,7 @@ const DB = {
         if (!username) return null;
         const q = username.toLowerCase().trim();
         if (this.isDemo()) return null;
-        const snap = await db.collection('users').where('username', '==', q).limit(1).get();
+        const snap = await db.collection('users').where('usernameLower', '==', q).limit(1).get();
         if (snap.empty) return null;
         const doc = snap.docs[0];
         return { uid: doc.id, ...doc.data() };
@@ -581,7 +578,7 @@ const DB = {
         if (!username) return false;
         const q = username.toLowerCase().trim();
         if (this.isDemo()) return true;
-        const snap = await db.collection('users').where('username', '==', q).limit(1).get();
+        const snap = await db.collection('users').where('usernameLower', '==', q).limit(1).get();
         if (snap.empty) return true;
         return snap.docs[0].id === currentUid;
     },

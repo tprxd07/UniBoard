@@ -31,9 +31,8 @@ const Auth = {
 
         // Complete profile modal
         const completeUsernameInput = document.getElementById('complete-username');
-        completeUsernameInput?.addEventListener('blur', () => this.validateCompleteUsername());
         completeUsernameInput?.addEventListener('input', () => {
-            const val = completeUsernameInput.value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+            const val = completeUsernameInput.value.replace(/\s/g, '');
             completeUsernameInput.value = val;
             document.getElementById('complete-username-status').textContent = '';
         });
@@ -41,9 +40,8 @@ const Auth = {
 
         // Register username validation
         const regUsernameInput = document.getElementById('reg-username');
-        regUsernameInput?.addEventListener('blur', () => this.validateRegUsername());
         regUsernameInput?.addEventListener('input', () => {
-            const val = regUsernameInput.value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+            const val = regUsernameInput.value.replace(/\s/g, '');
             regUsernameInput.value = val;
             document.getElementById('reg-username-status').textContent = '';
         });
@@ -109,31 +107,9 @@ const Auth = {
         document.getElementById('complete-username-status').textContent = '';
     },
 
-    async validateCompleteUsername() {
-        const input = document.getElementById('complete-username');
-        const status = document.getElementById('complete-username-status');
-        const val = input.value.trim();
-        if (!val) { status.textContent = ''; return false; }
-        if (val.length < 3) {
-            status.textContent = 'Mínimo 3 caracteres';
-            status.style.color = 'var(--danger, #e74c3c)';
-            return false;
-        }
-        const available = await DB.checkUsernameAvailable(val);
-        if (available) {
-            status.textContent = '✓ Disponible';
-            status.style.color = 'var(--success, #00b894)';
-            return true;
-        } else {
-            status.textContent = '✗ Ya está en uso';
-            status.style.color = 'var(--danger, #e74c3c)';
-            return false;
-        }
-    },
-
     async completeProfile() {
         const name = document.getElementById('complete-name').value.trim();
-        const username = document.getElementById('complete-username').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+        const username = document.getElementById('complete-username').value.trim();
 
         if (!name) {
             Utils.showToast('Introduce tu nombre', 'error');
@@ -154,6 +130,7 @@ const Auth = {
             await DB.updateProfile({
                 name: name,
                 username: username,
+                usernameLower: username.toLowerCase(),
                 nameLastChanged: new Date().toISOString(),
                 usernameLastChanged: new Date().toISOString()
             });
@@ -163,26 +140,6 @@ const Auth = {
             Utils.showToast('¡Perfil completado!', 'success');
         } catch (e) {
             Utils.showToast('Error al guardar', 'error');
-        }
-    },
-
-    async validateRegUsername() {
-        const input = document.getElementById('reg-username');
-        const status = document.getElementById('reg-username-status');
-        const val = input.value.trim();
-        if (!val) { status.textContent = ''; return; }
-        if (val.length < 3) {
-            status.textContent = 'Mínimo 3 caracteres';
-            status.style.color = 'var(--danger, #e74c3c)';
-            return;
-        }
-        const available = await DB.checkUsernameAvailable(val);
-        if (available) {
-            status.textContent = '✓ Disponible';
-            status.style.color = 'var(--success, #00b894)';
-        } else {
-            status.textContent = '✗ Ya está en uso';
-            status.style.color = 'var(--danger, #e74c3c)';
         }
     },
 
@@ -217,7 +174,7 @@ const Auth = {
 
     async register() {
         const name = document.getElementById('reg-name').value;
-        const username = document.getElementById('reg-username')?.value?.trim().toLowerCase().replace(/[^a-z0-9_]/g, '') || '';
+        const username = document.getElementById('reg-username')?.value?.trim() || '';
         const email = document.getElementById('reg-email').value;
         const password = document.getElementById('reg-password').value;
         const errorEl = document.getElementById('register-error');
@@ -230,13 +187,6 @@ const Auth = {
 
         if (username.length < 3) {
             errorEl.textContent = 'El usuario debe tener al menos 3 caracteres';
-            errorEl.classList.remove('hidden');
-            return;
-        }
-
-        const usernameRegex = /^[a-z0-9_]+$/;
-        if (!usernameRegex.test(username)) {
-            errorEl.textContent = 'El usuario solo puede contener letras minúsculas, números y guiones bajos';
             errorEl.classList.remove('hidden');
             return;
         }
@@ -255,6 +205,7 @@ const Auth = {
             if (!available) {
                 errorEl.textContent = 'Ese nombre de usuario ya está en uso';
                 errorEl.classList.remove('hidden');
+                document.getElementById('btn-register').disabled = false;
                 return;
             }
 
@@ -263,6 +214,7 @@ const Auth = {
             await db.collection('users').doc(cred.user.uid).set({
                 name: name,
                 username: username,
+                usernameLower: username.toLowerCase(),
                 email: email,
                 provider: 'password',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),

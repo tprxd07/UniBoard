@@ -230,8 +230,8 @@ const SettingsPage = {
         document.documentElement.style.setProperty('--bg-sidebar', this.lighten(color, isLight ? 0.01 : -0.08));
         document.documentElement.style.setProperty('--bg-input', this.lighten(color, isLight ? -0.03 : 0.05));
         document.documentElement.style.setProperty('--text', isLight ? '#2D3436' : '#EAEAEA');
-        document.documentElement.style.setProperty('--text-secondary', isLight ? '#636E72' : '#A0A0B0');
-        document.documentElement.style.setProperty('--text-muted', isLight ? '#B2BEC3' : '#5A5A7A');
+        document.documentElement.style.setProperty('--text-secondary', isLight ? '#4A5568' : '#B0B8C4');
+        document.documentElement.style.setProperty('--text-muted', isLight ? '#718096' : '#7A8599');
         document.documentElement.style.setProperty('--border', isLight ? '#E8ECF0' : '#2A2A4A');
         document.documentElement.style.setProperty('--border-light', isLight ? '#F1F3F8' : '#2A2A4A');
     },

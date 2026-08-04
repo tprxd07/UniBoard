@@ -330,8 +330,7 @@ const App = {
             if (input) {
                 input._blurSet = true;
                 input.addEventListener('blur', async () => {
-                    const val = input.value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
-                    input.value = val;
+                    const val = input.value.trim();
                     if (!val) {
                         status.textContent = 'Obligatorio para añadir amigos';
                         status.style.color = 'var(--text-secondary)';
@@ -408,7 +407,7 @@ const App = {
         const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
 
         const newName = document.getElementById('profile-name').value;
-        const newUsername = document.getElementById('profile-username').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+        const newUsername = document.getElementById('profile-username').value.trim();
         const bio = document.getElementById('profile-bio').value;
         const university = document.getElementById('profile-university').value;
         const degree = document.getElementById('profile-degree').value;
@@ -450,7 +449,7 @@ const App = {
         }
 
         try {
-            const updates = { name: finalName, username: finalUsername, bio, university, degree, phone };
+            const updates = { name: finalName, username: finalUsername, usernameLower: finalUsername.toLowerCase(), bio, university, degree, phone };
 
             if (newName !== profile.name) updates.nameLastChanged = new Date().toISOString();
             if (newUsername !== profile.username) updates.usernameLastChanged = new Date().toISOString();
