@@ -36,7 +36,6 @@ const Auth = {
             completeUsernameInput.value = val;
             document.getElementById('complete-username-status').textContent = '';
         });
-        document.getElementById('complete-profile-btn')?.addEventListener('click', () => this.completeProfile());
 
         // Register username validation
         const regUsernameInput = document.getElementById('reg-username');
@@ -105,6 +104,9 @@ const Auth = {
         document.getElementById('complete-name').value = defaultName;
         document.getElementById('complete-username').value = '';
         document.getElementById('complete-username-status').textContent = '';
+
+        const btn = document.getElementById('complete-profile-btn');
+        btn.onclick = () => this.completeProfile();
     },
 
     async completeProfile() {
