@@ -6,14 +6,12 @@ const ContactsPage = {
 
     render() {
         return `
-        <div class="section-header">
-            <span class="section-title">Contactos</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div class="tabs" style="max-width: 500px;">
+                <button class="tab active" data-tab="friends" onclick="ContactsPage.switchTab('friends')">Amigos</button>
+                <button class="tab" data-tab="staff" onclick="ContactsPage.switchTab('staff')">Personal del centro</button>
+            </div>
             <button class="btn btn-primary btn-sm" id="add-contact-btn">+ Añadir</button>
-        </div>
-
-        <div class="tabs" style="max-width: 500px;">
-            <button class="tab active" data-tab="friends" onclick="ContactsPage.switchTab('friends')">Amigos</button>
-            <button class="tab" data-tab="staff" onclick="ContactsPage.switchTab('staff')">Personal del centro</button>
         </div>
 
         <div id="contacts-list"></div>`;

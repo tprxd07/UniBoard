@@ -14,10 +14,6 @@ const StudyPage = {
 
     render() {
         return `
-        <div class="section-header">
-            <span class="section-title">Estudio</span>
-        </div>
-
         <div class="tabs" style="max-width: 400px; margin-bottom: 20px;">
             <button class="tab active" data-tab="pomodoro">Pomodoro</button>
             <button class="tab" data-tab="sessions">Sesiones</button>

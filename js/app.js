@@ -510,7 +510,8 @@ const App = {
             reminders: 'Recordatorios',
             contacts: 'Contactos',
             friends: 'Amigos',
-            settings: 'Ajustes'
+            settings: 'Ajustes',
+            activities: 'Actividades'
         };
         document.getElementById('page-title').textContent = titles[pageName] || pageName;
 

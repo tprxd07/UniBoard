@@ -8,14 +8,12 @@ const ActivitiesPage = {
 
     render() {
         return `
-        <div class="section-header">
-            <span class="section-title">Actividades</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div class="tabs" style="max-width: 400px;">
+                <button class="tab active" data-tab="tasks" onclick="ActivitiesPage.switchTab('tasks')">Tareas</button>
+                <button class="tab" data-tab="exams" onclick="ActivitiesPage.switchTab('exams')">Exámenes</button>
+            </div>
             <button class="btn btn-primary btn-sm" id="add-activity-btn">+ Añadir</button>
-        </div>
-
-        <div class="tabs" style="max-width: 400px;">
-            <button class="tab active" data-tab="tasks" onclick="ActivitiesPage.switchTab('tasks')">Tareas</button>
-            <button class="tab" data-tab="exams" onclick="ActivitiesPage.switchTab('exams')">Exámenes</button>
         </div>
 
         <div id="tasks-tab">
@@ -42,9 +40,12 @@ const ActivitiesPage = {
 
     switchTab(tab) {
         this.activeTab = tab;
-        document.querySelectorAll('.tabs:first-of-type .tab').forEach(t => {
-            t.classList.toggle('active', t.dataset.tab === tab);
-        });
+        const tabsContainer = document.querySelector('#page-content > div > .tabs');
+        if (tabsContainer) {
+            tabsContainer.querySelectorAll('.tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.tab === tab);
+            });
+        }
         document.getElementById('tasks-tab').style.display = tab === 'tasks' ? '' : 'none';
         document.getElementById('exams-tab').style.display = tab === 'exams' ? '' : 'none';
         const addBtn = document.getElementById('add-activity-btn');

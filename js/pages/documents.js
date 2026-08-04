@@ -4,8 +4,7 @@ const DocumentsPage = {
 
     render() {
         return `
-        <div class="section-header">
-            <span class="section-title">Documentos</span>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
             <button class="btn btn-primary btn-sm" id="add-doc-btn">+ Añadir</button>
         </div>
 

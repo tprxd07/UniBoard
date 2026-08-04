@@ -5,8 +5,7 @@ const SubjectsPage = {
 
     render() {
         return `
-        <div class="section-header">
-            <span class="section-title">Mis Asignaturas</span>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
             <button class="btn btn-primary btn-sm" id="add-subject-btn">+ Añadir</button>
         </div>
         <div id="subjects-grid" class="grid-3"></div>`;
