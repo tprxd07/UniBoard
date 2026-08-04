@@ -1003,6 +1003,75 @@
 }
 
 /* ============================================
+   CONCENTRATION MODE
+   ============================================ */
+.concentration-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #0a0a1a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    color: white;
+}
+
+.concentration-overlay.hidden {
+    display: none;
+}
+
+.concentration-time {
+    font-size: 120px;
+    font-weight: 200;
+    letter-spacing: 4px;
+    font-variant-numeric: tabular-nums;
+    color: white;
+}
+
+.concentration-mode-label {
+    font-size: 18px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+.concentration-actions {
+    display: flex;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.concentration-btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.08);
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.concentration-btn:hover {
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.4);
+}
+
+.concentration-btn-exit {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+    border-color: rgba(255,255,255,0.1);
+    background: transparent;
+}
+
+/* ============================================
    TASK GROUPS & CARDS
    ============================================ */
 .task-group {
