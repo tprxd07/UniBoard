@@ -3,6 +3,9 @@ const Auth = {
     currentUser: null,
 
     init() {
+        // Ensure auth persistence is LOCAL (stays logged in across sessions)
+        firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
+
         // Form listeners
         document.getElementById('show-register').addEventListener('click', (e) => {
             e.preventDefault();
