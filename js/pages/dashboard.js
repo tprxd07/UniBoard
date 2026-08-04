@@ -22,7 +22,7 @@ const DashboardPage = {
 
             <div class="card" style="margin-bottom: 16px;">
                 <div class="card-header">
-                    <span class="card-title">📝 Exámenes próximos</span>
+                    <span class="card-title">📝 Exámenes esta semana</span>
                     <a href="#" onclick="App.loadPage('activities'); return false;" class="badge badge-primary">Ver todos</a>
                 </div>
                 <div id="dashboard-exams"></div>
