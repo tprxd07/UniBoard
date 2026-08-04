@@ -343,5 +343,10 @@ const App = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    Auth.init();
+    try {
+        Auth.init();
+    } catch(e) {
+        var el = document.getElementById('error-banner');
+        if (el) { el.style.display='block'; el.textContent='INIT ERROR: ' + e.message + '\n' + e.stack; }
+    }
 });
