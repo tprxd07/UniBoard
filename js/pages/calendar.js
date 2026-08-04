@@ -1,12 +1,13 @@
-// Calendar Page
 const CalendarPage = {
     currentDate: new Date(),
     view: 'month',
     events: [],
     groups: [],
     tasks: [],
+    exams: [],
     editingEvent: null,
     editingGroup: null,
+    _collapsedTodos: {},
 
     render() {
         return `
@@ -16,6 +17,7 @@ const CalendarPage = {
                     <button class="tab active" data-view="month">Mes</button>
                     <button class="tab" data-view="week">Semana</button>
                     <button class="tab" data-view="day">Día</button>
+                    <button class="tab" data-view="all">Todos</button>
                 </div>
                 <div class="calendar-topbar-right">
                     <button class="btn btn-primary btn-sm" id="cal-today">Hoy</button>
@@ -42,11 +44,18 @@ const CalendarPage = {
         this.currentDate = new Date();
         await DB.initDefaultGroups();
 
-        document.querySelectorAll('.tab').forEach(tab => {
+        document.querySelectorAll('.calendar-topbar .tab').forEach(tab => {
             tab.addEventListener('click', () => {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.calendar-topbar .tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 this.view = tab.dataset.view;
+                if (this.view === 'all') {
+                    document.getElementById('cal-prev').style.display = 'none';
+                    document.getElementById('cal-next').style.display = 'none';
+                } else {
+                    document.getElementById('cal-prev').style.display = '';
+                    document.getElementById('cal-next').style.display = '';
+                }
                 this.renderCalendar();
             });
         });
@@ -64,13 +73,21 @@ const CalendarPage = {
     },
 
     navigate(dir) {
-        if (this.view === 'month') {
-            this.currentDate.setMonth(this.currentDate.getMonth() + dir);
-        } else if (this.view === 'week') {
-            this.currentDate.setDate(this.currentDate.getDate() + (dir * 7));
-        } else {
-            this.currentDate.setDate(this.currentDate.getDate() + dir);
-        }
+        if (this.view === 'month') this.currentDate.setMonth(this.currentDate.getMonth() + dir);
+        else if (this.view === 'week') this.currentDate.setDate(this.currentDate.getDate() + (dir * 7));
+        else this.currentDate.setDate(this.currentDate.getDate() + dir);
+        this.renderCalendar();
+    },
+
+    goToDay(dateStr) {
+        const parts = dateStr.split('-');
+        this.currentDate = new Date(parts[0], parts[1] - 1, parts[2]);
+        this.view = 'day';
+        document.querySelectorAll('.calendar-topbar .tab').forEach(t => {
+            t.classList.toggle('active', t.dataset.view === 'day');
+        });
+        document.getElementById('cal-prev').style.display = '';
+        document.getElementById('cal-next').style.display = '';
         this.renderCalendar();
     },
 
@@ -79,22 +96,18 @@ const CalendarPage = {
         const title = document.getElementById('cal-title');
 
         try {
-            [this.events, this.groups, this.tasks] = await Promise.all([
-                DB.getEvents(),
-                DB.getGroups(),
-                DB.getTasks()
+            [this.events, this.groups, this.tasks, this.exams] = await Promise.all([
+                DB.getEvents(), DB.getGroups(), DB.getTasks(), DB.getExams()
             ]);
+            this.subjects_cache = await DB.getSubjects().catch(() => []);
         } catch (e) {
             console.error('Error loading calendar data:', e);
         }
 
-        if (this.view === 'month') {
-            this.renderMonth(container, title);
-        } else if (this.view === 'week') {
-            this.renderWeek(container, title);
-        } else {
-            this.renderDay(container, title);
-        }
+        if (this.view === 'month') this.renderMonth(container, title);
+        else if (this.view === 'week') this.renderWeek(container, title);
+        else if (this.view === 'day') this.renderDay(container, title);
+        else this.renderAll(container, title);
     },
 
     getGroupForEvent(event) {
@@ -104,53 +117,44 @@ const CalendarPage = {
 
     eventOnDate(event, date) {
         const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-        if (event.repeat === 'daily') {
-            return dateStr >= event.date;
-        }
-        if (event.repeat === 'weekly') {
-            const eventDate = new Date(event.date);
-            return date.getDay() === eventDate.getDay() && dateStr >= event.date;
-        }
-        if (event.repeat === 'monthly') {
-            const eventDate = new Date(event.date);
-            return date.getDate() === eventDate.getDate() && dateStr >= event.date;
-        }
-        if (event.repeat === 'yearly') {
-            const eventDate = new Date(event.date);
-            return date.getDate() === eventDate.getDate() && date.getMonth() === eventDate.getMonth() && dateStr >= event.date;
-        }
-        if (event.repeat === 'custom') {
-            return event.repeatDays && event.repeatDays.includes(date.getDay()) && dateStr >= event.date;
-        }
+        if (event.repeat === 'daily') return dateStr >= event.date;
+        if (event.repeat === 'weekly') { const ed = new Date(event.date); return date.getDay() === ed.getDay() && dateStr >= event.date; }
+        if (event.repeat === 'monthly') { const ed = new Date(event.date); return date.getDate() === ed.getDate() && dateStr >= event.date; }
+        if (event.repeat === 'yearly') { const ed = new Date(event.date); return date.getDate() === ed.getDate() && date.getMonth() === ed.getMonth() && dateStr >= event.date; }
+        if (event.repeat === 'custom') return event.repeatDays && event.repeatDays.includes(date.getDay()) && dateStr >= event.date;
         return event.date === dateStr;
     },
 
-    eventsOnDate(date) {
-        return this.events.filter(e => this.eventOnDate(e, date));
-    },
+    eventsOnDate(date) { return this.events.filter(e => this.eventOnDate(e, date)); },
 
     tasksOnDate(date) {
         const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         const dayMs = 1000 * 60 * 60 * 24;
-
         return this.tasks.filter(t => {
             if (!t.dueDate || t.completed) return false;
             const due = typeof t.dueDate === 'string' ? t.dueDate : new Date(t.dueDate.seconds ? t.dueDate.seconds * 1000 : t.dueDate).toISOString().split('T')[0];
-
             if (t.repeat) {
                 const taskDate = new Date(due + 'T00:00:00');
                 const diffFromStart = Math.round((date - taskDate) / dayMs);
                 if (diffFromStart < 0) return false;
-
                 if (t.repeat === 'daily') return true;
                 if (t.repeat === 'weekly') return date.getDay() === taskDate.getDay();
                 if (t.repeat === 'monthly') return date.getDate() === taskDate.getDate();
                 if (t.repeat === 'custom' && t.repeatDays) return t.repeatDays.includes(date.getDay());
                 return false;
             }
-
             return due === dateStr;
         });
+    },
+
+    examsOnDate(date) {
+        const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        return this.exams.filter(e => e.date === dateStr);
+    },
+
+    getSubjectColor(name) {
+        const s = this.subjects_cache && this.subjects_cache.find(s => s.name === name);
+        return s ? s.color || '#6C5CE7' : '#6C5CE7';
     },
 
     getTaskColor(priority) {
@@ -159,6 +163,7 @@ const CalendarPage = {
         return '#a8e6cf';
     },
 
+    // ============ MONTH VIEW ============
     renderMonth(container, title) {
         const year = this.currentDate.getFullYear();
         const month = this.currentDate.getMonth();
@@ -176,10 +181,8 @@ const CalendarPage = {
         const prevMonth = month === 0 ? 11 : month - 1;
         const prevYear = month === 0 ? year - 1 : year;
         const daysInPrevMonth = Utils.getDaysInMonth(prevYear, prevMonth);
-
         for (let i = startDay - 1; i >= 0; i--) {
-            const day = daysInPrevMonth - i;
-            html += `<div class="calendar-day other-month">${day}</div>`;
+            html += `<div class="calendar-day other-month">${daysInPrevMonth - i}</div>`;
         }
 
         for (let day = 1; day <= daysInMonth; day++) {
@@ -188,9 +191,12 @@ const CalendarPage = {
             const isToday = Utils.isToday(date);
             const dayEvents = this.eventsOnDate(date);
             const dayTasks = this.tasksOnDate(date);
+            const dayExams = this.examsOnDate(date);
+            const total = dayEvents.length + dayTasks.length + dayExams.length;
 
             let classes = 'calendar-day';
             if (isToday) classes += ' today';
+            if (total > 0) classes += ' has-content';
 
             let eventsHtml = '';
             dayEvents.forEach(e => {
@@ -201,15 +207,23 @@ const CalendarPage = {
                     <span class="calendar-event-text">${emoji}${e.title}</span>
                 </div>`;
             });
-
             dayTasks.forEach(t => {
                 const color = this.getTaskColor(t.priority);
-                eventsHtml += `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${t.title} (Tarea)">
+                eventsHtml += `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${t.title}">
                     <span class="calendar-event-text">📋 ${t.title}</span>
                 </div>`;
             });
+            dayExams.forEach(ex => {
+                const color = this.getSubjectColor(ex.subject);
+                eventsHtml += `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${ex.subject}">
+                    <span class="calendar-event-text">📝 ${ex.topics || ex.subject}</span>
+                </div>`;
+            });
 
-            html += `<div class="${classes}" data-date="${dateStr}"><div class="calendar-day-number">${day}</div><div class="calendar-day-events">${eventsHtml}</div></div>`;
+            html += `<div class="${classes}" data-date="${dateStr}" onclick="CalendarPage.goToDay('${dateStr}')" style="cursor:pointer;">
+                <div class="calendar-day-number">${day}</div>
+                <div class="calendar-day-events">${eventsHtml}</div>
+            </div>`;
         }
 
         const totalCells = startDay + daysInMonth;
@@ -222,15 +236,14 @@ const CalendarPage = {
         container.innerHTML = html;
     },
 
+    // ============ WEEK VIEW ============
     renderWeek(container, title) {
         const weekStart = Utils.getStartOfWeek(this.currentDate);
         const weekEnd = Utils.addDays(weekStart, 6);
         title.textContent = `${Utils.formatDate(weekStart, 'short')} - ${Utils.formatDate(weekEnd, 'short')}`;
 
         const days = [];
-        for (let i = 0; i < 7; i++) {
-            days.push(Utils.addDays(weekStart, i));
-        }
+        for (let i = 0; i < 7; i++) days.push(Utils.addDays(weekStart, i));
 
         const hours = [];
         for (let h = 0; h <= 23; h++) hours.push(h);
@@ -246,21 +259,26 @@ const CalendarPage = {
             html += `<tr><td style="font-weight: 600;">${String(h).padStart(2, '0')}:00</td>`;
             days.forEach(d => {
                 const hourEvents = this.eventsOnDate(d).filter(e => {
-                    if (!e.startTime) return false;
+                    if (!e.startTime) return h === 0;
                     const [eh] = e.startTime.split(':').map(Number);
                     return eh === h;
                 });
                 const dayTasks = h === 23 ? this.tasksOnDate(d) : [];
+                const dayExams = h === 23 ? this.examsOnDate(d) : [];
                 html += '<td style="padding: 4px;">';
                 hourEvents.forEach(e => {
                     const group = this.getGroupForEvent(e);
                     const color = group ? group.color : 'var(--primary)';
                     const emoji = group && group.emoji ? group.emoji + ' ' : '';
-                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer; position: relative;" onclick="CalendarPage.openEventModal('${e.id}')">${emoji}${e.title}</div>`;
+                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer;" onclick="event.stopPropagation(); CalendarPage.openEventModal('${e.id}')">${emoji}${e.title}</div>`;
                 });
                 dayTasks.forEach(t => {
                     const color = this.getTaskColor(t.priority);
-                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px;">📋 ${t.title}</div>`;
+                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer;" onclick="event.stopPropagation(); CalendarPage.goToTask('${t.id}')">📋 ${t.title}</div>`;
+                });
+                dayExams.forEach(ex => {
+                    const color = this.getSubjectColor(ex.subject);
+                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer;" onclick="event.stopPropagation(); CalendarPage.goToExam('${ex.id}')">📝 ${ex.topics || ex.subject}</div>`;
                 });
                 html += '</td>';
             });
@@ -271,34 +289,40 @@ const CalendarPage = {
         container.innerHTML = html;
     },
 
+    // ============ DAY VIEW ============
     renderDay(container, title) {
         title.textContent = Utils.formatDate(this.currentDate, 'long');
         const dayEvents = this.eventsOnDate(this.currentDate);
         const dayTasks = this.tasksOnDate(this.currentDate);
+        const dayExams = this.examsOnDate(this.currentDate);
         const hours = [];
         for (let h = 0; h <= 23; h++) hours.push(h);
 
-        let html = '<div class="calendar-scroll-container"><div class="table-container"><table class="table"><thead><tr><th>Hora</th><th>Eventos</th></tr></thead><tbody>';
+        let html = '<div class="calendar-scroll-container"><div class="table-container"><table class="table"><thead><tr><th>Hora</th><th>Eventos, tareas y exámenes</th></tr></thead><tbody>';
 
         hours.forEach(h => {
             const hourEvents = dayEvents.filter(e => {
-                if (!e.startTime) return false;
+                if (!e.startTime) return h === 0;
                 const [eh] = e.startTime.split(':').map(Number);
                 return eh === h;
             });
-            const showTasks = h === 23 && dayTasks.length > 0;
+            const showTasks = h === 23 && (dayTasks.length > 0 || dayExams.length > 0);
             html += `<tr><td style="font-weight: 600; white-space: nowrap;">${String(h).padStart(2, '0')}:00</td>`;
             html += '<td style="padding: 4px;">';
             hourEvents.forEach(e => {
                 const group = this.getGroupForEvent(e);
                 const color = group ? group.color : 'var(--primary)';
                 const emoji = group && group.emoji ? group.emoji + ' ' : '';
-                html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer; position: relative;" onclick="CalendarPage.openEventModal('${e.id}')">${emoji}${e.title} (${e.startTime} - ${e.endTime || ''})</div>`;
+                html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer;" onclick="CalendarPage.openEventModal('${e.id}')">${emoji}${e.title} (${e.startTime} - ${e.endTime || ''})</div>`;
             });
             if (showTasks) {
                 dayTasks.forEach(t => {
                     const color = this.getTaskColor(t.priority);
-                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px;">📋 ${t.title} (Tarea - fecha límite)</div>`;
+                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer;" onclick="CalendarPage.goToTask('${t.id}')">📋 ${t.title} (fecha límite)</div>`;
+                });
+                dayExams.forEach(ex => {
+                    const color = this.getSubjectColor(ex.subject);
+                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer;" onclick="CalendarPage.goToExam('${ex.id}')">📝 ${ex.topics || ex.subject} · ${ex.room || ''} (${ex.time || ''})</div>`;
                 });
             }
             html += '</td></tr>';
@@ -306,6 +330,222 @@ const CalendarPage = {
 
         html += '</tbody></table></div></div>';
         container.innerHTML = html;
+    },
+
+    // ============ ALL (TODOS) VIEW ============
+    async renderAll(container, title) {
+        title.textContent = 'Todos';
+
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const dayMs = 1000 * 60 * 60 * 24;
+        const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+        const items = [];
+
+        this.events.forEach(e => {
+            if (!e.date) return;
+            const evDate = new Date(e.date + 'T00:00:00');
+            const diff = Math.round((evDate - today) / dayMs);
+            if (diff < 0 && !e.repeat) return;
+            let displayDate;
+            if (e.repeat) {
+                for (let i = 0; i < 365; i++) {
+                    const d = new Date(today);
+                    d.setDate(d.getDate() + i);
+                    if (this.eventOnDate(e, d)) { displayDate = d; break; }
+                }
+            } else {
+                displayDate = evDate;
+            }
+            if (!displayDate) return;
+            const dateStr = `${displayDate.getFullYear()}-${String(displayDate.getMonth() + 1).padStart(2, '0')}-${String(displayDate.getDate()).padStart(2, '0')}`;
+            const group = this.getGroupForEvent(e);
+            items.push({
+                type: 'event', date: displayDate, dateStr, order: displayDate.getTime(),
+                data: e, color: group ? group.color : 'var(--primary)',
+                title: e.title, subtitle: e.startTime ? `${e.startTime} - ${e.endTime || ''}` : ''
+            });
+        });
+
+        this.tasks.forEach(t => {
+            if (!t.dueDate || t.completed) return;
+            const due = typeof t.dueDate === 'string' ? t.dueDate : new Date(t.dueDate.seconds ? t.dueDate.seconds * 1000 : t.dueDate).toISOString().split('T')[0];
+            const dueDate = new Date(due + 'T00:00:00');
+            const diff = Math.round((dueDate - today) / dayMs);
+            if (diff < 0 && !t.repeat) return;
+            let displayDate = dueDate;
+            if (t.repeat) {
+                for (let i = 0; i < 365; i++) {
+                    const d = new Date(today);
+                    d.setDate(d.getDate() + i);
+                    const dTasks = this.tasksOnDate(d);
+                    if (dTasks.find(dt => dt.id === t.id)) { displayDate = d; break; }
+                }
+            }
+            const dateStr = `${displayDate.getFullYear()}-${String(displayDate.getMonth() + 1).padStart(2, '0')}-${String(displayDate.getDate()).padStart(2, '0')}`;
+            items.push({
+                type: 'task', date: displayDate, dateStr, order: displayDate.getTime(),
+                data: t, color: this.getTaskColor(t.priority),
+                title: t.title, subtitle: t.subject || ''
+            });
+        });
+
+        this.exams.forEach(ex => {
+            if (!ex.date) return;
+            const exDate = new Date(ex.date + 'T00:00:00');
+            if (exDate < today) return;
+            const dateStr = `${exDate.getFullYear()}-${String(exDate.getMonth() + 1).padStart(2, '0')}-${String(exDate.getDate()).padStart(2, '0')}`;
+            items.push({
+                type: 'exam', date: exDate, dateStr, order: exDate.getTime(),
+                data: ex, color: this.getSubjectColor(ex.subject),
+                title: ex.topics || ex.subject || 'Examen', subtitle: `${ex.subject || ''} ${ex.time ? '· ' + ex.time : ''} ${ex.room ? '· ' + ex.room : ''}`
+            });
+        });
+
+        items.sort((a, b) => a.order - b.order);
+
+        if (items.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📅</div><h3>Sin contenido</h3><p>No hay eventos, tareas ni exámenes próximos</p></div>';
+            return;
+        }
+
+        const grouped = {};
+        items.forEach(item => {
+            if (!grouped[item.dateStr]) {
+                const d = item.date;
+                const diffDays = Math.round((d - today) / dayMs);
+                let label;
+                if (diffDays === 0) label = 'Hoy';
+                else if (diffDays === 1) label = 'Mañana';
+                else label = `${dayNames[d.getDay()]}, ${d.getDate()} de ${monthNames[d.getMonth()]}`;
+                grouped[item.dateStr] = { label, items: [] };
+            }
+            grouped[item.dateStr].items.push(item);
+        });
+
+        let html = '<div class="todos-list">';
+        Object.entries(grouped).forEach(([dateStr, group]) => {
+            const events = group.items.filter(i => i.type === 'event');
+            const exams = group.items.filter(i => i.type === 'exam');
+            const tasks = group.items.filter(i => i.type === 'task');
+            const total = group.items.length;
+            const isCollapsed = this._collapsedTodos[dateStr];
+
+            html += `<div class="todos-day-group">
+                <div class="todos-day-header" onclick="CalendarPage.toggleTodosDay('${dateStr}')">
+                    <div class="todos-day-left">
+                        <span class="todos-arrow">${isCollapsed
+                            ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>'
+                            : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 15-6-6-6 6"/></svg>'}</span>
+                        <span class="todos-day-label">${group.label}</span>
+                        <span class="todos-day-count">${total}</span>
+                    </div>
+                </div>`;
+
+            if (!isCollapsed) {
+                html += '<div class="todos-day-items">';
+
+                if (events.length > 0) {
+                    html += `<div class="todos-section">
+                        <div class="todos-section-header">
+                            <span class="todos-section-title">Eventos</span>
+                            <div class="todos-section-line"></div>
+                        </div>`;
+                    events.forEach(item => {
+                        html += `<div class="todos-item" style="border-left: 3px solid ${item.color};">
+                            <div class="todos-item-content">
+                                <div class="todos-item-title">${item.title}</div>
+                                <div class="todos-item-subtitle">${item.subtitle}</div>
+                            </div>
+                            <button class="btn-icon btn-sm" onclick="event.stopPropagation(); CalendarPage.openEventModal('${item.data.id}')" title="Editar">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                            </button>
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+
+                if (exams.length > 0) {
+                    html += `<div class="todos-section">
+                        <div class="todos-section-header">
+                            <span class="todos-section-title">Exámenes</span>
+                            <div class="todos-section-line"></div>
+                        </div>`;
+                    exams.forEach(item => {
+                        html += `<div class="todos-item" style="border-left: 3px solid ${item.color};">
+                            <div class="todos-item-content">
+                                <div class="todos-item-title">📝 ${item.title}</div>
+                                <div class="todos-item-subtitle">${item.subtitle}</div>
+                            </div>
+                            <button class="btn-icon btn-sm" onclick="event.stopPropagation(); CalendarPage.goToExam('${item.data.id}')" title="Editar">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                            </button>
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+
+                if (tasks.length > 0) {
+                    html += `<div class="todos-section">
+                        <div class="todos-section-header">
+                            <span class="todos-section-title">Tareas</span>
+                            <div class="todos-section-line"></div>
+                        </div>`;
+                    tasks.forEach(item => {
+                        html += `<div class="todos-item" style="border-left: 3px solid ${item.color};">
+                            <div class="todos-item-content">
+                                <div class="todos-item-title">📋 ${item.title}</div>
+                                <div class="todos-item-subtitle">${item.subtitle}</div>
+                            </div>
+                            <button class="btn-icon btn-sm" onclick="event.stopPropagation(); CalendarPage.goToTask('${item.data.id}')" title="Editar">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                            </button>
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+
+                html += '</div>';
+            }
+
+            html += '</div>';
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+    },
+
+    toggleTodosDay(dateStr) {
+        this._collapsedTodos[dateStr] = !this._collapsedTodos[dateStr];
+        this.renderCalendar();
+    },
+
+    goToTask(taskId) {
+        App.loadPage('activities');
+        setTimeout(() => {
+            if (typeof ActivitiesPage !== 'undefined') {
+                ActivitiesPage.switchTab('tasks');
+                setTimeout(() => {
+                    const task = ActivitiesPage.tasks && ActivitiesPage.tasks.find(t => t.id === taskId);
+                    if (task) ActivitiesPage.showEditTaskModal(taskId);
+                }, 300);
+            }
+        }, 200);
+    },
+
+    goToExam(examId) {
+        App.loadPage('activities');
+        setTimeout(() => {
+            if (typeof ActivitiesPage !== 'undefined') {
+                ActivitiesPage.switchTab('exams');
+                setTimeout(() => {
+                    const exam = ActivitiesPage.exams && ActivitiesPage.exams.find(e => e.id === examId);
+                    if (exam) ActivitiesPage.showEditExamModal(examId);
+                }, 300);
+            }
+        }, 200);
     },
 
     // ============ EVENT MODAL ============
@@ -333,12 +573,12 @@ const CalendarPage = {
                 <label>Título</label>
                 <input type="text" id="ev-title" value="${ev.title || ''}" placeholder="Nombre del evento">
             </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Fecha</label>
-                        <input type="date" id="ev-date" value="${ev.date || ''}" min="${today}">
-                    </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" id="ev-date" value="${ev.date || ''}" min="${today}">
                 </div>
+            </div>
             <div class="form-row">
                 <div class="form-group">
                     <label>Hora inicio</label>
@@ -387,14 +627,10 @@ const CalendarPage = {
         modal.classList.remove('hidden');
 
         modal.querySelectorAll('.modal-close').forEach(btn => {
-            btn.addEventListener('click', () => {
-                modal.classList.add('hidden');
-                this.resetModalFooter();
-            });
+            btn.addEventListener('click', () => { modal.classList.add('hidden'); this.resetModalFooter(); });
         });
         modal.querySelector('.modal-overlay').addEventListener('click', () => {
-            modal.classList.add('hidden');
-            this.resetModalFooter();
+            modal.classList.add('hidden'); this.resetModalFooter();
         });
     },
 
@@ -483,7 +719,7 @@ const CalendarPage = {
                 <span class="group-list-emoji">${g.emoji || ''}</span>
                 <span class="group-list-name">${g.name}</span>
                 ${g.isDefault ? '<span class="badge badge-ghost" style="margin-left: auto; font-size: 11px;">Por defecto</span>' : ''}
-                <button class="btn-icon btn-sm" onclick="CalendarPage.openGroupForm('${g.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+                <button class="btn-icon btn-sm" onclick="CalendarPage.openGroupForm('${g.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
             </div>
         `).join('');
 
@@ -504,14 +740,10 @@ const CalendarPage = {
         modal.classList.remove('hidden');
 
         modal.querySelectorAll('.modal-close').forEach(btn => {
-            btn.addEventListener('click', () => {
-                modal.classList.add('hidden');
-                this.resetModalFooter();
-            });
+            btn.addEventListener('click', () => { modal.classList.add('hidden'); this.resetModalFooter(); });
         });
         modal.querySelector('.modal-overlay').addEventListener('click', () => {
-            modal.classList.add('hidden');
-            this.resetModalFooter();
+            modal.classList.add('hidden'); this.resetModalFooter();
         });
     },
 
@@ -572,14 +804,10 @@ const CalendarPage = {
         modal.classList.remove('hidden');
 
         modal.querySelectorAll('.modal-close').forEach(btn => {
-            btn.addEventListener('click', () => {
-                modal.classList.add('hidden');
-                this.resetModalFooter();
-            });
+            btn.addEventListener('click', () => { modal.classList.add('hidden'); this.resetModalFooter(); });
         });
         modal.querySelector('.modal-overlay').addEventListener('click', () => {
-            modal.classList.add('hidden');
-            this.resetModalFooter();
+            modal.classList.add('hidden'); this.resetModalFooter();
         });
     },
 

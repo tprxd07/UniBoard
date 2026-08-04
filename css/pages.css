@@ -527,6 +527,130 @@
     background: var(--bg-card);
 }
 
+/* ============ TODOS VIEW ============ */
+.todos-list {
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+.todos-list::-webkit-scrollbar { display: none; }
+
+.todos-day-group {
+    margin-bottom: 8px;
+}
+
+.todos-day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.15s;
+    user-select: none;
+}
+.todos-day-header:hover {
+    background: var(--bg-input);
+}
+
+.todos-day-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.todos-arrow {
+    display: flex;
+    align-items: center;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.todos-day-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.todos-day-count {
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--bg-input);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.todos-day-items {
+    padding: 8px 0 0 16px;
+}
+
+.todos-section {
+    margin-bottom: 12px;
+}
+
+.todos-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.todos-section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.todos-section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.todos-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin-bottom: 4px;
+    transition: background 0.15s;
+    gap: 10px;
+}
+.todos-item:hover {
+    background: var(--bg-input);
+}
+
+.todos-item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.todos-item-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.todos-item-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .color-custom input[type="color"]::-webkit-color-swatch-wrapper {
     padding: 2px;
 }
