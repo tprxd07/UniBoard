@@ -201,9 +201,12 @@
                 <button class="btn-icon modal-close" onclick="App.closeProfileModal()">✕</button>
             </div>
             <div class="modal-body" style="padding:0;">
-                <div class="profile-banner-section" id="profile-banner-wrapper" style="position:relative;width:100%;height:120px;background:var(--primary-bg);cursor:pointer;overflow:hidden;">
-                    <div id="profile-banner-display" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:13px;">Toca para añadir banner</div>
-                    <div class="profile-banner-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;color:#fff;font-size:13px;">📷 Cambiar banner</div>
+                <div class="profile-banner-section" id="profile-banner-wrapper" style="position:relative;width:100%;height:120px;background:#6C5CE7;cursor:pointer;overflow:hidden;">
+                    <div id="profile-banner-display" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"></div>
+                    <div class="profile-banner-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;gap:12px;opacity:0;transition:opacity 0.2s;color:#fff;font-size:13px;">
+                        <label for="profile-banner-input" style="cursor:pointer;padding:4px 10px;background:rgba(255,255,255,0.2);border-radius:6px;" onclick="event.stopPropagation();">📷 Foto</label>
+                        <span id="banner-remove-photo" style="cursor:pointer;padding:4px 10px;background:rgba(255,255,255,0.2);border-radius:6px;display:none;" onclick="event.stopPropagation(); App.removeBannerPhoto();">✕ Quitar foto</span>
+                    </div>
                     <input type="file" id="profile-banner-input" accept="image/*" class="hidden">
                 </div>
                 <div style="padding:0 20px 20px;">
@@ -214,6 +217,22 @@
                         </div>
                         <p class="profile-photo-hint">Arrastra una imagen o haz clic para cambiar</p>
                         <input type="file" id="profile-photo-input" accept="image/*" class="hidden">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Color del banner</label>
+                        <div class="color-options" id="banner-color-options">
+                            <div class="color-option" style="background:#6C5CE7;" data-color="#6C5CE7"></div>
+                            <div class="color-option" style="background:#00B894;" data-color="#00B894"></div>
+                            <div class="color-option" style="background:#E17055;" data-color="#E17055"></div>
+                            <div class="color-option" style="background:#74B9FF;" data-color="#74B9FF"></div>
+                            <div class="color-option" style="background:#E84393;" data-color="#E84393"></div>
+                            <div class="color-option" style="background:#00CEC9;" data-color="#00CEC9"></div>
+                            <div class="color-option" style="background:#FDCB6E;" data-color="#FDCB6E"></div>
+                            <div class="color-option" style="background:#636E72;" data-color="#636E72"></div>
+                            <div class="color-option" style="background:#2D3436;" data-color="#2D3436"></div>
+                            <div class="color-option" style="background:#D63031;" data-color="#D63031"></div>
+                        </div>
                     </div>
 
                     <div id="profile-stats-bar" style="display:flex;justify-content:center;gap:24px;margin:12px 0 16px;"></div>

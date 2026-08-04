@@ -195,6 +195,7 @@ const App = {
     closeProfileModal() {
         this.closeCropper();
         this._pendingBanner = null;
+        this._pendingBannerColorRemoval = null;
         document.getElementById('profile-modal').classList.add('hidden');
     },
 
@@ -224,6 +225,7 @@ const App = {
     async openProfileModal() {
         this._pendingPhoto = null;
         this._pendingBanner = null;
+        this._pendingBannerColor = null;
         const modal = document.getElementById('profile-modal');
         modal.classList.remove('hidden');
 
@@ -247,10 +249,24 @@ const App = {
             display.innerHTML = '👤';
         }
 
+        const bannerWrapper = document.getElementById('profile-banner-wrapper');
+        const bannerColor = profile.bannerColor || '#6C5CE7';
+        bannerWrapper.style.background = bannerColor;
+        this._pendingBannerColor = bannerColor;
+
         const bannerDisplay = document.getElementById('profile-banner-display');
+        const removeBtn = document.getElementById('banner-remove-photo');
         if (profile.bannerURL) {
             bannerDisplay.innerHTML = `<img src="${profile.bannerURL}" style="width:100%;height:100%;object-fit:cover;">`;
+            if (removeBtn) removeBtn.style.display = '';
+        } else {
+            bannerDisplay.innerHTML = '';
+            if (removeBtn) removeBtn.style.display = 'none';
         }
+
+        document.querySelectorAll('#banner-color-options .color-option').forEach(opt => {
+            opt.classList.toggle('active', opt.dataset.color === bannerColor);
+        });
 
         const statsBar = document.getElementById('profile-stats-bar');
         statsBar.innerHTML = `
@@ -264,7 +280,10 @@ const App = {
         const wrapper = document.getElementById('profile-banner-wrapper');
         const input = document.getElementById('profile-banner-input');
         if (!wrapper || !input) return;
-        wrapper.onclick = () => input.click();
+        wrapper.onclick = (e) => {
+            if (e.target.closest('#banner-remove-photo') || e.target.closest('label')) return;
+            input.click();
+        };
         wrapper.onmouseenter = () => { wrapper.querySelector('.profile-banner-overlay').style.opacity = '1'; };
         wrapper.onmouseleave = () => { wrapper.querySelector('.profile-banner-overlay').style.opacity = '0'; };
         input.onchange = (e) => {
@@ -273,10 +292,33 @@ const App = {
                 reader.onload = (ev) => {
                     this._pendingBanner = ev.target.result;
                     document.getElementById('profile-banner-display').innerHTML = `<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
+                    const removeBtn = document.getElementById('banner-remove-photo');
+                    if (removeBtn) removeBtn.style.display = '';
                 };
                 reader.readAsDataURL(e.target.files[0]);
             }
         };
+
+        document.querySelectorAll('#banner-color-options .color-option').forEach(opt => {
+            opt.onclick = () => {
+                document.querySelectorAll('#banner-color-options .color-option').forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
+                const color = opt.dataset.color;
+                this._pendingBannerColor = color;
+                const bw = document.getElementById('profile-banner-wrapper');
+                bw.style.background = color;
+            };
+        });
+    },
+
+    removeBannerPhoto() {
+        this._pendingBanner = null;
+        this._pendingBannerColorRemoval = true;
+        document.getElementById('profile-banner-display').innerHTML = '';
+        const removeBtn = document.getElementById('banner-remove-photo');
+        if (removeBtn) removeBtn.style.display = 'none';
+        const input = document.getElementById('profile-banner-input');
+        if (input) input.value = '';
     },
 
     async saveProfileFromModal() {
@@ -289,7 +331,13 @@ const App = {
         try {
             const updates = { name, bio, university, degree, phone };
             if (this._pendingPhoto) updates.photoURL = this._pendingPhoto;
-            if (this._pendingBanner) updates.bannerURL = this._pendingBanner;
+            if (this._pendingBanner) {
+                updates.bannerURL = this._pendingBanner;
+            }
+            if (this._pendingBannerColor) updates.bannerColor = this._pendingBannerColor;
+            if (this._pendingBannerColorRemoval) {
+                updates.bannerURL = '';
+            }
             await DB.updateProfile(updates);
 
             document.getElementById('user-name').textContent = name || Auth.currentUser?.email.split('@')[0];
@@ -299,6 +347,7 @@ const App = {
             }
             this._pendingPhoto = null;
             this._pendingBanner = null;
+            this._pendingBannerColorRemoval = null;
             this.closeProfileModal();
             Utils.showToast('Perfil actualizado', 'success');
         } catch (e) {
