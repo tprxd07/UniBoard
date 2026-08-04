@@ -52,14 +52,6 @@
     --primary-bg: rgba(162, 155, 254, 0.15);
 }
 
-/* Pink Theme */
-[data-theme="pink"] {
-    --primary: #E84393;
-    --primary-light: #FD79A8;
-    --primary-dark: #D63384;
-    --primary-bg: rgba(232, 67, 147, 0.1);
-}
-
 /* Reset */
 *, *::before, *::after {
     margin: 0;

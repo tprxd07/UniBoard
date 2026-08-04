@@ -384,6 +384,26 @@
     transform: scale(1.1);
 }
 
+.color-option-custom {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 3px dashed var(--border);
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
+}
+
+.color-option-custom:hover {
+    border-color: var(--text-secondary);
+    transform: scale(1.1);
+}
+
+.color-option-bg {
+    border: 2px solid var(--border);
+}
+
 /* Timer Display */
 .timer-display {
     font-size: 72px;

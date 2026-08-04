@@ -489,6 +489,9 @@ const App = {
             if (settings.accentColor) {
                 document.documentElement.style.setProperty('--primary', settings.accentColor);
             }
+            if (settings.bgColor) {
+                SettingsPage.applyBgColor(settings.bgColor);
+            }
         } catch (e) {
             console.log('Using default settings');
         }
