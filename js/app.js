@@ -52,9 +52,20 @@ const App = {
         const sidebar = document.getElementById('sidebar');
         const openBtn = document.getElementById('open-sidebar');
         const closeBtn = document.getElementById('close-sidebar');
+        const toggleBtn = document.getElementById('toggle-sidebar');
 
         openBtn?.addEventListener('click', () => sidebar.classList.add('open'));
         closeBtn?.addEventListener('click', () => sidebar.classList.remove('open'));
+
+        toggleBtn?.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+        });
+
+        // Restore sidebar state
+        if (localStorage.getItem('sidebar-collapsed') === 'true') {
+            sidebar.classList.add('collapsed');
+        }
 
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', () => sidebar.classList.remove('open'));
