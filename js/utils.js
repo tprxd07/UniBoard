@@ -116,8 +116,8 @@ const Utils = {
     // Get greeting based on time
     getGreeting() {
         const hour = new Date().getHours();
-        if (hour < 12) return 'Buenos días';
-        if (hour < 18) return 'Buenas tardes';
+        if (hour >= 7 && hour < 13) return 'Buenos días';
+        if (hour >= 13 && hour < 20) return 'Buenas tardes';
         return 'Buenas noches';
     },
 
