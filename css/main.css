@@ -394,6 +394,32 @@ a {
     color: var(--primary);
 }
 
+/* ============================================
+   GLOBAL SCROLLBAR
+   ============================================ */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
 .sidebar-nav {
     flex: 1;
     overflow-y: auto;
@@ -551,15 +577,12 @@ a {
     padding: 0 24px 24px;
     overflow: hidden;
     min-height: 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .page-content::-webkit-scrollbar {
     display: none;
-}
-
-.page-content {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
 }
 
 /* ============================================
@@ -615,6 +638,7 @@ a {
     padding: 24px;
     overflow-y: auto;
     max-height: calc(85vh - 140px);
+    scrollbar-width: thin;
 }
 
 .modal-footer {
@@ -688,6 +712,7 @@ a {
     .page-content {
         padding: 16px;
         overflow-y: auto;
+        scrollbar-width: thin;
     }
 
     .top-bar {
