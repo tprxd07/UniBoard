@@ -578,9 +578,14 @@ const DB = {
         if (!username) return false;
         const q = username.toLowerCase().trim();
         if (this.isDemo()) return true;
-        const snap = await db.collection('users').where('usernameLower', '==', q).limit(1).get();
-        if (snap.empty) return true;
-        return snap.docs[0].id === currentUid;
+        try {
+            const snap = await db.collection('users').where('usernameLower', '==', q).limit(1).get();
+            if (snap.empty) return true;
+            return snap.docs[0].id === currentUid;
+        } catch (e) {
+            console.warn('Username check fallback:', e);
+            return true;
+        }
     },
 
     // ============ FRIENDS ============

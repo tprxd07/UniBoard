@@ -120,13 +120,13 @@ const Auth = {
             return;
         }
 
-        const available = await DB.checkUsernameAvailable(username);
-        if (!available) {
-            Utils.showToast('Ese usuario ya está en uso', 'error');
-            return;
-        }
-
         try {
+            const available = await DB.checkUsernameAvailable(username);
+            if (!available) {
+                Utils.showToast('Ese usuario ya está en uso', 'error');
+                return;
+            }
+
             await DB.updateProfile({
                 name: name,
                 username: username,
@@ -139,7 +139,8 @@ const Auth = {
             this.onLogin(this.currentUser);
             Utils.showToast('¡Perfil completado!', 'success');
         } catch (e) {
-            Utils.showToast('Error al guardar', 'error');
+            console.error('Error completing profile:', e);
+            Utils.showToast('Error al guardar: ' + e.message, 'error');
         }
     },
 
