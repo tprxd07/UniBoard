@@ -322,7 +322,7 @@ const CalendarPage = {
                 });
                 dayExams.forEach(ex => {
                     const color = this.getSubjectColor(ex.subject);
-                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer;" onclick="CalendarPage.goToExam('${ex.id}')">📝 ${ex.topics || ex.subject} · ${ex.room || ''} (${ex.time || ''})</div>`;
+                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer;" onclick="CalendarPage.goToExam('${ex.id}')">📝 ${ex.topics || ex.subject} · ${ex.room || ''} (${ex.startTime || ''}${ex.endTime ? ' - ' + ex.endTime : ''})</div>`;
                 });
             }
             html += '</td></tr>';
@@ -400,7 +400,7 @@ const CalendarPage = {
             items.push({
                 type: 'exam', date: exDate, dateStr, order: exDate.getTime(),
                 data: ex, color: this.getSubjectColor(ex.subject),
-                title: ex.topics || ex.subject || 'Examen', subtitle: `${ex.subject || ''} ${ex.time ? '· ' + ex.time : ''} ${ex.room ? '· ' + ex.room : ''}`
+                title: ex.topics || ex.subject || 'Examen', subtitle: `${ex.subject || ''} ${ex.startTime ? '· ' + ex.startTime + (ex.endTime ? ' - ' + ex.endTime : '') : ''} ${ex.room ? '· ' + ex.room : ''}`
             });
         });
 

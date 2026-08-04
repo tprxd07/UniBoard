@@ -330,7 +330,7 @@ const ActivitiesPage = {
                     <div class="task-card-info">
                         <div class="task-card-subject" style="color: ${color};">${exam.subject || ''}</div>
                         <div class="task-card-title">${exam.topics || exam.name || 'Examen'}</div>
-                        <div class="task-card-time">${Utils.formatDate(exam.date, 'long')} ${exam.time ? '· ' + exam.time : ''} · ${exam.room || 'Sin aula'}</div>
+                        <div class="task-card-time">${Utils.formatDate(exam.date, 'long')} ${exam.startTime ? '· ' + exam.startTime + (exam.endTime ? ' - ' + exam.endTime : '') : ''} · ${exam.room || 'Sin aula'}</div>
                         ${exam.description ? `<div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">${exam.description}</div>` : ''}
                     </div>
                 </div>
@@ -354,14 +354,18 @@ const ActivitiesPage = {
                 <label>Temas</label>
                 <input type="text" id="exam-topics" value="${exam?.topics || ''}" placeholder="Ej: Temas 1-3">
             </div>
+            <div class="form-group">
+                <label>Fecha</label>
+                <input type="date" id="exam-date" value="${exam?.date || ''}">
+            </div>
             <div class="grid-2">
                 <div class="form-group">
-                    <label>Fecha</label>
-                    <input type="date" id="exam-date" value="${exam?.date || ''}">
+                    <label>Hora inicio</label>
+                    <input type="time" id="exam-start-time" value="${exam?.startTime || ''}">
                 </div>
                 <div class="form-group">
-                    <label>Hora</label>
-                    <input type="time" id="exam-time" value="${exam?.time || ''}">
+                    <label>Hora fin</label>
+                    <input type="time" id="exam-end-time" value="${exam?.endTime || ''}">
                 </div>
             </div>
             <div class="form-group">
@@ -378,7 +382,8 @@ const ActivitiesPage = {
                 subject: document.getElementById('exam-subject').value,
                 topics: document.getElementById('exam-topics').value,
                 date: document.getElementById('exam-date').value,
-                time: document.getElementById('exam-time').value,
+                startTime: document.getElementById('exam-start-time').value,
+                endTime: document.getElementById('exam-end-time').value,
                 room: document.getElementById('exam-room').value,
                 description: document.getElementById('exam-description').value
             };
