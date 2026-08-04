@@ -242,8 +242,10 @@ const App = {
         ]);
         const streak = DB.calculateStreakFromSessions(sessions);
 
-        document.getElementById('profile-name').value = profile.name || '';
-        document.getElementById('profile-username').value = profile.username || '';
+        const nameInput = document.getElementById('profile-name');
+        const usernameInput = document.getElementById('profile-username');
+        nameInput.value = profile.name || '';
+        usernameInput.value = profile.username || '';
         document.getElementById('profile-bio').value = profile.bio || '';
         document.getElementById('profile-university').value = profile.university || '';
         document.getElementById('profile-degree').value = profile.degree || '';
@@ -256,6 +258,34 @@ const App = {
         } else {
             usernameStatus.textContent = 'Obligatorio para añadir amigos';
             usernameStatus.style.color = 'var(--text-secondary)';
+        }
+
+        // 30-day cooldown for name and username
+        const now = new Date();
+        const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+
+        const nameLastChanged = profile.nameLastChanged ? new Date(profile.nameLastChanged) : null;
+        if (nameLastChanged && (now - nameLastChanged) < thirtyDaysMs) {
+            const daysLeft = Math.ceil((thirtyDaysMs - (now - nameLastChanged)) / (24 * 60 * 60 * 1000));
+            nameInput.disabled = true;
+            nameInput.title = `Puedes cambiarlo en ${daysLeft} días`;
+            nameInput.style.opacity = '0.6';
+        } else {
+            nameInput.disabled = false;
+            nameInput.title = '';
+            nameInput.style.opacity = '1';
+        }
+
+        const usernameLastChanged = profile.usernameLastChanged ? new Date(profile.usernameLastChanged) : null;
+        if (usernameLastChanged && (now - usernameLastChanged) < thirtyDaysMs) {
+            const daysLeft = Math.ceil((thirtyDaysMs - (now - usernameLastChanged)) / (24 * 60 * 60 * 1000));
+            usernameInput.disabled = true;
+            usernameInput.title = `Puedes cambiarlo en ${daysLeft} días`;
+            usernameInput.style.opacity = '0.6';
+        } else {
+            usernameInput.disabled = false;
+            usernameInput.title = '';
+            usernameInput.style.opacity = '1';
         }
 
         const display = document.getElementById('profile-photo-display');
@@ -373,37 +403,66 @@ const App = {
     },
 
     async saveProfileFromModal() {
-        const name = document.getElementById('profile-name').value;
-        const username = document.getElementById('profile-username').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+        const profile = await DB.getProfile();
+        const now = new Date();
+        const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+
+        const newName = document.getElementById('profile-name').value;
+        const newUsername = document.getElementById('profile-username').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
         const bio = document.getElementById('profile-bio').value;
         const university = document.getElementById('profile-university').value;
         const degree = document.getElementById('profile-degree').value;
         const phone = document.getElementById('profile-phone').value;
 
-        if (!username || username.length < 3) {
-            Utils.showToast('El usuario debe tener al menos 3 caracteres', 'error');
-            return;
+        // Check 30-day cooldown for name
+        let finalName = profile.name;
+        const nameLastChanged = profile.nameLastChanged ? new Date(profile.nameLastChanged) : null;
+        if (newName !== profile.name) {
+            if (nameLastChanged && (now - nameLastChanged) < thirtyDaysMs) {
+                const daysLeft = Math.ceil((thirtyDaysMs - (now - nameLastChanged)) / (24 * 60 * 60 * 1000));
+                Utils.showToast(`Solo puedes cambiar el nombre cada 30 días. Disponible en ${daysLeft} días`, 'error');
+                return;
+            }
+            finalName = newName;
         }
 
-        const available = await DB.checkUsernameAvailable(username, Auth.currentUser.uid);
-        if (!available) {
-            Utils.showToast('Ese usuario ya está en uso', 'error');
-            return;
+        // Check 30-day cooldown for username
+        let finalUsername = profile.username;
+        if (newUsername !== profile.username) {
+            const usernameLastChanged = profile.usernameLastChanged ? new Date(profile.usernameLastChanged) : null;
+            if (usernameLastChanged && (now - usernameLastChanged) < thirtyDaysMs) {
+                const daysLeft = Math.ceil((thirtyDaysMs - (now - usernameLastChanged)) / (24 * 60 * 60 * 1000));
+                Utils.showToast(`Solo puedes cambiar el usuario cada 30 días. Disponible en ${daysLeft} días`, 'error');
+                return;
+            }
+
+            if (!newUsername || newUsername.length < 3) {
+                Utils.showToast('El usuario debe tener al menos 3 caracteres', 'error');
+                return;
+            }
+
+            const available = await DB.checkUsernameAvailable(newUsername, Auth.currentUser.uid);
+            if (!available) {
+                Utils.showToast('Ese usuario ya está en uso', 'error');
+                return;
+            }
+            finalUsername = newUsername;
         }
 
         try {
-            const updates = { name, username, bio, university, degree, phone };
+            const updates = { name: finalName, username: finalUsername, bio, university, degree, phone };
+
+            if (newName !== profile.name) updates.nameLastChanged = new Date().toISOString();
+            if (newUsername !== profile.username) updates.usernameLastChanged = new Date().toISOString();
+
             if (this._pendingPhoto) updates.photoURL = this._pendingPhoto;
-            if (this._pendingBanner) {
-                updates.bannerURL = this._pendingBanner;
-            }
+            if (this._pendingBanner) updates.bannerURL = this._pendingBanner;
             if (this._pendingBannerColor) updates.bannerColor = this._pendingBannerColor;
-            if (this._pendingBannerColorRemoval) {
-                updates.bannerURL = '';
-            }
+            if (this._pendingBannerColorRemoval) updates.bannerURL = '';
+
             await DB.updateProfile(updates);
 
-            document.getElementById('user-name').textContent = name || Auth.currentUser?.email.split('@')[0];
+            document.getElementById('user-name').textContent = finalName || Auth.currentUser?.email.split('@')[0];
             if (this._pendingPhoto) {
                 const avatarEl = document.getElementById('user-avatar');
                 avatarEl.innerHTML = `<img src="${this._pendingPhoto}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;

@@ -29,19 +29,36 @@ const Auth = {
             if (e.key === 'Enter') this.register();
         });
 
+        // Complete profile modal
+        const completeUsernameInput = document.getElementById('complete-username');
+        completeUsernameInput?.addEventListener('blur', () => this.validateCompleteUsername());
+        completeUsernameInput?.addEventListener('input', () => {
+            const val = completeUsernameInput.value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+            completeUsernameInput.value = val;
+            document.getElementById('complete-username-status').textContent = '';
+        });
+        document.getElementById('complete-profile-btn')?.addEventListener('click', () => this.completeProfile());
+
+        // Register username validation
+        const regUsernameInput = document.getElementById('reg-username');
+        regUsernameInput?.addEventListener('blur', () => this.validateRegUsername());
+        regUsernameInput?.addEventListener('input', () => {
+            const val = regUsernameInput.value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+            regUsernameInput.value = val;
+            document.getElementById('reg-username-status').textContent = '';
+        });
+
         // Listen for auth state changes
         auth.onAuthStateChanged(async (user) => {
             if (user) {
-                // Load profile from Firestore, create if first social login
                 try {
                     const doc = await db.collection('users').doc(user.uid).get();
                     let profile = doc.data();
 
-                    // First time social login - create profile
                     if (!profile) {
                         const defaultProfile = {
                             name: user.displayName || user.email.split('@')[0],
-                            username: (user.displayName || user.email.split('@')[0]).toLowerCase().replace(/[^a-z0-9_]/g, '').substring(0, 20),
+                            username: '',
                             email: user.email || '',
                             provider: user.providerData[0]?.providerId || 'password',
                             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -63,6 +80,12 @@ const Auth = {
                         email: user.email,
                         displayName: profile?.name || user.displayName || user.email.split('@')[0]
                     };
+
+                    // Force username completion for social logins
+                    if (!profile.username) {
+                        this.showCompleteProfile(user.displayName || user.email.split('@')[0]);
+                        return;
+                    }
                 } catch (e) {
                     this.currentUser = {
                         uid: user.uid,
@@ -76,6 +99,91 @@ const Auth = {
                 this.onLogout();
             }
         });
+    },
+
+    showCompleteProfile(defaultName) {
+        const modal = document.getElementById('complete-profile-modal');
+        modal.classList.remove('hidden');
+        document.getElementById('complete-name').value = defaultName;
+        document.getElementById('complete-username').value = '';
+        document.getElementById('complete-username-status').textContent = '';
+    },
+
+    async validateCompleteUsername() {
+        const input = document.getElementById('complete-username');
+        const status = document.getElementById('complete-username-status');
+        const val = input.value.trim();
+        if (!val) { status.textContent = ''; return false; }
+        if (val.length < 3) {
+            status.textContent = 'Mínimo 3 caracteres';
+            status.style.color = 'var(--danger, #e74c3c)';
+            return false;
+        }
+        const available = await DB.checkUsernameAvailable(val);
+        if (available) {
+            status.textContent = '✓ Disponible';
+            status.style.color = 'var(--success, #00b894)';
+            return true;
+        } else {
+            status.textContent = '✗ Ya está en uso';
+            status.style.color = 'var(--danger, #e74c3c)';
+            return false;
+        }
+    },
+
+    async completeProfile() {
+        const name = document.getElementById('complete-name').value.trim();
+        const username = document.getElementById('complete-username').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+
+        if (!name) {
+            Utils.showToast('Introduce tu nombre', 'error');
+            return;
+        }
+        if (!username || username.length < 3) {
+            Utils.showToast('El usuario debe tener al menos 3 caracteres', 'error');
+            return;
+        }
+
+        const available = await DB.checkUsernameAvailable(username);
+        if (!available) {
+            Utils.showToast('Ese usuario ya está en uso', 'error');
+            return;
+        }
+
+        try {
+            await DB.updateProfile({
+                name: name,
+                username: username,
+                nameLastChanged: new Date().toISOString(),
+                usernameLastChanged: new Date().toISOString()
+            });
+            document.getElementById('complete-profile-modal').classList.add('hidden');
+            this.currentUser.displayName = name;
+            this.onLogin(this.currentUser);
+            Utils.showToast('¡Perfil completado!', 'success');
+        } catch (e) {
+            Utils.showToast('Error al guardar', 'error');
+        }
+    },
+
+    async validateRegUsername() {
+        const input = document.getElementById('reg-username');
+        const status = document.getElementById('reg-username-status');
+        const val = input.value.trim();
+        if (!val) { status.textContent = ''; return; }
+        if (val.length < 3) {
+            status.textContent = 'Mínimo 3 caracteres';
+            status.style.color = 'var(--danger, #e74c3c)';
+            return;
+        }
+        const available = await DB.checkUsernameAvailable(val);
+        if (available) {
+            status.textContent = '✓ Disponible';
+            status.style.color = 'var(--success, #00b894)';
+        } else {
+            status.textContent = '✗ Ya está en uso';
+            status.style.color = 'var(--danger, #e74c3c)';
+        }
     },
 
     async login() {
@@ -109,12 +217,26 @@ const Auth = {
 
     async register() {
         const name = document.getElementById('reg-name').value;
+        const username = document.getElementById('reg-username')?.value?.trim().toLowerCase().replace(/[^a-z0-9_]/g, '') || '';
         const email = document.getElementById('reg-email').value;
         const password = document.getElementById('reg-password').value;
         const errorEl = document.getElementById('register-error');
 
-        if (!name || !email || !password) {
+        if (!name || !username || !email || !password) {
             errorEl.textContent = 'Por favor, rellena todos los campos';
+            errorEl.classList.remove('hidden');
+            return;
+        }
+
+        if (username.length < 3) {
+            errorEl.textContent = 'El usuario debe tener al menos 3 caracteres';
+            errorEl.classList.remove('hidden');
+            return;
+        }
+
+        const usernameRegex = /^[a-z0-9_]+$/;
+        if (!usernameRegex.test(username)) {
+            errorEl.textContent = 'El usuario solo puede contener letras minúsculas, números y guiones bajos';
             errorEl.classList.remove('hidden');
             return;
         }
@@ -129,15 +251,23 @@ const Auth = {
             errorEl.classList.add('hidden');
             document.getElementById('btn-register').disabled = true;
 
+            const available = await DB.checkUsernameAvailable(username);
+            if (!available) {
+                errorEl.textContent = 'Ese nombre de usuario ya está en uso';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
             const cred = await auth.createUserWithEmailAndPassword(email, password);
 
-            // Create user profile in Firestore
             await db.collection('users').doc(cred.user.uid).set({
                 name: name,
-                username: name.toLowerCase().replace(/[^a-z0-9_]/g, '').substring(0, 20),
+                username: username,
                 email: email,
                 provider: 'password',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                nameLastChanged: new Date().toISOString(),
+                usernameLastChanged: new Date().toISOString(),
                 settings: {
                     theme: 'light',
                     accentColor: '#6C5CE7',
