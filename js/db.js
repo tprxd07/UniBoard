@@ -535,5 +535,182 @@ const DB = {
             return;
         }
         await this.userDoc().update(data);
+    },
+
+    // ============ USER SEARCH ============
+    async searchUsers(query) {
+        if (!query || query.length < 2) return [];
+        const q = query.toLowerCase().trim();
+        if (this.isDemo()) return [];
+        const nameSnap = await db.collection('users')
+            .where('name', '>=', q).where('name', '<=', q + '\uf8ff')
+            .limit(10).get();
+        const emailSnap = await db.collection('users')
+            .where('email', '>=', q).where('email', '<=', q + '\uf8ff')
+            .limit(10).get();
+        const results = new Map();
+        [...nameSnap.docs, ...emailSnap.docs].forEach(doc => {
+            if (doc.id !== Auth.currentUser.uid) {
+                const d = doc.data();
+                results.set(doc.id, { uid: doc.id, name: d.name || '', email: d.email || '', photoURL: d.photoURL || '' });
+            }
+        });
+        return Array.from(results.values());
+    },
+
+    // ============ FRIENDS ============
+    async getFriends() {
+        if (this.isDemo()) return this._getStore('friends');
+        const snap = await this.collection('friends').orderBy('addedAt', 'desc').get();
+        return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+
+    async addFriend(friendData) {
+        if (this.isDemo()) {
+            const items = this._getStore('friends');
+            items.push({ id: friendData.uid, ...friendData, addedAt: new Date().toISOString() });
+            this._setStore('friends', items);
+            return;
+        }
+        await this.collection('friends').doc(friendData.uid).set({
+            uid: friendData.uid,
+            name: friendData.name || '',
+            email: friendData.email || '',
+            photoURL: friendData.photoURL || '',
+            nickname: friendData.nickname || '',
+            note: friendData.note || '',
+            phone: friendData.phone || '',
+            addedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    },
+
+    async updateFriend(friendUid, data) {
+        if (this.isDemo()) {
+            const items = this._getStore('friends');
+            const idx = items.findIndex(f => f.id === friendUid);
+            if (idx !== -1) items[idx] = { ...items[idx], ...data };
+            this._setStore('friends', items);
+            return;
+        }
+        await this.collection('friends').doc(friendUid).update(data);
+    },
+
+    async removeFriend(friendUid) {
+        if (this.isDemo()) {
+            this._setStore('friends', this._getStore('friends').filter(f => f.id !== friendUid));
+            return;
+        }
+        await this.collection('friends').doc(friendUid).delete();
+    },
+
+    async areFriends(uid) {
+        if (this.isDemo()) return this._getStore('friends').some(f => f.id === uid);
+        const doc = await this.collection('friends').doc(uid).get();
+        return doc.exists;
+    },
+
+    // ============ FRIEND REQUESTS ============
+    async getFriendRequests() {
+        if (this.isDemo()) return this._getStore('friendRequests');
+        const snap = await db.collection('friendRequests')
+            .where('toUid', '==', Auth.currentUser.uid)
+            .where('status', '==', 'pending').get();
+        return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+
+    async getSentRequests() {
+        if (this.isDemo()) return this._getStore('sentFriendRequests');
+        const snap = await db.collection('friendRequests')
+            .where('fromUid', '==', Auth.currentUser.uid)
+            .where('status', '==', 'pending').get();
+        return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+
+    async sendFriendRequest(toUser) {
+        const profile = await this.getProfile();
+        const data = {
+            fromUid: Auth.currentUser.uid,
+            fromName: profile.name || Auth.currentUser.displayName || '',
+            fromEmail: Auth.currentUser.email || '',
+            fromPhotoURL: profile.photoURL || '',
+            toUid: toUser.uid,
+            toName: toUser.name || '',
+            toEmail: toUser.email || '',
+            status: 'pending',
+            createdAt: new Date().toISOString()
+        };
+        if (this.isDemo()) {
+            const items = this._getStore('sentFriendRequests');
+            items.push({ id: 'req_' + Date.now(), ...data });
+            this._setStore('sentFriendRequests', items);
+            return;
+        }
+        await db.collection('friendRequests').add({
+            ...data,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    },
+
+    async acceptFriendRequest(requestId, fromUser) {
+        await this.addFriend({
+            uid: fromUser.fromUid,
+            name: fromUser.fromName,
+            email: fromUser.fromEmail,
+            photoURL: fromUser.fromPhotoURL || ''
+        });
+        if (this.isDemo()) {
+            this._setStore('friendRequests', this._getStore('friendRequests').filter(r => r.id !== requestId));
+            return;
+        }
+        await db.collection('friendRequests').doc(requestId).delete();
+    },
+
+    async rejectFriendRequest(requestId) {
+        if (this.isDemo()) {
+            this._setStore('friendRequests', this._getStore('friendRequests').filter(r => r.id !== requestId));
+            return;
+        }
+        await db.collection('friendRequests').doc(requestId).delete();
+    },
+
+    async cancelFriendRequest(requestId) {
+        if (this.isDemo()) {
+            this._setStore('sentFriendRequests', this._getStore('sentFriendRequests').filter(r => r.id !== requestId));
+            return;
+        }
+        await db.collection('friendRequests').doc(requestId).delete();
+    },
+
+    // ============ STUDY STREAK ============
+    calculateStreakFromSessions(sessions) {
+        if (!sessions || sessions.length === 0) return 0;
+        const dayMinutes = {};
+        sessions.forEach(s => {
+            const date = s.date || '';
+            if (!date) return;
+            if (!dayMinutes[date]) dayMinutes[date] = 0;
+            dayMinutes[date] += s.duration || 0;
+        });
+        let streak = 0;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        for (let i = 0; i < 365; i++) {
+            const d = new Date(today);
+            d.setDate(d.getDate() - i);
+            const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            if (dayMinutes[dateStr] && dayMinutes[dateStr] >= 10) {
+                streak++;
+            } else {
+                break;
+            }
+        }
+        return streak;
+    },
+
+    async updateStreak() {
+        const sessions = await this.getStudySessions();
+        const streak = this.calculateStreakFromSessions(sessions);
+        await this.updateProfile({ studyStreak: streak });
+        return streak;
     }
 };

@@ -251,6 +251,7 @@ const StudyPage = {
                 date: new Date().toISOString().split('T')[0],
                 type: 'pomodoro'
             });
+            DB.updateStreak().catch(() => {});
         } catch (e) {}
     },
 
@@ -357,6 +358,7 @@ const StudyPage = {
             };
             try {
                 await DB.addStudySession(data);
+                DB.updateStreak().catch(() => {});
                 Utils.showToast('Sesión registrada', 'success');
                 this.renderSessionsTab(document.getElementById('study-content'));
             } catch (e) { Utils.showToast('Error al guardar', 'error'); }

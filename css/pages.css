@@ -1170,3 +1170,203 @@
     gap: 4px;
     flex-shrink: 0;
 }
+
+/* ============ FRIENDS PAGE ============ */
+.friends-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.friends-stat-card {
+    text-align: center;
+    padding: 16px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm, 8px);
+}
+
+.friends-stat-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.friends-stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.friends-stat-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.friends-search-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.friends-search-results {
+    margin-bottom: 8px;
+}
+
+.friends-search-list, .friends-list, .friends-requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.friend-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm, 8px);
+}
+
+.friend-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-bg, rgba(108, 92, 231, 0.1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary);
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.friend-avatar-lg {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+}
+
+.friend-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.friend-info h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.friend-info p {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.friend-real-name {
+    font-size: 11px !important;
+    color: var(--text-secondary) !important;
+}
+
+.friend-email {
+    font-size: 11px !important;
+}
+
+.friend-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+    align-items: center;
+}
+
+.friend-streak {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--border);
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.friend-streak-fire.active {
+    background: linear-gradient(135deg, #ff6b35, #ff3b30);
+    color: #fff;
+}
+
+.friend-streak-icon {
+    font-size: 14px;
+}
+
+.friend-streak-num {
+    font-size: 13px;
+}
+
+.friend-card-full {
+    gap: 14px;
+}
+
+.friend-card-request {
+    border-left: 3px solid var(--primary);
+}
+
+.friend-card-search {
+    transition: box-shadow 0.2s;
+}
+
+.friend-card-search:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.friend-profile-detail {
+    text-align: center;
+}
+
+.friend-profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--primary-bg, rgba(108, 92, 231, 0.1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.friend-profile-fields {
+    text-align: left;
+    margin-top: 16px;
+}
+
+/* ============ PROFILE BANNER ============ */
+.profile-banner-section:hover .profile-banner-overlay {
+    opacity: 1 !important;
+}
+
+/* ============ CONTACTS - STAFF ============ */
+.contact-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}

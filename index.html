@@ -141,6 +141,10 @@
                     <span class="nav-icon">👥</span>
                     <span class="nav-label">Contactos</span>
                 </a>
+                <a href="#" class="nav-item" data-page="friends">
+                    <span class="nav-icon">👫</span>
+                    <span class="nav-label">Amigos</span>
+                </a>
             </div>
 
             <div class="sidebar-footer">
@@ -196,47 +200,66 @@
                 <h3>Mi Perfil</h3>
                 <button class="btn-icon modal-close" onclick="App.closeProfileModal()">✕</button>
             </div>
-            <div class="modal-body">
-                <div class="profile-photo-section">
-                    <div class="profile-photo-wrapper" id="profile-photo-wrapper">
-                        <div class="profile-photo" id="profile-photo-display">👤</div>
-                        <div class="profile-photo-overlay">📷</div>
-                    </div>
-                    <p class="profile-photo-hint">Arrastra una imagen o haz clic para cambiar</p>
-                    <input type="file" id="profile-photo-input" accept="image/*" class="hidden">
+            <div class="modal-body" style="padding:0;">
+                <div class="profile-banner-section" id="profile-banner-wrapper" style="position:relative;width:100%;height:120px;background:var(--primary-bg);cursor:pointer;overflow:hidden;">
+                    <div id="profile-banner-display" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:13px;">Toca para añadir banner</div>
+                    <div class="profile-banner-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;color:#fff;font-size:13px;">📷 Cambiar banner</div>
+                    <input type="file" id="profile-banner-input" accept="image/*" class="hidden">
                 </div>
+                <div style="padding:0 20px 20px;">
+                    <div class="profile-photo-section" style="margin-top:-40px;">
+                        <div class="profile-photo-wrapper" id="profile-photo-wrapper" style="border:3px solid var(--bg-card);">
+                            <div class="profile-photo" id="profile-photo-display">👤</div>
+                            <div class="profile-photo-overlay">📷</div>
+                        </div>
+                        <p class="profile-photo-hint">Arrastra una imagen o haz clic para cambiar</p>
+                        <input type="file" id="profile-photo-input" accept="image/*" class="hidden">
+                    </div>
 
-                <!-- Crop UI (hidden by default) -->
-                <div id="crop-container" class="crop-container hidden">
-                    <div class="crop-image-wrapper">
-                        <img id="crop-image" src="">
-                    </div>
-                    <div class="crop-actions">
-                        <button class="btn btn-ghost btn-sm" id="crop-rotate-left" title="Girar izquierda">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                        </button>
-                        <button class="btn btn-ghost btn-sm" id="crop-rotate-right" title="Girar derecha">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
-                        </button>
-                        <button class="btn btn-ghost btn-sm" id="crop-flip-h" title="Voltear horizontal">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h3"/><path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3"/><line x1="12" y1="20" x2="12" y2="4"/></svg>
-                        </button>
-                        <button class="btn btn-ghost btn-sm" id="crop-cancel" title="Cancelar">✕</button>
-                        <button class="btn btn-primary btn-sm" id="crop-confirm" title="Confirmar">✓</button>
-                    </div>
-                </div>
+                    <div id="profile-stats-bar" style="display:flex;justify-content:center;gap:24px;margin:12px 0 16px;"></div>
 
-                <div class="form-group">
-                    <label>Nombre</label>
-                    <input type="text" id="profile-name" placeholder="Tu nombre">
-                </div>
-                <div class="form-group">
-                    <label>Universidad</label>
-                    <input type="text" id="profile-university" placeholder="Nombre de tu universidad">
-                </div>
-                <div class="form-group">
-                    <label>Grado</label>
-                    <input type="text" id="profile-degree" placeholder="Ej: Ingeniería Informática">
+                    <!-- Crop UI (hidden by default) -->
+                    <div id="crop-container" class="crop-container hidden">
+                        <div class="crop-image-wrapper">
+                            <img id="crop-image" src="">
+                        </div>
+                        <div class="crop-actions">
+                            <button class="btn btn-ghost btn-sm" id="crop-rotate-left" title="Girar izquierda">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                            </button>
+                            <button class="btn btn-ghost btn-sm" id="crop-rotate-right" title="Girar derecha">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                            </button>
+                            <button class="btn btn-ghost btn-sm" id="crop-flip-h" title="Voltear horizontal">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h3"/><path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3"/><line x1="12" y1="20" x2="12" y2="4"/></svg>
+                            </button>
+                            <button class="btn btn-ghost btn-sm" id="crop-cancel" title="Cancelar">✕</button>
+                            <button class="btn btn-primary btn-sm" id="crop-confirm" title="Confirmar">✓</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" id="profile-name" placeholder="Tu nombre">
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción</label>
+                        <textarea id="profile-bio" rows="2" placeholder="Cuéntanos algo sobre ti..." style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--bg-input);color:var(--text);font-family:var(--font-family);resize:none;"></textarea>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Universidad</label>
+                            <input type="text" id="profile-university" placeholder="Tu universidad">
+                        </div>
+                        <div class="form-group">
+                            <label>Grado</label>
+                            <input type="text" id="profile-degree" placeholder="Ej: Ingeniería">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" id="profile-phone" placeholder="612 345 678">
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -274,6 +297,7 @@
     <script src="js/pages/goals.js"></script>
     <script src="js/pages/reminders.js"></script>
     <script src="js/pages/contacts.js"></script>
+    <script src="js/pages/friends.js"></script>
     <script src="js/pages/settings.js"></script>
     <script src="js/app.js"></script>
 </body>

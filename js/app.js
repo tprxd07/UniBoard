@@ -34,6 +34,7 @@ const App = {
             goals: GoalsPage,
             reminders: RemindersPage,
             contacts: ContactsPage,
+            friends: FriendsPage,
             settings: SettingsPage
         };
     },
@@ -193,6 +194,7 @@ const App = {
 
     closeProfileModal() {
         this.closeCropper();
+        this._pendingBanner = null;
         document.getElementById('profile-modal').classList.add('hidden');
     },
 
@@ -221,13 +223,22 @@ const App = {
 
     async openProfileModal() {
         this._pendingPhoto = null;
+        this._pendingBanner = null;
         const modal = document.getElementById('profile-modal');
         modal.classList.remove('hidden');
 
-        const profile = await DB.getProfile();
+        const [profile, friends, sessions] = await Promise.all([
+            DB.getProfile(),
+            DB.getFriends().catch(() => []),
+            DB.getStudySessions().catch(() => [])
+        ]);
+        const streak = DB.calculateStreakFromSessions(sessions);
+
         document.getElementById('profile-name').value = profile.name || '';
+        document.getElementById('profile-bio').value = profile.bio || '';
         document.getElementById('profile-university').value = profile.university || '';
         document.getElementById('profile-degree').value = profile.degree || '';
+        document.getElementById('profile-phone').value = profile.phone || '';
 
         const display = document.getElementById('profile-photo-display');
         if (profile.photoURL) {
@@ -235,16 +246,50 @@ const App = {
         } else {
             display.innerHTML = '👤';
         }
+
+        const bannerDisplay = document.getElementById('profile-banner-display');
+        if (profile.bannerURL) {
+            bannerDisplay.innerHTML = `<img src="${profile.bannerURL}" style="width:100%;height:100%;object-fit:cover;">`;
+        }
+
+        const statsBar = document.getElementById('profile-stats-bar');
+        statsBar.innerHTML = `
+            <div style="text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--primary);">${friends.length}</div><div style="font-size:11px;color:var(--text-secondary);">Amigos</div></div>
+            <div style="text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--primary);">🔥 ${streak}</div><div style="font-size:11px;color:var(--text-secondary);">Racha</div></div>`;
+
+        this._setupBannerUpload();
+    },
+
+    _setupBannerUpload() {
+        const wrapper = document.getElementById('profile-banner-wrapper');
+        const input = document.getElementById('profile-banner-input');
+        if (!wrapper || !input) return;
+        wrapper.onclick = () => input.click();
+        wrapper.onmouseenter = () => { wrapper.querySelector('.profile-banner-overlay').style.opacity = '1'; };
+        wrapper.onmouseleave = () => { wrapper.querySelector('.profile-banner-overlay').style.opacity = '0'; };
+        input.onchange = (e) => {
+            if (e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    this._pendingBanner = ev.target.result;
+                    document.getElementById('profile-banner-display').innerHTML = `<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        };
     },
 
     async saveProfileFromModal() {
         const name = document.getElementById('profile-name').value;
+        const bio = document.getElementById('profile-bio').value;
         const university = document.getElementById('profile-university').value;
         const degree = document.getElementById('profile-degree').value;
+        const phone = document.getElementById('profile-phone').value;
 
         try {
-            const updates = { name, university, degree };
+            const updates = { name, bio, university, degree, phone };
             if (this._pendingPhoto) updates.photoURL = this._pendingPhoto;
+            if (this._pendingBanner) updates.bannerURL = this._pendingBanner;
             await DB.updateProfile(updates);
 
             document.getElementById('user-name').textContent = name || Auth.currentUser?.email.split('@')[0];
@@ -253,6 +298,7 @@ const App = {
                 avatarEl.innerHTML = `<img src="${this._pendingPhoto}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
             }
             this._pendingPhoto = null;
+            this._pendingBanner = null;
             this.closeProfileModal();
             Utils.showToast('Perfil actualizado', 'success');
         } catch (e) {
@@ -292,6 +338,7 @@ const App = {
             goals: 'Objetivos',
             reminders: 'Recordatorios',
             contacts: 'Contactos',
+            friends: 'Amigos',
             settings: 'Ajustes'
         };
         document.getElementById('page-title').textContent = titles[pageName] || pageName;

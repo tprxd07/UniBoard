@@ -621,6 +621,8 @@ a {
 
 .modal-body {
     padding: 24px;
+    overflow-y: auto;
+    max-height: calc(85vh - 140px);
 }
 
 .modal-footer {
@@ -702,6 +704,27 @@ a {
 
     .auth-container {
         padding: 24px;
+    }
+
+    .friends-stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+
+    .friends-stat-card {
+        padding: 12px 8px;
+    }
+
+    .friends-stat-value {
+        font-size: 20px;
+    }
+
+    .friend-card-full {
+        flex-wrap: wrap;
+    }
+
+    .friend-streak {
+        margin-left: auto;
     }
 }
 
