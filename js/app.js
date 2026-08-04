@@ -316,6 +316,12 @@ const App = {
             if (timeEl) {
                 timeEl.textContent = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
             }
+            // Update dashboard greeting live
+            const greetingEl = document.querySelector('.dashboard-greeting h2');
+            if (greetingEl && this.currentPage === 'dashboard') {
+                const name = greetingEl.textContent.split(', ').slice(1).join(', ');
+                greetingEl.textContent = `${Utils.getGreeting()}, ${name}`;
+            }
         };
         updateClock();
         setInterval(updateClock, 1000);
