@@ -78,10 +78,6 @@ const ProfilePage = {
                             <input type="text" id="profile-degree" placeholder="Ej: Ingeniería">
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>Teléfono</label>
-                        <input type="tel" id="profile-phone" placeholder="Opcional">
-                    </div>
                     <button class="btn btn-primary" id="save-profile-page">Guardar perfil</button>
                 </div>
             </div>
@@ -108,7 +104,6 @@ const ProfilePage = {
         document.getElementById('profile-bio').value = profile.bio || '';
         document.getElementById('profile-university').value = profile.university || '';
         document.getElementById('profile-degree').value = profile.degree || '';
-        document.getElementById('profile-phone').value = profile.phone || '';
 
         const usernameStatus = document.getElementById('username-status');
         if (profile.username) {
@@ -285,7 +280,6 @@ const ProfilePage = {
         const bio = document.getElementById('profile-bio').value;
         const university = document.getElementById('profile-university').value;
         const degree = document.getElementById('profile-degree').value;
-        const phone = document.getElementById('profile-phone').value;
 
         let finalName = profile.name;
         const nameLastChanged = profile.nameLastChanged ? new Date(profile.nameLastChanged) : null;
@@ -319,7 +313,7 @@ const ProfilePage = {
         }
 
         try {
-            const updates = { name: finalName, username: finalUsername, usernameLower: finalUsername.toLowerCase(), bio, university, degree, phone };
+            const updates = { name: finalName, username: finalUsername, usernameLower: finalUsername.toLowerCase(), bio, university, degree };
             if (newName !== profile.name) updates.nameLastChanged = new Date().toISOString();
             if (newUsername !== profile.username) updates.usernameLastChanged = new Date().toISOString();
             if (this._pendingPhoto) updates.photoURL = this._pendingPhoto;
