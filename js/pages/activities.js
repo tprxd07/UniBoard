@@ -113,13 +113,15 @@ const ActivitiesPage = {
                     const completedStyle = task.completed ? 'opacity: 0.5;' : '';
                     const lineStyle = task.completed ? 'text-decoration: line-through;' : '';
                     const timeStr = task.dueTime || '';
+                    const priorityColors = { low: '#00b894', medium: '#fdcb6e', high: '#e17055' };
+                    const priorityDot = task.priority ? `<span class="priority-dot" style="background:${priorityColors[task.priority] || priorityColors.medium};" title="${task.priority === 'low' ? 'Baja' : task.priority === 'high' ? 'Alta' : 'Media'}"></span>` : '';
                     html += `
                     <div class="task-card" style="${completedStyle} border-left: 4px solid ${color};">
                         <div class="task-card-top">
                             <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="ActivitiesPage.toggleTask('${task.id}')">${task.completed ? '✓' : ''}</div>
                             <div class="task-card-info">
                                 <div class="task-card-subject" style="color: ${color};">${task.subject || 'Sin asignatura'}</div>
-                                <div class="task-card-title" style="${lineStyle}">${task.title}</div>
+                                <div class="task-card-title" style="${lineStyle}">${priorityDot}${task.title}</div>
                                 ${timeStr ? `<div class="task-card-time">Hora de entrega: ${timeStr}</div>` : ''}
                             </div>
                         </div>

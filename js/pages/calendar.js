@@ -210,7 +210,7 @@ const CalendarPage = {
             dayTasks.forEach(t => {
                 const color = this.getTaskColor(t.priority);
                 eventsHtml += `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${t.title}">
-                    <span class="calendar-event-text">${Icons.clipboard} ${t.title}</span>
+                    <span class="calendar-event-text"><span class="priority-dot" style="background:${color};"></span>${t.title}</span>
                 </div>`;
             });
             dayExams.forEach(ex => {
@@ -274,7 +274,7 @@ const CalendarPage = {
                 });
                 dayTasks.forEach(t => {
                     const color = this.getTaskColor(t.priority);
-                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer;" onclick="event.stopPropagation(); CalendarPage.goToTask('${t.id}')">${Icons.clipboard} ${t.title}</div>`;
+                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer;" onclick="event.stopPropagation(); CalendarPage.goToTask('${t.id}')"><span class="priority-dot" style="background:${color};"></span>${t.title}</div>`;
                 });
                 dayExams.forEach(ex => {
                     const color = this.getSubjectColor(ex.subject);

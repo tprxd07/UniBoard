@@ -429,9 +429,9 @@ const SubjectsPage = {
                         if (type === 'trimestre') {
                             return ['Primero','Segundo','Tercero'].map((label, i) => `<option value="${i+1}" ${s.periodNumber == i+1 ? 'selected' : ''}>${label}</option>`).join('');
                         } else if (type === 'cuatrimestre') {
-                            return ['Primero','Segundo'].map((label, i) => `<option value="${i+1}" ${s.periodNumber == i+1 ? 'selected' : ''}>${label}</option>`).join('');
+                            return Array.from({length:8}, (_, i) => `<option value="${i+1}" ${s.periodNumber == i+1 ? 'selected' : ''}>${i+1}º</option>`).join('');
                         }
-                        return [1,2,3,4,5,6,7,8].map(n => `<option value="${n}" ${s.periodNumber == n ? 'selected' : ''}>${n}</option>`).join('');
+                        return '';
                     })()}
                 </select>
             </div>
@@ -498,9 +498,7 @@ const SubjectsPage = {
             if (this.value === 'trimestre') {
                 options += ['Primero','Segundo','Tercero'].map((label, i) => `<option value="${i+1}" ${current == i+1 ? 'selected' : ''}>${label}</option>`).join('');
             } else if (this.value === 'cuatrimestre') {
-                options += ['Primero','Segundo'].map((label, i) => `<option value="${i+1}" ${current == i+1 ? 'selected' : ''}>${label}</option>`).join('');
-            } else {
-                options += [1,2,3,4,5,6,7,8].map(n => `<option value="${n}" ${current == n ? 'selected' : ''}>${n}</option>`).join('');
+                options += Array.from({length:8}, (_, i) => `<option value="${i+1}" ${current == i+1 ? 'selected' : ''}>${i+1}º</option>`).join('');
             }
             select.innerHTML = options;
         });
