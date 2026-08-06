@@ -38,7 +38,12 @@ const SubjectsPage = {
             <div class="subject-card" onclick="SubjectsPage.showDetail('${s.id}')">
                 <div class="subject-card-header">
                     <div class="subject-color" style="background: ${s.color || '#6C5CE7'};"></div>
-                    <span class="badge badge-primary">${s.credits || 0} créditos</span>
+                    <div style="display:flex;gap:4px;">
+                        <span class="badge badge-primary">${s.credits || 0} créditos</span>
+                        <button class="btn-icon btn-sm" onclick="event.stopPropagation(); SubjectsPage.showAddModal(SubjectsPage.subjects.find(x=>x.id==='${s.id}'))" title="Editar">
+                            ${Icons.edit}
+                        </button>
+                    </div>
                 </div>
                 <h4>${s.name}</h4>
                 <p style="font-size:12px;color:var(--text-secondary);">${s.professors && s.professors.length > 0 ? s.professors.join(', ') : (s.professor || 'Sin profesor')}</p>
@@ -143,8 +148,8 @@ const SubjectsPage = {
             </div>
             ${s.guideUrl ? `<a href="${s.guideUrl}" target="_blank" class="btn btn-ghost btn-full" style="margin-bottom:12px;">${Icons.file} Ver guía docente</a>` : ''}
             <div style="display:flex;gap:8px;">
-                <button class="btn btn-ghost" style="flex:1;" onclick="SubjectsPage.showAddModal(SubjectsPage.selectedSubject); Utils.closeModal();">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> Editar
+                <button class="btn btn-ghost" style="flex:1;" onclick="Utils.closeModal(); setTimeout(() => SubjectsPage.showAddModal(SubjectsPage.selectedSubject), 200);">
+                    ${Icons.edit} Editar
                 </button>
                 <button class="btn btn-danger" style="flex:1;" onclick="SubjectsPage.deleteSubject('${s.id}')">${Icons.trash} Eliminar</button>
             </div>`;
