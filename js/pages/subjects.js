@@ -424,9 +424,7 @@ const SubjectsPage = {
                 <label>Número de período</label>
                 <select id="subj-period-number">
                     <option value="">—</option>
-                    <option value="1" ${s.periodNumber == '1' ? 'selected' : ''}>Primero</option>
-                    <option value="2" ${s.periodNumber == '2' ? 'selected' : ''}>Segundo</option>
-                    <option value="3" ${s.periodNumber == '3' ? 'selected' : ''}>Tercero</option>
+                    ${[1,2,3,4,5,6,7,8].map(n => `<option value="${n}" ${s.periodNumber == n ? 'selected' : ''}>${n}</option>`).join('')}
                 </select>
             </div>
             <div class="form-group">
