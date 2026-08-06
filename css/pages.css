@@ -766,6 +766,7 @@
     border-radius: var(--radius-sm);
     margin-bottom: 8px;
     transition: var(--transition);
+    cursor: pointer;
 }
 
 .task-item:hover {
@@ -826,6 +827,12 @@
     border-radius: var(--radius);
     padding: 20px;
     margin-bottom: 12px;
+    transition: var(--transition);
+}
+
+.exam-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .exam-card-header {
@@ -864,6 +871,11 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     margin-bottom: 8px;
+    transition: var(--transition);
+}
+
+.study-session:hover {
+    border-color: var(--primary);
 }
 
 .study-session-time {
@@ -920,6 +932,11 @@
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
+    transition: var(--transition);
+}
+
+.finance-item:hover {
+    border-color: var(--primary);
 }
 
 .finance-item .amount {
@@ -952,6 +969,11 @@
     justify-content: space-between;
     padding: 14px 0;
     border-bottom: 1px solid var(--border);
+    cursor: pointer;
+}
+
+.settings-item:hover {
+    background: var(--primary-bg);
 }
 
 .settings-item-info h4 {
@@ -974,6 +996,12 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     margin-bottom: 8px;
+    transition: var(--transition);
+}
+
+.contact-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .contact-avatar {
@@ -1057,6 +1085,12 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     margin-bottom: 8px;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.reminder-item:hover {
+    border-color: var(--primary);
 }
 
 .reminder-icon {
@@ -1273,6 +1307,45 @@
     .doc-item {
         padding: 12px;
     }
+
+    /* Concentration mode */
+    .concentration-time {
+        font-size: 72px !important;
+    }
+
+    /* Form row stacking */
+    .form-row {
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+
+    /* Todos list safe area */
+    .todos-list {
+        max-height: calc(100dvh - 160px) !important;
+    }
+
+    /* Profile page stats */
+    .profile-page-stats {
+        gap: 16px !important;
+    }
+
+    /* Next class card */
+    .next-class-card {
+        padding: 16px !important;
+    }
+    .next-class-timer .time-value {
+        font-size: 22px !important;
+    }
+
+    /* Exam countdown */
+    .exam-countdown .days {
+        font-size: 28px !important;
+    }
+
+    /* Dashboard events scroll */
+    .dashboard-events-scroll {
+        max-height: 260px !important;
+    }
 }
 
 /* ============================================
@@ -1458,6 +1531,12 @@
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm, 8px);
+    transition: var(--transition);
+}
+
+.friends-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
 }
 
 .friends-stat-icon {
@@ -1504,6 +1583,11 @@
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm, 8px);
+    transition: var(--transition);
+}
+
+.friend-card:hover {
+    border-color: var(--primary);
 }
 
 .friend-avatar {
@@ -1708,6 +1792,11 @@
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
+    transition: var(--transition);
+}
+
+.request-card:hover {
+    border-color: var(--primary);
 }
 
 .request-avatar {

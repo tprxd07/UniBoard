@@ -227,14 +227,38 @@ a {
     color: var(--primary);
 }
 
+.btn-ghost:active {
+    transform: scale(0.97);
+}
+
 .btn-danger {
     background: var(--danger);
     color: white;
 }
 
+.btn-danger:hover {
+    background: #c0392b;
+    border-color: #c0392b;
+    color: #fff;
+}
+
+.btn-danger:active {
+    transform: scale(0.97);
+}
+
 .btn-success {
     background: var(--success);
     color: white;
+}
+
+.btn-success:hover {
+    background: #27ae60;
+    border-color: #27ae60;
+    color: #fff;
+}
+
+.btn-success:active {
+    transform: scale(0.97);
 }
 
 .btn-sm {
@@ -263,8 +287,12 @@ a {
     background: var(--primary-bg);
 }
 
+.btn-icon:active {
+    transform: scale(0.9);
+}
+
 /* ============================================
-   SOCIAL LOGIN BUTTONS
+    SOCIAL LOGIN BUTTONS
    ============================================ */
 .auth-divider {
     display: flex;
@@ -305,6 +333,10 @@ a {
     border-color: var(--primary);
     background: var(--primary-bg);
     transform: translateY(-1px);
+}
+
+.btn-social:active {
+    transform: scale(0.97);
 }
 
 .btn-social svg {
@@ -615,6 +647,28 @@ a {
     display: none;
 }
 
+/* Page transitions */
+.page-exit {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.1s ease, transform 0.1s ease;
+}
+
+.page-enter {
+    animation: pageEnter 0.15s ease;
+}
+
+@keyframes pageEnter {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* ============================================
    MODAL
    ============================================ */
@@ -677,6 +731,25 @@ a {
     gap: 12px;
     padding: 16px 24px;
     border-top: 1px solid var(--border);
+}
+
+.modal.show .modal-content {
+    animation: modalIn 0.2s ease;
+}
+
+@keyframes modalIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-overlay {
+    transition: opacity 0.2s ease;
 }
 
 /* ============================================
@@ -743,6 +816,7 @@ a {
         inset: 0;
         background: rgba(0,0,0,0.4);
         z-index: 99;
+        transition: opacity 0.2s ease;
     }
 
     .main-content {
@@ -1073,6 +1147,15 @@ a {
     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
 
+.crop-container:not(.hidden) {
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
 .crop-image-wrapper {
     width: 100%;
     max-width: 320px;
@@ -1175,4 +1258,36 @@ a {
 
 .btn-danger:hover {
     background: #c0392b;
+}
+
+/* Focus visible for keyboard accessibility */
+*:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+button:focus-visible,
+.btn:focus-visible,
+.btn-icon:focus-visible,
+.nav-item:focus-visible,
+.pill:focus-visible,
+.tab:focus-visible,
+.color-option:focus-visible,
+.toggle-slider:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .page-exit, .page-enter {
+        animation: none !important;
+        transition: none !important;
+    }
 }

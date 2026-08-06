@@ -216,9 +216,18 @@ const App = {
         };
         document.getElementById('page-title').textContent = titles[pageName] || pageName;
 
+        const container = document.getElementById('page-content');
+
         if (page && page.render) {
-            document.getElementById('page-content').innerHTML = page.render();
-            if (page.init) page.init();
+            container.classList.add('page-exit');
+            setTimeout(() => {
+                container.scrollTop = 0;
+                container.innerHTML = page.render();
+                container.classList.remove('page-exit');
+                container.classList.add('page-enter');
+                setTimeout(() => container.classList.remove('page-enter'), 150);
+                if (page.init) page.init();
+            }, 100);
         }
     },
 
