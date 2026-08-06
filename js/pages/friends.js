@@ -241,7 +241,13 @@ const FriendsPage = {
         // Sugerencias
         html += `<div class="section-header"><span class="section-title">Sugerencias de amistad</span></div>`;
         if (this.suggestions.length === 0) {
-            html += `<p style="text-align:center;color:var(--text-secondary);padding:16px;font-size:13px;">Cargando sugerencias...</p>`;
+            html += `
+            <div class="empty-state" style="padding:32px 16px;">
+                <div class="empty-state-icon">🔍</div>
+                <h3>Esto está muy vacío...</h3>
+                <p>¡Invita a más personas!</p>
+                <button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="FriendsPage.copyInviteLink()">Compartir enlace de registro</button>
+            </div>`;
         } else {
             html += '<div class="suggestions-grid">';
             const sentIds = this.sentRequests.map(r => r.toUid);
@@ -416,5 +422,24 @@ const FriendsPage = {
 
     esc(str) {
         return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    },
+
+    copyInviteLink() {
+        const url = window.location.origin + window.location.pathname;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => {
+                Utils.showToast('Enlace copiado al portapapeles', 'success');
+            }).catch(() => {
+                Utils.showToast('Error al copiar', 'error');
+            });
+        } else {
+            const input = document.createElement('input');
+            input.value = url;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            Utils.showToast('Enlace copiado al portapapeles', 'success');
+        }
     }
 };
