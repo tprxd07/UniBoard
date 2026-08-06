@@ -121,7 +121,7 @@ const DashboardPage = {
                     const groupName = group ? group.name : '';
 
                     html += `
-                        <div class="list-item" style="margin-bottom: 6px;">
+                        <div class="list-item" style="margin-bottom: 6px; cursor: pointer;" onclick="App.loadPage('calendar');">
                             <div style="width: 4px; height: 32px; border-radius: 2px; background: ${color}; flex-shrink: 0; margin-right: 10px;"></div>
                             <div class="list-item-content">
                                 <div class="list-item-title" style="font-size: 14px;">${ev.title}</div>
@@ -238,7 +238,7 @@ const DashboardPage = {
                         const color = subjectColors[task.subject] || '#6C5CE7';
                         const timeStr = task.dueTime || '';
                         html += `
-                        <div class="task-card" style="border-left: 4px solid ${color};">
+                        <div class="task-card" style="border-left: 4px solid ${color}; cursor: pointer;" onclick="App.loadPage('tasks');">
                             <div class="task-card-info">
                                 <div class="task-card-subject" style="color: ${color};">${task.subject || 'Sin asignatura'}</div>
                                 <div class="task-card-title">${task.title}</div>
@@ -318,7 +318,7 @@ const DashboardPage = {
                 }
 
                 html += `
-                    <div class="list-item" style="margin-bottom: 6px;">
+                    <div class="list-item" style="margin-bottom: 6px; cursor: pointer;" onclick="App.loadPage('activities');">
                         <div style="width: 4px; height: 32px; border-radius: 2px; background: ${color}; flex-shrink: 0; margin-right: 10px;"></div>
                         <div class="list-item-content">
                             <div class="list-item-title" style="font-size: 14px;">${exam.topics || exam.name || exam.subject}</div>
