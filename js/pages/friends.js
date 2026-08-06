@@ -227,9 +227,18 @@ const FriendsPage = {
         try {
             const friendIds = this.friends.map(f => f.id || f.uid);
             const sentIds = this.sentRequests.map(r => r.toUid);
-            const excludeIds = [...friendIds, ...sentIds];
+            const requestIds = this.requests.map(r => r.fromUid);
+            const excludeIds = [...friendIds, ...sentIds, ...requestIds];
+            console.log('Suggestions debug:', {
+                friends: friendIds,
+                sent: sentIds,
+                received: requestIds,
+                exclude: excludeIds
+            });
             this.suggestions = await DB.getRandomUsers(3, excludeIds);
+            console.log('Suggestions result:', this.suggestions.length, 'users');
         } catch (e) {
+            console.error('Error loading suggestions:', e);
             this.suggestions = [];
         }
     },
