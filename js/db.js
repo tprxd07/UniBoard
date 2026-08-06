@@ -577,10 +577,12 @@ const DB = {
     async getRandomUsers(count, excludeIds) {
         if (this.isDemo()) return [];
         try {
-            const snap = await db.collection('users').limit(60).get();
-            const candidates = snap.docs
-                .map(doc => ({ uid: doc.id, ...doc.data() }))
-                .filter(u => u.uid !== Auth.currentUser.uid && !excludeIds.includes(u.uid));
+            const snap = await db.collection('users').limit(500).get();
+            const allUsers = snap.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
+            const currentUid = Auth.currentUser?.uid;
+            const excludeSet = new Set([...excludeIds, currentUid]);
+            const candidates = allUsers.filter(u => !excludeSet.has(u.uid));
+            console.log(`Suggestions: ${allUsers.length} total users, ${candidates.length} candidates after exclusions`);
             const shuffled = candidates.sort(() => 0.5 - Math.random());
             return shuffled.slice(0, count);
         } catch (e) {
