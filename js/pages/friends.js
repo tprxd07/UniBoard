@@ -2,33 +2,34 @@ const FriendsPage = {
     friends: [],
     requests: [],
     sentRequests: [],
+    suggestions: [],
     searchResults: [],
     streak: 0,
+    activeTab: 'friends',
 
     render() {
         return `
         <div class="friends-stats" id="friends-stats"></div>
 
-        <div class="friends-search-bar">
-            <input type="text" id="friend-search-input" placeholder="Buscar por usuario, email o teléfono..." class="input-field" style="flex:1;">
-            <button class="btn btn-primary btn-sm" id="friend-search-btn">Buscar</button>
+        <div class="uni-life-tabs" style="margin-bottom:16px;">
+            <button class="tab active" data-tab="friends" onclick="FriendsPage.switchTab('friends',this)">Amigos</button>
+            <button class="tab" data-tab="requests" onclick="FriendsPage.switchTab('requests',this)">
+                Solicitudes ${this.requests.length > 0 ? `(${this.requests.length})` : ''}
+            </button>
         </div>
-        <div id="friends-search-results" class="friends-search-results"></div>
-
-        <div id="friends-requests-section"></div>
-
-        <div class="section-header" style="margin-top: 20px;">
-            <span class="section-title" id="friends-count-title">Mis Amigos</span>
-        </div>
-        <div id="friends-list"></div>`;
+        <div id="friends-tab-content"></div>`;
     },
 
     async init() {
-        document.getElementById('friend-search-btn').addEventListener('click', () => this.search());
-        document.getElementById('friend-search-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.search();
-        });
+        this.activeTab = 'friends';
         await this.loadData();
+    },
+
+    switchTab(tab, btn) {
+        document.querySelectorAll('.uni-life-tabs .tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        this.activeTab = tab;
+        this.renderCurrentTab();
     },
 
     async loadData() {
@@ -46,8 +47,11 @@ const FriendsPage = {
             this.streak = DB.calculateStreakFromSessions(sessions);
             await DB.updateProfile({ studyStreak: this.streak }).catch(() => {});
             this.renderStats(profile);
-            this.renderRequests();
-            this.renderFriendsList();
+
+            if (this.activeTab === 'requests') {
+                await this.loadSuggestions();
+            }
+            this.renderCurrentTab();
         } catch (e) {
             console.error('Error loading friends:', e);
         }
@@ -59,7 +63,7 @@ const FriendsPage = {
         <div class="friends-stat-card">
             <div class="friends-stat-icon">🔥</div>
             <div class="friends-stat-value">${this.streak}</div>
-            <div class="friends-stat-label">Racha de estudio</div>
+            <div class="friends-stat-label">Racha</div>
         </div>
         <div class="friends-stat-card">
             <div class="friends-stat-icon">👫</div>
@@ -71,6 +75,36 @@ const FriendsPage = {
             <div class="friends-stat-value">${this.requests.length}</div>
             <div class="friends-stat-label">Solicitudes</div>
         </div>`;
+    },
+
+    renderCurrentTab() {
+        if (this.activeTab === 'friends') {
+            this.renderFriendsTab();
+        } else {
+            this.renderRequestsTab();
+        }
+    },
+
+    // ========== AMIGOS TAB ==========
+    renderFriendsTab() {
+        const container = document.getElementById('friends-tab-content');
+        container.innerHTML = `
+        <div class="friends-search-bar">
+            <input type="text" id="friend-search-input" placeholder="Buscar por usuario, email o teléfono..." class="input-field" style="flex:1;">
+            <button class="btn btn-primary btn-sm" id="friend-search-btn">Buscar</button>
+        </div>
+        <div id="friends-search-results" class="friends-search-results"></div>
+        <div class="section-header" style="margin-top:20px;">
+            <span class="section-title">Mis Amigos (${this.friends.length})</span>
+        </div>
+        <div id="friends-list"></div>`;
+
+        document.getElementById('friend-search-btn').addEventListener('click', () => this.search());
+        document.getElementById('friend-search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.search();
+        });
+
+        this.renderFriendsList();
     },
 
     async search() {
@@ -117,7 +151,6 @@ const FriendsPage = {
                 <div class="friend-info">
                     <h4>${user.name || 'Sin nombre'}</h4>
                     ${user.username ? `<p style="color:var(--primary);font-size:12px;">@${user.username}</p>` : `<p>${user.email || ''}</p>`}
-                    ${user.phone ? `<p style="color:var(--text-secondary);font-size:11px;">📱 ${user.phone}</p>` : ''}
                 </div>
                 <div class="friend-actions">${actionBtn}</div>
             </div>`;
@@ -126,75 +159,10 @@ const FriendsPage = {
         container.innerHTML = html;
     },
 
-    async sendRequest(uid, name, email, photoURL, username) {
-        try {
-            await DB.sendFriendRequest({ uid, name, email, photoURL, username });
-            Utils.showToast('Solicitud enviada', 'success');
-            const sent = await DB.getSentRequests();
-            this.sentRequests = sent;
-            this.renderSearchResults();
-        } catch (e) {
-            Utils.showToast('Error al enviar solicitud', 'error');
-        }
-    },
-
-    renderRequests() {
-        const el = document.getElementById('friends-requests-section');
-        if (this.requests.length === 0) {
-            el.innerHTML = '';
-            return;
-        }
-        let html = `
-        <div class="section-header" style="margin-top: 20px;">
-            <span class="section-title">Solicitudes pendientes (${this.requests.length})</span>
-        </div>
-        <div class="friends-requests-list">`;
-        this.requests.forEach(req => {
-            const initial = (req.fromName || '?')[0].toUpperCase();
-            html += `
-            <div class="friend-card friend-card-request">
-                <div class="friend-avatar">${req.fromPhotoURL ? `<img src="${req.fromPhotoURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : initial}</div>
-                <div class="friend-info">
-                    <h4>${req.fromName || 'Sin nombre'}</h4>
-                    ${req.fromUsername ? `<p style="color:var(--primary);font-size:12px;">@${req.fromUsername}</p>` : `<p>${req.fromEmail || ''}</p>`}
-                </div>
-                <div class="friend-actions">
-                    <button class="btn btn-primary btn-sm" onclick="FriendsPage.acceptRequest('${req.id}')">Aceptar</button>
-                    <button class="btn btn-ghost btn-sm" onclick="FriendsPage.rejectRequest('${req.id}')">Rechazar</button>
-                </div>
-            </div>`;
-        });
-        html += '</div>';
-        el.innerHTML = html;
-    },
-
-    async acceptRequest(requestId) {
-        const req = this.requests.find(r => r.id === requestId);
-        if (!req) return;
-        try {
-            await DB.acceptFriendRequest(requestId, req);
-            Utils.showToast('¡Ahora sois amigos!', 'success');
-            await this.loadData();
-        } catch (e) {
-            Utils.showToast('Error al aceptar', 'error');
-        }
-    },
-
-    async rejectRequest(requestId) {
-        try {
-            await DB.rejectFriendRequest(requestId);
-            Utils.showToast('Solicitud rechazada', 'success');
-            await this.loadData();
-        } catch (e) {
-            Utils.showToast('Error al rechazar', 'error');
-        }
-    },
-
     renderFriendsList() {
         const container = document.getElementById('friends-list');
-        document.getElementById('friends-count-title').textContent = `Mis Amigos (${this.friends.length})`;
         if (this.friends.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👫</div><h3>Sin amigos</h3><p>Busca usuarios para añadir amigos</p></div>';
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👫</div><h3>Sin amigos</h3><p>Busca usuarios o revisa las sugerencias</p></div>';
             return;
         }
         let html = '<div class="friends-list">';
@@ -229,6 +197,175 @@ const FriendsPage = {
         container.innerHTML = html;
     },
 
+    async sendRequest(uid, name, email, photoURL, username) {
+        try {
+            await DB.sendFriendRequest({ uid, name, email, photoURL, username });
+            Utils.showToast('Solicitud enviada', 'success');
+            const sent = await DB.getSentRequests();
+            this.sentRequests = sent;
+            if (this.activeTab === 'friends') this.renderSearchResults();
+            else this.renderRequestsTab();
+        } catch (e) {
+            Utils.showToast('Error al enviar solicitud', 'error');
+        }
+    },
+
+    async cancelSentRequest(requestId) {
+        try {
+            await DB.cancelFriendRequest(requestId);
+            Utils.showToast('Solicitud cancelada', 'success');
+            const sent = await DB.getSentRequests();
+            this.sentRequests = sent;
+            this.renderRequestsTab();
+        } catch (e) {
+            Utils.showToast('Error al cancelar', 'error');
+        }
+    },
+
+    // ========== SOLICITUDES TAB ==========
+    async loadSuggestions() {
+        try {
+            const friendIds = this.friends.map(f => f.id || f.uid);
+            const sentIds = this.sentRequests.map(r => r.toUid);
+            const excludeIds = [...friendIds, ...sentIds];
+            this.suggestions = await DB.getRandomUsers(3, excludeIds);
+        } catch (e) {
+            this.suggestions = [];
+        }
+    },
+
+    renderRequestsTab() {
+        const container = document.getElementById('friends-tab-content');
+        let html = '';
+
+        // Sugerencias
+        html += `<div class="section-header"><span class="section-title">Sugerencias de amistad</span></div>`;
+        if (this.suggestions.length === 0) {
+            html += `<p style="text-align:center;color:var(--text-secondary);padding:16px;font-size:13px;">Cargando sugerencias...</p>`;
+        } else {
+            html += '<div class="suggestions-grid">';
+            const sentIds = this.sentRequests.map(r => r.toUid);
+            this.suggestions.forEach(user => {
+                const initial = (user.name || user.email || '?')[0].toUpperCase();
+                const requestSent = sentIds.includes(user.uid);
+                html += `
+                <div class="suggestion-card" onclick="FriendsPage.showSuggestionProfile('${user.uid}','${this.esc(user.name)}','${this.esc(user.email || '')}','${this.esc(user.photoURL || '')}','${this.esc(user.username || '')}')">
+                    <div class="suggestion-avatar">${user.photoURL ? `<img src="${user.photoURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : initial}</div>
+                    <div class="suggestion-name">${user.name || 'Sin nombre'}</div>
+                    ${user.username ? `<div class="suggestion-username">@${user.username}</div>` : ''}
+                    <button class="btn ${requestSent ? 'btn-ghost' : 'btn-primary'} btn-sm suggestion-btn"
+                        onclick="event.stopPropagation(); ${requestSent ? `FriendsPage.cancelSuggestion('${user.uid}','${this.esc(user.name)}','${this.esc(user.email || '')}','${this.esc(user.photoURL || '')}','${this.esc(user.username || '')}')` : `FriendsPage.sendSuggestion('${user.uid}','${this.esc(user.name)}','${this.esc(user.email || '')}','${this.esc(user.photoURL || '')}','${this.esc(user.username || '')}')`}">
+                        ${requestSent ? 'Solicitud enviada' : 'Enviar solicitud'}
+                    </button>
+                </div>`;
+            });
+            html += '</div>';
+        }
+
+        // Solicitudes recibidas
+        if (this.requests.length > 0) {
+            html += `<div class="section-header" style="margin-top:20px;"><span class="section-title">Solicitudes recibidas (${this.requests.length})</span></div>`;
+            html += '<div class="requests-list">';
+            this.requests.forEach(req => {
+                const initial = (req.fromName || '?')[0].toUpperCase();
+                html += `
+                <div class="request-card">
+                    <div class="request-avatar">${req.fromPhotoURL ? `<img src="${req.fromPhotoURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : initial}</div>
+                    <div class="request-info">
+                        <div class="request-name">${req.fromName || 'Sin nombre'}</div>
+                        ${req.fromUsername ? `<div class="request-username">@${req.fromUsername}</div>` : ''}
+                    </div>
+                    <div class="request-actions">
+                        <button class="btn btn-primary btn-sm" onclick="FriendsPage.acceptRequest('${req.id}')">Aceptar</button>
+                        <button class="btn btn-ghost btn-sm" onclick="FriendsPage.rejectRequest('${req.id}')">Rechazar</button>
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+        }
+
+        // Solicitudes enviadas
+        const outgoingSent = this.sentRequests.filter(r => !this.suggestions.some(s => s.uid === r.toUid));
+        if (this.sentRequests.length > 0) {
+            html += `<div class="section-header" style="margin-top:20px;"><span class="section-title">Solicitudes enviadas (${this.sentRequests.length})</span></div>`;
+            html += '<div class="requests-list">';
+            this.sentRequests.forEach(req => {
+                const name = req.toName || req.toEmail || 'Usuario';
+                const initial = name[0].toUpperCase();
+                html += `
+                <div class="request-card">
+                    <div class="request-avatar">${initial}</div>
+                    <div class="request-info">
+                        <div class="request-name">${name}</div>
+                    </div>
+                    <div class="request-actions">
+                        <button class="btn btn-ghost btn-sm" onclick="FriendsPage.cancelSentRequest('${req.id}')">Cancelar</button>
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+        }
+
+        if (this.requests.length === 0 && this.sentRequests.length === 0 && this.suggestions.length > 0) {
+            // Suggestions were already shown above
+        } else if (this.requests.length === 0 && this.sentRequests.length === 0) {
+            html += '<div class="empty-state"><div class="empty-state-icon">📭</div><h3>Sin solicitudes</h3><p>No hay solicitudes pendientes</p></div>';
+        }
+
+        container.innerHTML = html;
+    },
+
+    showSuggestionProfile(uid, name, email, photoURL, username) {
+        const initial = (name || '?')[0].toUpperCase();
+        const html = `
+        <div style="text-align:center;">
+            <div style="width:80px;height:80px;border-radius:50%;margin:0 auto 12px;background:var(--primary-bg);display:flex;align-items:center;justify-content:center;font-size:32px;overflow:hidden;">
+                ${photoURL ? `<img src="${photoURL}" style="width:100%;height:100%;object-fit:cover;">` : initial}
+            </div>
+            <h3 style="margin:0 0 4px;">${name || 'Sin nombre'}</h3>
+            ${username ? `<p style="color:var(--primary);font-size:13px;margin:0;">@${username}</p>` : ''}
+            ${email ? `<p style="color:var(--text-secondary);font-size:12px;margin:4px 0 0;">${email}</p>` : ''}
+        </div>`;
+        Utils.showModal('Perfil', html);
+    },
+
+    async sendSuggestion(uid, name, email, photoURL, username) {
+        await this.sendRequest(uid, name, email, photoURL, username);
+        await this.loadSuggestions();
+        this.renderRequestsTab();
+    },
+
+    async cancelSuggestion(uid, name, email, photoURL, username) {
+        const req = this.sentRequests.find(r => r.toUid === uid);
+        if (req) {
+            await this.cancelSentRequest(req.id);
+            await this.loadSuggestions();
+        }
+    },
+
+    // ========== COMMON ==========
+    async acceptRequest(requestId) {
+        const req = this.requests.find(r => r.id === requestId);
+        if (!req) return;
+        try {
+            await DB.acceptFriendRequest(requestId, req);
+            Utils.showToast('¡Ahora sois amigos!', 'success');
+            await this.loadData();
+        } catch (e) {
+            Utils.showToast('Error al aceptar', 'error');
+        }
+    },
+
+    async rejectRequest(requestId) {
+        try {
+            await DB.rejectFriendRequest(requestId);
+            Utils.showToast('Solicitud rechazada', 'success');
+            await this.loadData();
+        } catch (e) {
+            Utils.showToast('Error al rechazar', 'error');
+        }
+    },
+
     showFriendProfile(friendId) {
         const friend = this.friends.find(f => (f.id || f.uid) === friendId);
         if (!friend) return;
@@ -240,27 +377,16 @@ const FriendsPage = {
             </div>
             <h3 style="text-align:center;margin:8px 0 2px;">${friend.name || 'Sin nombre'}</h3>
             <p style="text-align:center;color:var(--text-secondary);font-size:13px;margin:0;">${friend.email || ''}</p>
-
             <div class="friend-profile-stats" style="display:flex;justify-content:center;gap:24px;margin:16px 0;">
                 <div style="text-align:center;">
                     <div style="font-size:20px;font-weight:700;color:var(--primary);">${friend.studyStreak || 0}</div>
                     <div style="font-size:11px;color:var(--text-secondary);">🔥 Racha</div>
                 </div>
             </div>
-
             <div class="friend-profile-fields">
-                <div class="form-group">
-                    <label>Mote</label>
-                    <input type="text" id="fp-nickname" value="${friend.nickname || ''}" placeholder="Apodo para este amigo">
-                </div>
-                <div class="form-group">
-                    <label>Nota</label>
-                    <input type="text" id="fp-note" value="${friend.note || ''}" placeholder="Ej: Amigo del instituto">
-                </div>
-                <div class="form-group">
-                    <label>Teléfono</label>
-                    <input type="tel" id="fp-phone" value="${friend.phone || ''}" placeholder="Opcional">
-                </div>
+                <div class="form-group"><label>Mote</label><input type="text" id="fp-nickname" value="${friend.nickname || ''}" placeholder="Apodo para este amigo"></div>
+                <div class="form-group"><label>Nota</label><input type="text" id="fp-note" value="${friend.note || ''}" placeholder="Ej: Amigo del instituto"></div>
+                <div class="form-group"><label>Teléfono</label><input type="tel" id="fp-phone" value="${friend.phone || ''}" placeholder="Opcional"></div>
             </div>
         </div>`;
         Utils.showModal('Perfil de amigo', html, async () => {

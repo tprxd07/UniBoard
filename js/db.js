@@ -574,6 +574,21 @@ const DB = {
         return { uid: doc.id, ...doc.data() };
     },
 
+    async getRandomUsers(count, excludeIds) {
+        if (this.isDemo()) return [];
+        try {
+            const snap = await db.collection('users').limit(60).get();
+            const candidates = snap.docs
+                .map(doc => ({ uid: doc.id, ...doc.data() }))
+                .filter(u => u.uid !== Auth.currentUser.uid && !excludeIds.includes(u.uid));
+            const shuffled = candidates.sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        } catch (e) {
+            console.error('Error getting random users:', e);
+            return [];
+        }
+    },
+
     async checkUsernameAvailable(username, currentUid) {
         if (!username) return false;
         const q = username.toLowerCase().trim();
