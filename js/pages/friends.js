@@ -245,10 +245,53 @@ const FriendsPage = {
 
     renderRequestsTab() {
         const container = document.getElementById('friends-tab-content');
-        let html = '';
+        let html = '<div class="requests-scroll">';
 
-        // Sugerencias
-        html += `<div class="section-header"><span class="section-title">Sugerencias de amistad</span></div>`;
+        // 1. Solicitudes recibidas
+        if (this.requests.length > 0) {
+            html += `<div class="section-header"><span class="section-title">Solicitudes recibidas (${this.requests.length})</span></div>`;
+            html += '<div class="requests-list">';
+            this.requests.forEach(req => {
+                const initial = (req.fromName || '?')[0].toUpperCase();
+                html += `
+                <div class="request-card">
+                    <div class="request-avatar">${req.fromPhotoURL ? `<img src="${req.fromPhotoURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : initial}</div>
+                    <div class="request-info">
+                        <div class="request-name">${req.fromName || 'Sin nombre'}</div>
+                        ${req.fromUsername ? `<div class="request-username">@${req.fromUsername}</div>` : ''}
+                    </div>
+                    <div class="request-actions">
+                        <button class="btn btn-primary btn-sm" onclick="FriendsPage.acceptRequest('${req.id}')">Aceptar</button>
+                        <button class="btn btn-ghost btn-sm" onclick="FriendsPage.rejectRequest('${req.id}')">Rechazar</button>
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+        }
+
+        // 2. Solicitudes enviadas
+        if (this.sentRequests.length > 0) {
+            html += `<div class="section-header"${this.requests.length === 0 ? '' : ' style="margin-top:20px;"'}><span class="section-title">Solicitudes enviadas (${this.sentRequests.length})</span></div>`;
+            html += '<div class="requests-list">';
+            this.sentRequests.forEach(req => {
+                const name = req.toName || req.toEmail || 'Usuario';
+                const initial = name[0].toUpperCase();
+                html += `
+                <div class="request-card">
+                    <div class="request-avatar">${initial}</div>
+                    <div class="request-info">
+                        <div class="request-name">${name}</div>
+                    </div>
+                    <div class="request-actions">
+                        <button class="btn btn-ghost btn-sm" onclick="FriendsPage.cancelSentRequest('${req.id}')">Cancelar</button>
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+        }
+
+        // 3. Sugerencias
+        html += `<div class="section-header"${(this.requests.length > 0 || this.sentRequests.length > 0) ? ' style="margin-top:20px;"' : ''}><span class="section-title">Sugerencias de amistad</span></div>`;
         if (this.suggestions.length === 0) {
             html += `
             <div class="empty-state" style="padding:32px 16px;">
@@ -277,56 +320,12 @@ const FriendsPage = {
             html += '</div>';
         }
 
-        // Solicitudes recibidas
-        if (this.requests.length > 0) {
-            html += `<div class="section-header" style="margin-top:20px;"><span class="section-title">Solicitudes recibidas (${this.requests.length})</span></div>`;
-            html += '<div class="requests-list">';
-            this.requests.forEach(req => {
-                const initial = (req.fromName || '?')[0].toUpperCase();
-                html += `
-                <div class="request-card">
-                    <div class="request-avatar">${req.fromPhotoURL ? `<img src="${req.fromPhotoURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : initial}</div>
-                    <div class="request-info">
-                        <div class="request-name">${req.fromName || 'Sin nombre'}</div>
-                        ${req.fromUsername ? `<div class="request-username">@${req.fromUsername}</div>` : ''}
-                    </div>
-                    <div class="request-actions">
-                        <button class="btn btn-primary btn-sm" onclick="FriendsPage.acceptRequest('${req.id}')">Aceptar</button>
-                        <button class="btn btn-ghost btn-sm" onclick="FriendsPage.rejectRequest('${req.id}')">Rechazar</button>
-                    </div>
-                </div>`;
-            });
-            html += '</div>';
-        }
-
-        // Solicitudes enviadas
-        const outgoingSent = this.sentRequests.filter(r => !this.suggestions.some(s => s.uid === r.toUid));
-        if (this.sentRequests.length > 0) {
-            html += `<div class="section-header" style="margin-top:20px;"><span class="section-title">Solicitudes enviadas (${this.sentRequests.length})</span></div>`;
-            html += '<div class="requests-list">';
-            this.sentRequests.forEach(req => {
-                const name = req.toName || req.toEmail || 'Usuario';
-                const initial = name[0].toUpperCase();
-                html += `
-                <div class="request-card">
-                    <div class="request-avatar">${initial}</div>
-                    <div class="request-info">
-                        <div class="request-name">${name}</div>
-                    </div>
-                    <div class="request-actions">
-                        <button class="btn btn-ghost btn-sm" onclick="FriendsPage.cancelSentRequest('${req.id}')">Cancelar</button>
-                    </div>
-                </div>`;
-            });
-            html += '</div>';
-        }
-
-        if (this.requests.length === 0 && this.sentRequests.length === 0 && this.suggestions.length > 0) {
-            // Suggestions were already shown above
-        } else if (this.requests.length === 0 && this.sentRequests.length === 0) {
+        // Empty state si no hay nada
+        if (this.requests.length === 0 && this.sentRequests.length === 0 && this.suggestions.length === 0) {
             html += '<div class="empty-state"><div class="empty-state-icon">' + Icons.inboxEmpty + '</div><h3>Sin solicitudes</h3><p>No hay solicitudes pendientes</p></div>';
         }
 
+        html += '</div>';
         container.innerHTML = html;
     },
 
