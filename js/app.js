@@ -14,6 +14,7 @@ const App = {
         this.setupSidebar();
         this.setupCropControls();
         this.loadSidebarAvatar();
+        this.updateNavIcons();
         this.startClock();
         this.loadPage('dashboard');
         this.loadSettings();
@@ -35,6 +36,30 @@ const App = {
             'uni-life': UniLifePage,
             profile: ProfilePage
         };
+    },
+
+    updateNavIcons() {
+        const navIcons = {
+            dashboard: 'home',
+            calendar: 'calendar',
+            subjects: 'book',
+            activities: 'clipboard',
+            study: 'bookOpen',
+            documents: 'file',
+            'uni-life': 'backpack',
+            contacts: 'users',
+            friends: 'userPlus'
+        };
+        Object.entries(navIcons).forEach(([page, icon]) => {
+            const navItem = document.querySelector(`.nav-item[data-page="${page}"] .nav-icon`);
+            if (navItem) navItem.innerHTML = Icons[icon];
+        });
+        const logoSm = document.querySelector('.logo-icon-sm');
+        if (logoSm) logoSm.innerHTML = Icons.graduationCap;
+        const logoLg = document.querySelector('.logo-icon');
+        if (logoLg) logoLg.innerHTML = Icons.graduationCap;
+        const userAvatar = document.getElementById('user-avatar');
+        if (userAvatar && !userAvatar.querySelector('img')) userAvatar.innerHTML = Icons.user;
     },
 
     setupNavigation() {

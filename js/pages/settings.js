@@ -41,6 +41,17 @@ const SettingsPage = {
 
             <div class="settings-item">
                 <div class="settings-item-info">
+                    <h4>Iconos</h4>
+                    <p>Cambia entre iconos SVG y emojis</p>
+                </div>
+                <div class="pill-selector">
+                    <button class="pill" data-icon-mode="icons">${Icons.home} Iconos</button>
+                    <button class="pill" data-icon-mode="emojis">🎓 Emojis</button>
+                </div>
+            </div>
+
+            <div class="settings-item">
+                <div class="settings-item-info">
                     <h4>Color de acento</h4>
                     <p>Color principal de la app</p>
                 </div>
@@ -162,6 +173,22 @@ const SettingsPage = {
             });
         });
 
+        // Icon mode pills
+        document.querySelectorAll('.pill[data-icon-mode]').forEach(pill => {
+            pill.addEventListener('click', () => {
+                document.querySelectorAll('.pill[data-icon-mode]').forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                const mode = pill.dataset.iconMode;
+                Icons.setMode(mode);
+                this.saveSetting('iconMode', mode);
+                this.reloadCurrentPage();
+            });
+        });
+
+        // Set initial icon mode active state
+        const currentIconMode = Icons.getMode();
+        document.querySelector(`.pill[data-icon-mode="${currentIconMode}"]`)?.classList.add('active');
+
         // Accent color presets
         document.querySelectorAll('.color-option[data-color]:not(.color-option-bg):not(.color-option-custom)').forEach(opt => {
             opt.addEventListener('click', () => {
@@ -266,6 +293,17 @@ const SettingsPage = {
         return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
     },
 
+    reloadCurrentPage() {
+        const pageName = App.currentPage || 'dashboard';
+        const page = App.pages?.[pageName];
+        if (page && page.render) {
+            const container = document.getElementById('page-content');
+            container.innerHTML = page.render();
+            if (page.init) page.init();
+        }
+        App.updateNavIcons();
+    },
+
     async loadSettings() {
         try {
             const settings = await DB.getSettings();
@@ -275,6 +313,10 @@ const SettingsPage = {
                 document.documentElement.dataset.theme = settings.theme;
                 document.querySelector(`.pill[data-theme="${settings.theme}"]`)?.classList.add('active');
             }
+
+            // Apply icon mode
+            const iconMode = settings.iconMode || localStorage.getItem('iconMode') || 'icons';
+            document.querySelector(`.pill[data-icon-mode="${iconMode}"]`)?.classList.add('active');
 
             // Apply accent color
             if (settings.accentColor) {
