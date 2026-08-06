@@ -424,7 +424,15 @@ const SubjectsPage = {
                 <label>Número de período</label>
                 <select id="subj-period-number">
                     <option value="">—</option>
-                    ${[1,2,3,4,5,6,7,8].map(n => `<option value="${n}" ${s.periodNumber == n ? 'selected' : ''}>${n}</option>`).join('')}
+                    ${(() => {
+                        const type = document.getElementById('subj-period-type')?.value || s.periodType;
+                        if (type === 'trimestre') {
+                            return ['Primero','Segundo','Tercero'].map((label, i) => `<option value="${i+1}" ${s.periodNumber == i+1 ? 'selected' : ''}>${label}</option>`).join('');
+                        } else if (type === 'cuatrimestre') {
+                            return ['Primero','Segundo'].map((label, i) => `<option value="${i+1}" ${s.periodNumber == i+1 ? 'selected' : ''}>${label}</option>`).join('');
+                        }
+                        return [1,2,3,4,5,6,7,8].map(n => `<option value="${n}" ${s.periodNumber == n ? 'selected' : ''}>${n}</option>`).join('');
+                    })()}
                 </select>
             </div>
             <div class="form-group">
@@ -484,6 +492,17 @@ const SubjectsPage = {
 
         document.getElementById('subj-period-type').addEventListener('change', function() {
             document.getElementById('period-number-group').style.display = this.value ? '' : 'none';
+            const select = document.getElementById('subj-period-number');
+            const current = select.value;
+            let options = '<option value="">—</option>';
+            if (this.value === 'trimestre') {
+                options += ['Primero','Segundo','Tercero'].map((label, i) => `<option value="${i+1}" ${current == i+1 ? 'selected' : ''}>${label}</option>`).join('');
+            } else if (this.value === 'cuatrimestre') {
+                options += ['Primero','Segundo'].map((label, i) => `<option value="${i+1}" ${current == i+1 ? 'selected' : ''}>${label}</option>`).join('');
+            } else {
+                options += [1,2,3,4,5,6,7,8].map(n => `<option value="${n}" ${current == n ? 'selected' : ''}>${n}</option>`).join('');
+            }
+            select.innerHTML = options;
         });
         document.getElementById('subj-color-picker').addEventListener('input', () => {
             document.querySelectorAll('#subj-colors .color-option').forEach(o => o.classList.remove('active'));
