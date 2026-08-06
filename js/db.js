@@ -549,18 +549,52 @@ const DB = {
                 results.set(doc.id, { uid: doc.id, name: d.name || '', email: d.email || '', photoURL: d.photoURL || '', username: d.username || '', phone: d.phone || '' });
             }
         };
-        const usernameSnap = await db.collection('users')
-            .where('usernameLower', '>=', q).where('usernameLower', '<=', q + '\uf8ff')
-            .limit(10).get();
-        usernameSnap.docs.forEach(addResult);
-        const emailSnap = await db.collection('users')
-            .where('email', '>=', q).where('email', '<=', q + '\uf8ff')
-            .limit(10).get();
-        emailSnap.docs.forEach(addResult);
-        const phoneSnap = await db.collection('users')
-            .where('phone', '>=', q).where('phone', '<=', q + '\uf8ff')
-            .limit(10).get();
-        phoneSnap.docs.forEach(addResult);
+        let foundViaQuery = false;
+        try {
+            const usernameSnap = await db.collection('users')
+                .where('usernameLower', '>=', q).where('usernameLower', '<=', q + '\uf8ff')
+                .limit(10).get();
+            usernameSnap.docs.forEach(addResult);
+            if (usernameSnap.docs.length > 0) foundViaQuery = true;
+        } catch (e) {
+            console.warn('Username search failed:', e);
+        }
+        try {
+            const emailSnap = await db.collection('users')
+                .where('email', '>=', q).where('email', '<=', q + '\uf8ff')
+                .limit(10).get();
+            emailSnap.docs.forEach(addResult);
+            if (emailSnap.docs.length > 0) foundViaQuery = true;
+        } catch (e) {
+            console.warn('Email search failed:', e);
+        }
+        try {
+            const nameSnap = await db.collection('users')
+                .where('name', '>=', q).where('name', '<=', q + '\uf8ff')
+                .limit(10).get();
+            nameSnap.docs.forEach(addResult);
+            if (nameSnap.docs.length > 0) foundViaQuery = true;
+        } catch (e) {
+            console.warn('Name search failed:', e);
+        }
+        // Fallback: fetch all users and filter client-side
+        if (!foundViaQuery && results.size === 0) {
+            console.log('Falling back to full scan for search:', query);
+            try {
+                const allSnap = await db.collection('users').limit(200).get();
+                allSnap.docs.forEach(doc => {
+                    if (doc.id === Auth.currentUser.uid || results.has(doc.id)) return;
+                    const d = doc.data();
+                    const searchStr = `${d.name || ''} ${d.email || ''} ${d.username || ''} ${d.usernameLower || ''}`.toLowerCase();
+                    if (searchStr.includes(q)) {
+                        results.set(doc.id, { uid: doc.id, name: d.name || '', email: d.email || '', photoURL: d.photoURL || '', username: d.username || '', phone: d.phone || '' });
+                    }
+                });
+            } catch (e) {
+                console.error('Fallback search failed:', e);
+            }
+        }
+        console.log('Search results for "' + query + '":', results.size, 'users found');
         return Array.from(results.values());
     },
 
@@ -582,7 +616,7 @@ const DB = {
             const currentUid = Auth.currentUser?.uid;
             const excludeSet = new Set([...excludeIds, currentUid]);
             const candidates = allUsers.filter(u => !excludeSet.has(u.uid));
-            console.log(`Suggestions: ${allUsers.length} total users, ${candidates.length} candidates after exclusions`);
+            console.log(`Suggestions: ${allUsers.length} total, ${candidates.length} candidates, excluded: [...excludeIds]`);
             const shuffled = candidates.sort(() => 0.5 - Math.random());
             return shuffled.slice(0, count);
         } catch (e) {
