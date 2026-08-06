@@ -248,8 +248,14 @@ const FriendsPage = {
         let html = '<div class="requests-scroll">';
 
         // 1. Solicitudes recibidas
-        if (this.requests.length > 0) {
-            html += `<div class="section-header"><span class="section-title">Solicitudes recibidas (${this.requests.length})</span></div>`;
+        html += `<div class="section-header collapsible" onclick="FriendsPage.toggleSection(this)">
+            <span class="section-title">Solicitudes recibidas (${this.requests.length})</span>
+            <span class="section-chevron">${Icons.chevronDown}</span>
+        </div>`;
+        html += '<div class="section-body' + (this.requests.length > 0 ? ' open' : '') + '">';
+        if (this.requests.length === 0) {
+            html += '<p class="section-empty">No hay solicitudes recibidas</p>';
+        } else {
             html += '<div class="requests-list">';
             this.requests.forEach(req => {
                 const initial = (req.fromName || '?')[0].toUpperCase();
@@ -268,10 +274,17 @@ const FriendsPage = {
             });
             html += '</div>';
         }
+        html += '</div>';
 
         // 2. Solicitudes enviadas
-        if (this.sentRequests.length > 0) {
-            html += `<div class="section-header"${this.requests.length === 0 ? '' : ' style="margin-top:20px;"'}><span class="section-title">Solicitudes enviadas (${this.sentRequests.length})</span></div>`;
+        html += `<div class="section-header${(this.requests.length > 0 || this.sentRequests.length > 0) ? '' : ''} collapsible" onclick="FriendsPage.toggleSection(this)">
+            <span class="section-title">Solicitudes enviadas (${this.sentRequests.length})</span>
+            <span class="section-chevron">${Icons.chevronDown}</span>
+        </div>`;
+        html += '<div class="section-body">';
+        if (this.sentRequests.length === 0) {
+            html += '<p class="section-empty">No hay solicitudes enviadas</p>';
+        } else {
             html += '<div class="requests-list">';
             this.sentRequests.forEach(req => {
                 const name = req.toName || req.toEmail || 'Usuario';
@@ -289,9 +302,15 @@ const FriendsPage = {
             });
             html += '</div>';
         }
+        html += '</div>';
 
         // 3. Sugerencias
-        html += `<div class="section-header"${(this.requests.length > 0 || this.sentRequests.length > 0) ? ' style="margin-top:20px;"' : ''}><span class="section-title">Sugerencias de amistad</span></div>`;
+        const hasRequests = this.requests.length > 0 || this.sentRequests.length > 0;
+        html += `<div class="section-header${hasRequests ? '' : ''} collapsible" onclick="FriendsPage.toggleSection(this)">
+            <span class="section-title">Sugerencias de amistad</span>
+            <span class="section-chevron">${Icons.chevronDown}</span>
+        </div>`;
+        html += '<div class="section-body' + (this.suggestions.length > 0 ? ' open' : '') + '">';
         if (this.suggestions.length === 0) {
             html += `
             <div class="empty-state" style="padding:32px 16px;">
@@ -319,6 +338,7 @@ const FriendsPage = {
             });
             html += '</div>';
         }
+        html += '</div>';
 
         // Empty state si no hay nada
         if (this.requests.length === 0 && this.sentRequests.length === 0 && this.suggestions.length === 0) {
@@ -327,6 +347,18 @@ const FriendsPage = {
 
         html += '</div>';
         container.innerHTML = html;
+    },
+
+    toggleSection(header) {
+        const body = header.nextElementSibling;
+        const chevron = header.querySelector('.section-chevron');
+        if (body.classList.contains('open')) {
+            body.classList.remove('open');
+            chevron.classList.remove('rotated');
+        } else {
+            body.classList.add('open');
+            chevron.classList.add('rotated');
+        }
     },
 
     showSuggestionProfile(uid, name, email, photoURL, username) {
