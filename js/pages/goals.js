@@ -45,7 +45,7 @@ const GoalsPage = {
 
         if (tab === 'goals') {
             if (this.goals.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎯</div><h3>Sin objetivos</h3><p>Crea tu primer objetivo semanal</p></div>';
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.target + '</div><h3>Sin objetivos</h3><p>Crea tu primer objetivo semanal</p></div>';
                 return;
             }
 
@@ -55,7 +55,7 @@ const GoalsPage = {
                         <span class="goal-title">${goal.title}</span>
                         <div style="display: flex; gap: 6px;">
                             <span class="badge badge-${goal.completed ? 'success' : 'primary'}">${goal.completed ? 'Completado' : 'En progreso'}</span>
-                            <button class="btn-icon" style="font-size: 14px;" onclick="GoalsPage.deleteGoal('${goal.id}')">🗑️</button>
+                            <button class="btn-icon" style="font-size: 14px;" onclick="GoalsPage.deleteGoal('${goal.id}')">${Icons.trash}</button>
                         </div>
                     </div>
                     ${goal.description ? `<p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">${goal.description}</p>` : ''}

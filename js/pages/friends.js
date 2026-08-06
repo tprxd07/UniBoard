@@ -61,17 +61,17 @@ const FriendsPage = {
         const el = document.getElementById('friends-stats');
         el.innerHTML = `
         <div class="friends-stat-card">
-            <div class="friends-stat-icon">🔥</div>
+            <div class="friends-stat-icon">${Icons.fire}</div>
             <div class="friends-stat-value">${this.streak}</div>
             <div class="friends-stat-label">Racha</div>
         </div>
         <div class="friends-stat-card">
-            <div class="friends-stat-icon">👫</div>
+            <div class="friends-stat-icon">${Icons.userPlus}</div>
             <div class="friends-stat-value">${this.friends.length}</div>
             <div class="friends-stat-label">Amigos</div>
         </div>
         <div class="friends-stat-card">
-            <div class="friends-stat-icon">📬</div>
+            <div class="friends-stat-icon">${Icons.inbox}</div>
             <div class="friends-stat-value">${this.requests.length}</div>
             <div class="friends-stat-label">Solicitudes</div>
         </div>`;
@@ -162,7 +162,7 @@ const FriendsPage = {
     renderFriendsList() {
         const container = document.getElementById('friends-list');
         if (this.friends.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👫</div><h3>Sin amigos</h3><p>Busca usuarios o revisa las sugerencias</p></div>';
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.userPlus + '</div><h3>Sin amigos</h3><p>Busca usuarios o revisa las sugerencias</p></div>';
             return;
         }
         let html = '<div class="friends-list">';
@@ -180,7 +180,7 @@ const FriendsPage = {
                     ${friend.username ? `<p class="friend-email" style="color:var(--primary);">@${friend.username}</p>` : `<p class="friend-email">${friend.email || ''}</p>`}
                 </div>
                 <div class="friend-streak ${fireClass}">
-                    <span class="friend-streak-icon">🔥</span>
+                    <span class="friend-streak-icon">${Icons.fire}</span>
                     <span class="friend-streak-num">${streak}</span>
                 </div>
                 <div class="friend-actions">
@@ -243,7 +243,7 @@ const FriendsPage = {
         if (this.suggestions.length === 0) {
             html += `
             <div class="empty-state" style="padding:32px 16px;">
-                <div class="empty-state-icon">🔍</div>
+                <div class="empty-state-icon">${Icons.search}</div>
                 <h3>Esto está muy vacío...</h3>
                 <p>¡Invita a más personas!</p>
                 <button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="FriendsPage.copyInviteLink()">Compartir enlace de registro</button>
@@ -315,7 +315,7 @@ const FriendsPage = {
         if (this.requests.length === 0 && this.sentRequests.length === 0 && this.suggestions.length > 0) {
             // Suggestions were already shown above
         } else if (this.requests.length === 0 && this.sentRequests.length === 0) {
-            html += '<div class="empty-state"><div class="empty-state-icon">📭</div><h3>Sin solicitudes</h3><p>No hay solicitudes pendientes</p></div>';
+            html += '<div class="empty-state"><div class="empty-state-icon">' + Icons.inboxEmpty + '</div><h3>Sin solicitudes</h3><p>No hay solicitudes pendientes</p></div>';
         }
 
         container.innerHTML = html;
@@ -386,7 +386,7 @@ const FriendsPage = {
             <div class="friend-profile-stats" style="display:flex;justify-content:center;gap:24px;margin:16px 0;">
                 <div style="text-align:center;">
                     <div style="font-size:20px;font-weight:700;color:var(--primary);">${friend.studyStreak || 0}</div>
-                    <div style="font-size:11px;color:var(--text-secondary);">🔥 Racha</div>
+                    <div style="font-size:11px;color:var(--text-secondary);">${Icons.fire} Racha</div>
                 </div>
             </div>
             <div class="friend-profile-fields">

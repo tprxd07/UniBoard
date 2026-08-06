@@ -87,7 +87,7 @@ const ActivitiesPage = {
         if (this.filter === 'completed') filtered = filtered.filter(t => t.completed);
 
         if (filtered.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div><h3>Sin tareas</h3><p>Añade tu primera tarea</p></div>';
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.check + '</div><h3>Sin tareas</h3><p>Añade tu primera tarea</p></div>';
             return;
         }
 
@@ -125,7 +125,7 @@ const ActivitiesPage = {
                         </div>
                         <div class="task-card-actions">
                             <button class="btn-icon" onclick="ActivitiesPage.showEditTaskModal('${task.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
-                            <button class="btn-icon" onclick="ActivitiesPage.deleteTask('${task.id}')">🗑️</button>
+                            <button class="btn-icon" onclick="ActivitiesPage.deleteTask('${task.id}')">${Icons.trash}</button>
                         </div>
                     </div>`;
                 });
@@ -315,7 +315,7 @@ const ActivitiesPage = {
     renderExams() {
         const container = document.getElementById('exams-list');
         if (this.exams.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><h3>Sin exámenes</h3><p>Añade tu primer examen</p></div>';
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.edit + '</div><h3>Sin exámenes</h3><p>Añade tu primer examen</p></div>';
             return;
         }
         const sorted = [...this.exams].sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -326,7 +326,7 @@ const ActivitiesPage = {
             return `
             <div class="task-card" style="${isPast ? 'opacity: 0.5;' : ''} border-left: 4px solid ${color};">
                 <div class="task-card-top">
-                    <div style="font-size:20px;flex-shrink:0;">📝</div>
+                    <div style="font-size:20px;flex-shrink:0;">${Icons.edit}</div>
                     <div class="task-card-info">
                         <div class="task-card-subject" style="color: ${color};">${exam.subject || ''}</div>
                         <div class="task-card-title">${exam.topics || exam.name || 'Examen'}</div>
@@ -337,7 +337,7 @@ const ActivitiesPage = {
                 <div class="task-card-actions">
                     ${!isPast ? `<span class="badge badge-primary" style="font-size:11px;">${days}d</span>` : '<span class="badge" style="font-size:11px;background:var(--border);">Finalizado</span>'}
                     <button class="btn-icon" onclick="ActivitiesPage.showEditExamModal('${exam.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
-                    <button class="btn-icon" onclick="ActivitiesPage.deleteExam('${exam.id}')">🗑️</button>
+                    <button class="btn-icon" onclick="ActivitiesPage.deleteExam('${exam.id}')">${Icons.trash}</button>
                 </div>
             </div>`;
         }).join('');

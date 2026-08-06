@@ -80,22 +80,22 @@ const UniLifePage = {
         container.innerHTML = `
         <div class="uni-overview-stats">
             <div class="uni-stat-card">
-                <div class="uni-stat-icon">🎓</div>
+                <div class="uni-stat-icon">${Icons.graduationCap}</div>
                 <div class="uni-stat-value">${saved.approvedCredits || 0}</div>
                 <div class="uni-stat-label">Créditos</div>
             </div>
             <div class="uni-stat-card">
-                <div class="uni-stat-icon">📊</div>
+                <div class="uni-stat-icon">${Icons.pieChart}</div>
                 <div class="uni-stat-value">${pct}%</div>
                 <div class="uni-stat-label">Grado</div>
             </div>
             <div class="uni-stat-card">
-                <div class="uni-stat-icon">📈</div>
+                <div class="uni-stat-icon">${Icons.trendUp}</div>
                 <div class="uni-stat-value" style="color:${gpaColor}">${gpaDisplay}</div>
                 <div class="uni-stat-label">Nota media</div>
             </div>
             <div class="uni-stat-card">
-                <div class="uni-stat-icon">🎯</div>
+                <div class="uni-stat-icon">${Icons.target}</div>
                 <div class="uni-stat-value">${goalsDone}/${goalsTotal}</div>
                 <div class="uni-stat-label">Metas</div>
             </div>
@@ -104,7 +104,7 @@ const UniLifePage = {
         <div class="grid-2">
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">🎓 Mi Universidad</span>
+                    <span class="card-title">${Icons.graduationCap} Mi Universidad</span>
                 </div>
                 <div class="form-group">
                     <label>Universidad</label>
@@ -129,28 +129,28 @@ const UniLifePage = {
 
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">🔗 Enlaces útiles</span>
+                    <span class="card-title">${Icons.link} Enlaces útiles</span>
                 </div>
                 <div class="list-item" onclick="window.open('https://www.google.com', '_blank')">
-                    <div class="list-item-icon">🌐</div>
+                    <div class="list-item-icon">${Icons.globe}</div>
                     <div class="list-item-content">
                         <div class="list-item-title">Web de la universidad</div>
                     </div>
                 </div>
                 <div class="list-item" onclick="window.open('https://mail.google.com', '_blank')">
-                    <div class="list-item-icon">📧</div>
+                    <div class="list-item-icon">${Icons.mail}</div>
                     <div class="list-item-content">
                         <div class="list-item-title">Correo universitario</div>
                     </div>
                 </div>
                 <div class="list-item" onclick="window.open('https://www.google.com', '_blank')">
-                    <div class="list-item-icon">📖</div>
+                    <div class="list-item-icon">${Icons.bookOpen}</div>
                     <div class="list-item-content">
                         <div class="list-item-title">Campus virtual</div>
                     </div>
                 </div>
                 <div class="list-item" onclick="window.open('https://www.google.com', '_blank')">
-                    <div class="list-item-icon">📚</div>
+                    <div class="list-item-icon">${Icons.library}</div>
                     <div class="list-item-content">
                         <div class="list-item-title">Biblioteca</div>
                     </div>
@@ -208,7 +208,7 @@ const UniLifePage = {
 
         if (tab === 'metas') {
             if (goals.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎯</div><h3>Sin metas</h3><p>Crea tu primer objetivo semanal</p></div>';
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.target + '</div><h3>Sin metas</h3><p>Crea tu primer objetivo semanal</p></div>';
                 return;
             }
             container.innerHTML = goals.map(goal => `
@@ -217,7 +217,7 @@ const UniLifePage = {
                         <span class="goal-title">${goal.title}</span>
                         <div style="display:flex;gap:6px;align-items:center;">
                             <span class="badge badge-${goal.completed ? 'success' : 'primary'}">${goal.completed ? 'Hecho' : `${goal.progress || 0}%`}</span>
-                            <button class="btn-icon" onclick="UniLifePage.deleteGoal('${goal.id}')" title="Eliminar">🗑️</button>
+                            <button class="btn-icon" onclick="UniLifePage.deleteGoal('${goal.id}')" title="Eliminar">${Icons.trash}</button>
                         </div>
                     </div>
                     ${goal.description ? `<p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">${goal.description}</p>` : ''}
@@ -344,7 +344,7 @@ const UniLifePage = {
             });
 
             if (schedule.length === 0) {
-                sc.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📅</div><h3>Sin clases</h3><p>Añade tu primer horario</p></div>';
+                sc.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.calendar + '</div><h3>Sin clases</h3><p>Añade tu primer horario</p></div>';
                 return;
             }
 
@@ -360,7 +360,7 @@ const UniLifePage = {
                             <span class="schedule-class-name">${c.subject || c.name}</span>
                             <span class="schedule-class-room">${c.room || ''}</span>
                         </div>
-                        <button class="btn-icon" onclick="UniLifePage.deleteClass('${c.id}')" title="Eliminar">🗑️</button>
+                        <button class="btn-icon" onclick="UniLifePage.deleteClass('${c.id}')" title="Eliminar">${Icons.trash}</button>
                     </div>`;
                 });
                 html += '</div>';
@@ -436,17 +436,17 @@ const UniLifePage = {
         container.innerHTML = `
         <div class="uni-overview-stats" style="margin-bottom:20px;">
             <div class="uni-stat-card">
-                <div class="uni-stat-icon">🎓</div>
+                <div class="uni-stat-icon">${Icons.graduationCap}</div>
                 <div class="uni-stat-value">${saved.approvedCredits || 0}</div>
                 <div class="uni-stat-label">Créditos aprobados</div>
             </div>
             <div class="uni-stat-card">
-                <div class="uni-stat-icon">📊</div>
+                <div class="uni-stat-icon">${Icons.pieChart}</div>
                 <div class="uni-stat-value">${pct}%</div>
                 <div class="uni-stat-label">Grado completado</div>
             </div>
             <div class="uni-stat-card">
-                <div class="uni-stat-icon">📈</div>
+                <div class="uni-stat-icon">${Icons.trendUp}</div>
                 <div class="uni-stat-value" style="color:${gpaColor}">${gpa}</div>
                 <div class="uni-stat-label">Nota media</div>
             </div>

@@ -28,7 +28,7 @@ const SubjectsPage = {
     renderGrid() {
         const grid = document.getElementById('subjects-grid');
         if (this.subjects.length === 0) {
-            grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📚</div><h3>No tienes asignaturas</h3><p>Añade tu primera asignatura para empezar</p></div>';
+            grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.book + '</div><h3>No tienes asignaturas</h3><p>Añade tu primera asignatura para empezar</p></div>';
             return;
         }
         grid.innerHTML = this.subjects.map(s => {
@@ -136,17 +136,17 @@ const SubjectsPage = {
         if (this.currentDetailTab === 'info') {
             bodyHTML = `
             <div class="grid-2" style="gap:10px;margin-bottom:16px;">
-                <div class="stat-card"><div class="stat-icon purple">👨‍🏫</div><div class="stat-info"><h4 style="font-size:13px;">${profList.length > 0 ? profList.join(', ') : '—'}</h4><p>Profesor${profList.length > 1 ? 'es' : ''}</p></div></div>
-                <div class="stat-card"><div class="stat-icon green">🏫</div><div class="stat-info"><h4 style="font-size:13px;">${s.room || '—'}</h4><p>Aula</p></div></div>
-                <div class="stat-card"><div class="stat-icon blue">📅</div><div class="stat-info"><h4 style="font-size:13px;">${periodLabel}</h4><p>Período</p></div></div>
-                <div class="stat-card"><div class="stat-icon orange">📜</div><div class="stat-info"><h4 style="font-size:13px;">${s.credits || 0}</h4><p>Créditos</p></div></div>
+                <div class="stat-card"><div class="stat-icon purple">${Icons.user}</div><div class="stat-info"><h4 style="font-size:13px;">${profList.length > 0 ? profList.join(', ') : '—'}</h4><p>Profesor${profList.length > 1 ? 'es' : ''}</p></div></div>
+                <div class="stat-card"><div class="stat-icon green">${Icons.backpack}</div><div class="stat-info"><h4 style="font-size:13px;">${s.room || '—'}</h4><p>Aula</p></div></div>
+                <div class="stat-card"><div class="stat-icon blue">${Icons.calendar}</div><div class="stat-info"><h4 style="font-size:13px;">${periodLabel}</h4><p>Período</p></div></div>
+                <div class="stat-card"><div class="stat-icon orange">${Icons.award}</div><div class="stat-info"><h4 style="font-size:13px;">${s.credits || 0}</h4><p>Créditos</p></div></div>
             </div>
-            ${s.guideUrl ? `<a href="${s.guideUrl}" target="_blank" class="btn btn-ghost btn-full" style="margin-bottom:12px;">📄 Ver guía docente</a>` : ''}
+            ${s.guideUrl ? `<a href="${s.guideUrl}" target="_blank" class="btn btn-ghost btn-full" style="margin-bottom:12px;">${Icons.file} Ver guía docente</a>` : ''}
             <div style="display:flex;gap:8px;">
                 <button class="btn btn-ghost" style="flex:1;" onclick="SubjectsPage.showAddModal(SubjectsPage.selectedSubject); Utils.closeModal();">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> Editar
                 </button>
-                <button class="btn btn-danger" style="flex:1;" onclick="SubjectsPage.deleteSubject('${s.id}')">🗑️ Eliminar</button>
+                <button class="btn btn-danger" style="flex:1;" onclick="SubjectsPage.deleteSubject('${s.id}')">${Icons.trash} Eliminar</button>
             </div>`;
         } else {
             bodyHTML = this.renderGradeTable(s);
@@ -175,7 +175,7 @@ const SubjectsPage = {
             html += `
             <div class="card" style="margin-bottom:12px;">
                 <div class="card-header" style="padding:12px 14px;">
-                    <span class="card-title" style="font-size:13px;">⚖️ Peso por ${subject.periodType}</span>
+                    <span class="card-title" style="font-size:13px;">${Icons.percent} Peso por ${subject.periodType}</span>
                     <label class="toggle" style="flex-shrink:0;">
                         <input type="checkbox" id="gt-use-periods" ${usePeriods ? 'checked' : ''} onchange="SubjectsPage.togglePeriods()">
                         <span class="toggle-slider"></span>
@@ -201,7 +201,7 @@ const SubjectsPage = {
         html += `
         <div class="card">
             <div class="card-header" style="padding:12px 14px;">
-                <span class="card-title" style="font-size:13px;">📋 Evaluaciones</span>
+                <span class="card-title" style="font-size:13px;">${Icons.clipboard} Evaluaciones</span>
                 <button class="btn btn-primary btn-sm" onclick="SubjectsPage.addGradeItem()" style="font-size:12px;padding:5px 10px;">+ Añadir</button>
             </div>
             <div class="grade-table-wrapper">

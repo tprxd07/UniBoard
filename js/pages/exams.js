@@ -29,7 +29,7 @@ const ExamsPage = {
         const container = document.getElementById('exams-list');
 
         if (this.exams.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><h3>Sin exámenes</h3><p>Añade tu primer examen</p></div>';
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.edit + '</div><h3>Sin exámenes</h3><p>Añade tu primer examen</p></div>';
             return;
         }
 
@@ -52,7 +52,7 @@ const ExamsPage = {
                     </div>
                     <div style="display: flex; gap: 6px;">
                         <button class="btn-icon" style="font-size: 14px;" onclick="ExamsPage.showAddModal(ExamsPage.exams.find(e=>e.id==='${exam.id}'))"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
-                        <button class="btn-icon" style="font-size: 14px;" onclick="ExamsPage.deleteExam('${exam.id}')">🗑️</button>
+                        <button class="btn-icon" style="font-size: 14px;" onclick="ExamsPage.deleteExam('${exam.id}')">${Icons.trash}</button>
                     </div>
                 </div>
 
@@ -77,7 +77,7 @@ const ExamsPage = {
 
                 ${exam.studyPlan ? `
                 <div style="margin-top: 12px; padding: 12px; background: var(--primary-bg); border-radius: 8px;">
-                    <div style="font-size: 12px; color: var(--primary); font-weight: 600; margin-bottom: 4px;">📋 Plan de estudio:</div>
+                    <div style="font-size: 12px; color: var(--primary); font-weight: 600; margin-bottom: 4px;">${Icons.clipboard} Plan de estudio:</div>
                     <div style="font-size: 13px;">${exam.studyPlan}</div>
                 </div>` : ''}
             </div>`;

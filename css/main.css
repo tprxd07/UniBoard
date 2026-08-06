@@ -117,8 +117,8 @@ a {
 }
 
 .logo-icon {
-    font-size: 48px;
     margin-bottom: 12px;
+    color: var(--primary);
 }
 
 .auth-logo h1 {
@@ -249,12 +249,14 @@ a {
 .btn-icon {
     background: none;
     border: none;
-    font-size: 18px;
     cursor: pointer;
     padding: 8px;
     border-radius: var(--radius-sm);
     color: var(--text);
     transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-icon:hover {
@@ -399,8 +401,10 @@ a {
 }
 
 .logo-icon-sm {
-    font-size: 24px;
     flex-shrink: 0;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
 }
 
 .logo-text {
@@ -475,9 +479,12 @@ a {
 }
 
 .nav-icon {
-    font-size: 18px;
     width: 24px;
-    text-align: center;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .sidebar-footer {
@@ -508,11 +515,11 @@ a {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
     flex-shrink: 0;
     overflow: hidden;
     cursor: pointer;
     transition: var(--transition);
+    color: var(--primary);
 }
 
 .user-avatar:hover {

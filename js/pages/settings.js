@@ -25,7 +25,7 @@ const SettingsPage = {
         return `
         <div class="card" style="margin-bottom: 20px;">
             <div class="card-header">
-                <span class="card-title">🎨 Apariencia</span>
+                <span class="card-title">${Icons.palette} Apariencia</span>
             </div>
 
             <div class="settings-item">
@@ -34,8 +34,8 @@ const SettingsPage = {
                     <p>Cambia entre claro y oscuro</p>
                 </div>
                 <div class="pill-selector">
-                    <button class="pill" data-theme="light">☀️ Claro</button>
-                    <button class="pill" data-theme="dark">🌙 Oscuro</button>
+                    <button class="pill" data-theme="light">${Icons.sun} Claro</button>
+                    <button class="pill" data-theme="dark">${Icons.moon} Oscuro</button>
                 </div>
             </div>
 
@@ -72,7 +72,7 @@ const SettingsPage = {
 
         <div class="card" style="margin-bottom: 20px;">
             <div class="card-header">
-                <span class="card-title">⏱️ Pomodoro</span>
+                <span class="card-title">${Icons.clock} Pomodoro</span>
             </div>
             <div class="grid-3">
                 <div class="form-group">
@@ -93,7 +93,7 @@ const SettingsPage = {
 
         <div class="card" style="margin-bottom: 20px;">
             <div class="card-header">
-                <span class="card-title">📱 Sincronización</span>
+                <span class="card-title">${Icons.smartphone} Sincronización</span>
             </div>
             <div class="settings-item">
                 <div class="settings-item-info">
@@ -112,7 +112,7 @@ const SettingsPage = {
 
         <div class="card" style="margin-bottom: 20px;">
             <div class="card-header">
-                <span class="card-title">📊 Datos</span>
+                <span class="card-title">${Icons.barChart} Datos</span>
             </div>
             <div class="settings-item">
                 <div class="settings-item-info">
@@ -131,19 +131,19 @@ const SettingsPage = {
 
         <div class="card" style="margin-bottom: 20px;">
             <div class="card-header">
-                <span class="card-title">ℹ️ Acerca de</span>
+                <span class="card-title">${Icons.info} Acerca de</span>
             </div>
             <div style="text-align: center; padding: 20px;">
-                <div style="font-size: 32px; margin-bottom: 8px;">🎓</div>
+                <div style="font-size: 32px; margin-bottom: 8px;">${Icons.graduationCap}</div>
                 <h3 style="font-size: 18px; font-weight: 700; color: var(--primary);">UniBoard</h3>
-                <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Tu compañera universitaria</p>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Planificador universitario</p>
                 <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Versión 1.0.0</p>
             </div>
         </div>
 
         <div class="card">
             <button class="btn btn-danger" id="btn-logout-settings" style="width: 100%;">
-                🚪 Cerrar sesión
+                ${Icons.logOut} Cerrar sesión
             </button>
         </div>`;
     },

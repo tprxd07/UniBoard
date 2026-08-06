@@ -64,10 +64,10 @@ const TimerPage = {
                 </div>
                 <div class="pill-selector">
                     <button class="pill active" data-music="none">Silencio</button>
-                    <button class="pill" data-music="rain">🌧️ Lluvia</button>
-                    <button class="pill" data-music="forest">🌲 Bosque</button>
-                    <button class="pill" data-music="cafe">☕ Café</button>
-                    <button class="pill" data-music="lofi">🎵 Lo-fi</button>
+                    <button class="pill" data-music="rain">${Icons.cloudRain} Lluvia</button>
+                    <button class="pill" data-music="forest">${Icons.tree} Bosque</button>
+                    <button class="pill" data-music="cafe">${Icons.coffee} Café</button>
+                    <button class="pill" data-music="lofi">${Icons.music} Lo-fi</button>
                 </div>
             </div>
 

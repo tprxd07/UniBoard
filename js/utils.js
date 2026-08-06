@@ -133,16 +133,16 @@ const Utils = {
     // Get motivational quote
     getQuote() {
         const quotes = [
-            "El éxito es la suma de pequeños esfuerzos, repetidos día tras día.",
-            "La educación es el arma más poderosa que puedes usar para cambiar el mundo.",
-            "No importa lo lento que vayas, siempre y cuando no te detengas.",
-            "El futuro pertenece a quienes creen en la belleza de sus sueños.",
-            "La mejor manera de predecir el futuro es creándolo.",
-            "Cada día es una nueva oportunidad para ser mejor que ayer.",
-            "El conocimiento es la única riqueza que nadie te puede quitar.",
-            "Los sueños no se cumplen solos, hay que trabajar por ellos.",
-            "La persistencia es el camino del éxito.",
-            "Tu futuro es creado por lo que haces hoy, no mañana."
+            "Organizar bien el tiempo es ganar tiempo.",
+            "Estudiar no es perder tiempo, es invertir en ti.",
+            "Un buen plan ahorra muchos malos ratos.",
+            "La constancia supera al talento cuando el talento no es constante.",
+            "Pequeños avances todos los días llegan lejos.",
+            "Prepararse reduce la ansiedad.",
+            "Lo hecho, hecho está. Pa'lante.",
+            "No es por saber mucho, sino por entender lo necesario.",
+            "El que planifica, controla.",
+            "A veces solo hay que sentarse y hacerlo."
         ];
         return quotes[Math.floor(Math.random() * quotes.length)];
     },

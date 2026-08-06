@@ -72,7 +72,7 @@ const StudyPage = {
                     ▶ Iniciar
                 </button>
                 <button class="btn btn-ghost" id="btn-concentration" style="width: 50px; height: 50px; border-radius: 50%; font-size: 18px; align-self: center;" title="Modo concentración">
-                    🖥️
+                    ${Icons.monitor}
                 </button>
             </div>
 
@@ -303,10 +303,10 @@ const StudyPage = {
             <button class="btn btn-primary btn-sm" id="add-study-btn">+ Nueva sesión</button>
         </div>
         <div class="grid-4" style="margin-bottom: 20px;">
-            <div class="stat-card"><div class="stat-icon purple">📖</div><div class="stat-info"><h4>${(totalMinutes / 60).toFixed(1)}h</h4><p>Total semana</p></div></div>
-            <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-info"><h4>${weekSessions.length}</h4><p>Sesiones</p></div></div>
-            <div class="stat-card"><div class="stat-icon orange">🔥</div><div class="stat-info"><h4>${streak}</h4><p>Racha</p></div></div>
-            <div class="stat-card"><div class="stat-icon blue">🎯</div><div class="stat-info"><h4>${daysWithSessions > 0 ? (totalMinutes / 60 / daysWithSessions).toFixed(1) + 'h' : '0h'}</h4><p>Promedio</p></div></div>
+            <div class="stat-card"><div class="stat-icon purple">${Icons.bookOpen}</div><div class="stat-info"><h4>${(totalMinutes / 60).toFixed(1)}h</h4><p>Total semana</p></div></div>
+            <div class="stat-card"><div class="stat-icon green">${Icons.check}</div><div class="stat-info"><h4>${weekSessions.length}</h4><p>Sesiones</p></div></div>
+            <div class="stat-card"><div class="stat-icon orange">${Icons.fire}</div><div class="stat-info"><h4>${streak}</h4><p>Racha</p></div></div>
+            <div class="stat-card"><div class="stat-icon blue">${Icons.target}</div><div class="stat-info"><h4>${daysWithSessions > 0 ? (totalMinutes / 60 / daysWithSessions).toFixed(1) + 'h' : '0h'}</h4><p>Promedio</p></div></div>
         </div>
         <div id="sessions-list"></div>`;
 
@@ -319,7 +319,7 @@ const StudyPage = {
         if (!list) return;
         const recent = this.sessions.slice(0, 20);
         if (recent.length === 0) {
-            list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📖</div><h3>Sin sesiones</h3><p>Registra tu primera sesión de estudio</p></div>';
+            list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.bookOpen + '</div><h3>Sin sesiones</h3><p>Registra tu primera sesión de estudio</p></div>';
             return;
         }
         list.innerHTML = recent.map(s => `
@@ -329,7 +329,7 @@ const StudyPage = {
                     <h4>${s.subject || 'Estudio general'}</h4>
                     <p>${s.topics || 'Sin temas'} · ${Utils.formatDate(s.date)}</p>
                 </div>
-                <button class="btn-icon" style="font-size: 14px;" onclick="StudyPage.deleteSession('${s.id}')">🗑️</button>
+                <button class="btn-icon" style="font-size: 14px;" onclick="StudyPage.deleteSession('${s.id}')">${Icons.trash}</button>
             </div>
         `).join('');
     },

@@ -122,14 +122,14 @@ const DocumentsPage = {
             });
 
             if (Object.keys(groups).length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📄</div><h3>Sin documentos</h3><p>Añade tu primer documento o arrastra archivos aquí</p></div>';
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.file + '</div><h3>Sin documentos</h3><p>Añade tu primer documento o arrastra archivos aquí</p></div>';
                 return;
             }
 
             container.innerHTML = `<div class="doc-grid">
                 ${Object.entries(groups).map(([name, docs]) => `
                     <div class="doc-folder" onclick="DocumentsPage.showFolder('${name}')">
-                        <div class="doc-folder-icon">📁</div>
+                        <div class="doc-folder-icon">${Icons.folder}</div>
                         <div class="doc-folder-name">${name}</div>
                         <div class="doc-folder-count">${docs.length} archivos</div>
                     </div>
@@ -137,12 +137,12 @@ const DocumentsPage = {
             </div>`;
         } else {
             if (this.documents.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📄</div><h3>Sin documentos</h3></div>';
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.file + '</div><h3>Sin documentos</h3></div>';
                 return;
             }
 
             container.innerHTML = this.documents.map(doc => {
-                const icon = doc.type === 'pdf' ? '📕' : doc.type === 'presentation' ? '📊' : '📝';
+                const icon = doc.type === 'pdf' ? Icons.fileText : doc.type === 'presentation' ? Icons.presentation : Icons.edit;
                 return `
                 <div class="list-item">
                     <div class="list-item-icon">${icon}</div>
@@ -151,8 +151,8 @@ const DocumentsPage = {
                         <div class="list-item-subtitle">${doc.subject || 'Sin asignatura'} · ${doc.type || 'Documento'}</div>
                     </div>
                     <div class="list-item-actions">
-                        ${doc.url ? `<a href="${doc.url}" target="_blank" class="btn btn-ghost btn-sm">🔗 Abrir</a>` : ''}
-                        <button class="btn-icon" style="font-size: 14px;" onclick="DocumentsPage.deleteDocument('${doc.id}')">🗑️</button>
+                        ${doc.url ? `<a href="${doc.url}" target="_blank" class="btn btn-ghost btn-sm">${Icons.externalLink} Abrir</a>` : ''}
+                        <button class="btn-icon" style="font-size: 14px;" onclick="DocumentsPage.deleteDocument('${doc.id}')">${Icons.trash}</button>
                     </div>
                 </div>`;
             }).join('');
@@ -169,7 +169,7 @@ const DocumentsPage = {
                 <h3 style="display: inline; margin-left: 12px;">${name}</h3>
             </div>
             ${docs.map(doc => {
-                const icon = doc.type === 'pdf' ? '📕' : doc.type === 'presentation' ? '📊' : '📝';
+                const icon = doc.type === 'pdf' ? Icons.fileText : doc.type === 'presentation' ? Icons.presentation : Icons.edit;
                 return `
                 <div class="list-item">
                     <div class="list-item-icon">${icon}</div>
@@ -178,8 +178,8 @@ const DocumentsPage = {
                         <div class="list-item-subtitle">${doc.type || 'Documento'}</div>
                     </div>
                     <div class="list-item-actions">
-                        ${doc.url ? `<a href="${doc.url}" target="_blank" class="btn btn-ghost btn-sm">🔗 Abrir</a>` : ''}
-                        <button class="btn-icon" style="font-size: 14px;" onclick="DocumentsPage.deleteDocument('${doc.id}')">🗑️</button>
+                        ${doc.url ? `<a href="${doc.url}" target="_blank" class="btn btn-ghost btn-sm">${Icons.externalLink} Abrir</a>` : ''}
+                        <button class="btn-icon" style="font-size: 14px;" onclick="DocumentsPage.deleteDocument('${doc.id}')">${Icons.trash}</button>
                     </div>
                 </div>`;
             }).join('')}`;

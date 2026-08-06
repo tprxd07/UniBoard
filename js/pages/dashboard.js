@@ -14,7 +14,7 @@ const DashboardPage = {
         <div class="dashboard-events-section">
             <div class="card" style="margin-bottom: 16px;">
                 <div class="card-header">
-                    <span class="card-title">✅ Tareas de hoy</span>
+                    <span class="card-title">${Icons.check} Tareas de hoy</span>
                     <a href="#" onclick="App.loadPage('tasks'); return false;" class="badge badge-primary">Ver todas</a>
                 </div>
                 <div id="dashboard-tasks"></div>
@@ -22,7 +22,7 @@ const DashboardPage = {
 
             <div class="card" style="margin-bottom: 16px;">
                 <div class="card-header">
-                    <span class="card-title">📝 Exámenes esta semana</span>
+                    <span class="card-title">${Icons.edit} Exámenes esta semana</span>
                     <a href="#" onclick="App.loadPage('activities'); return false;" class="badge badge-primary">Ver todos</a>
                 </div>
                 <div id="dashboard-exams"></div>
@@ -30,7 +30,7 @@ const DashboardPage = {
 
             <div class="card dashboard-events-scroll">
                 <div class="card-header">
-                    <span class="card-title">📌 Eventos de la semana</span>
+                    <span class="card-title">${Icons.flag} Eventos de la semana</span>
                 </div>
                 <div id="dashboard-events"></div>
             </div>
@@ -214,7 +214,7 @@ const DashboardPage = {
             if (!container) return;
 
             if (grouped.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 13px;">¡Tienes el día libre! 🎉</p>';
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 13px;">Sin eventos ni tareas pendientes.</p>';
                 return;
             }
 

@@ -1094,8 +1094,11 @@
 }
 
 .doc-folder-icon {
-    font-size: 32px;
     margin-bottom: 8px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .doc-folder-name {
@@ -1458,8 +1461,11 @@
 }
 
 .friends-stat-icon {
-    font-size: 24px;
     margin-bottom: 4px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .friends-stat-value {
@@ -1578,7 +1584,8 @@
 }
 
 .friend-streak-icon {
-    font-size: 14px;
+    display: flex;
+    align-items: center;
 }
 
 .friend-streak-num {
@@ -2088,8 +2095,11 @@
 }
 
 .uni-stat-icon {
-    font-size: 22px;
     margin-bottom: 4px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .uni-stat-value {

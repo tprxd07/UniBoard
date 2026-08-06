@@ -73,11 +73,11 @@ const FinancesPage = {
             </div>
             <div class="finance-item">
                 <div class="amount">-${Utils.formatCurrency(categories.photocopies)}</div>
-                <div class="label">📄 Fotocopias</div>
+                <div class="label">${Icons.file} Fotocopias</div>
             </div>
             <div class="finance-item">
                 <div class="amount">-${Utils.formatCurrency(categories.transport)}</div>
-                <div class="label">🚌 Transporte</div>
+                <div class="label">${Icons.backpack} Transporte</div>
             </div>`;
 
         // Update budget progress
@@ -91,7 +91,7 @@ const FinancesPage = {
                 </div>
                 <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">
                     ${Utils.formatCurrency(total)} / ${Utils.formatCurrency(budget)} (${Math.round(percentage)}%)
-                    ${percentage > 100 ? ' ⚠️ Presupuesto superado' : ''}
+                    ${percentage > 100 ? ` ${Icons.alertTriangle} Presupuesto superado` : ''}
                 </p>`;
         }
     },
@@ -105,18 +105,18 @@ const FinancesPage = {
             return;
         }
 
-        const categoryIcons = { photocopies: '📄', transport: '🚌', cafeteria: '☕', other: '💰' };
+        const categoryIcons = { photocopies: Icons.file, transport: Icons.backpack, cafeteria: Icons.coffee, other: Icons.zap };
         const categoryNames = { photocopies: 'Fotocopias', transport: 'Transporte', cafeteria: 'Cafetería', other: 'Otro' };
 
         container.innerHTML = recent.map(t => `
             <div class="list-item">
-                <div class="list-item-icon">${categoryIcons[t.category] || '💰'}</div>
+                <div class="list-item-icon">${categoryIcons[t.category] || Icons.zap}</div>
                 <div class="list-item-content">
                     <div class="list-item-title">${t.description || categoryNames[t.category] || 'Gasto'}</div>
                     <div class="list-item-subtitle">${Utils.formatDate(t.date)}</div>
                 </div>
                 <span style="font-weight: 700; color: var(--danger);">-${Utils.formatCurrency(t.amount)}</span>
-                <button class="btn-icon" style="font-size: 14px;" onclick="FinancesPage.deleteTransaction('${t.id}')">🗑️</button>
+                <button class="btn-icon" style="font-size: 14px;" onclick="FinancesPage.deleteTransaction('${t.id}')">${Icons.trash}</button>
             </div>
         `).join('');
     },
@@ -126,10 +126,10 @@ const FinancesPage = {
             <div class="form-group">
                 <label>Categoría</label>
                 <select id="tx-category">
-                    <option value="photocopies">📄 Fotocopias</option>
-                    <option value="transport">🚌 Transporte</option>
-                    <option value="cafeteria">☕ Cafetería</option>
-                    <option value="other">💰 Otro</option>
+                    <option value="photocopies">${Icons.file} Fotocopias</option>
+                    <option value="transport">${Icons.backpack} Transporte</option>
+                    <option value="cafeteria">${Icons.coffee} Cafetería</option>
+                    <option value="other">${Icons.zap} Otro</option>
                 </select>
             </div>
             <div class="grid-2">

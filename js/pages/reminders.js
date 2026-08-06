@@ -30,28 +30,28 @@ const RemindersPage = {
         const container = document.getElementById('reminders-list');
 
         if (this.reminders.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔔</div><h3>Sin recordatorios</h3><p>Crea tu primer recordatorio</p></div>';
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.bell + '</div><h3>Sin recordatorios</h3><p>Crea tu primer recordatorio</p></div>';
             return;
         }
 
         const iconMap = {
-            study: '📖',
-            water: '💧',
-            task: '✅',
-            exam: '📝',
-            class: '📚',
-            other: '🔔'
+            study: Icons.bookOpen,
+            water: Icons.droplet,
+            task: Icons.check,
+            exam: Icons.edit,
+            class: Icons.book,
+            other: Icons.bell
         };
 
         container.innerHTML = this.reminders.map(r => `
             <div class="reminder-item">
-                <div class="reminder-icon">${iconMap[r.type] || '🔔'}</div>
+                <div class="reminder-icon">${iconMap[r.type] || Icons.bell}</div>
                 <div class="list-item-content">
                     <div class="list-item-title">${r.title}</div>
                     <div class="list-item-subtitle">
-                        ${r.time ? '⏰ ' + r.time : ''}
+                        ${r.time ? Icons.clock + ' ' + r.time : ''}
                         ${r.days ? ' · ' + this.formatDays(r.days) : ''}
-                        ${r.recurring ? ' 🔄' : ''}
+                        ${r.recurring ? ' · recurrente' : ''}
                     </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
@@ -59,7 +59,7 @@ const RemindersPage = {
                         <input type="checkbox" ${r.enabled !== false ? 'checked' : ''} onchange="RemindersPage.toggleReminder('${r.id}', this.checked)">
                         <span class="toggle-slider"></span>
                     </label>
-                    <button class="btn-icon" style="font-size: 14px;" onclick="RemindersPage.deleteReminder('${r.id}')">🗑️</button>
+                    <button class="btn-icon" style="font-size: 14px;" onclick="RemindersPage.deleteReminder('${r.id}')">${Icons.trash}</button>
                 </div>
             </div>
         `).join('');
@@ -77,12 +77,12 @@ const RemindersPage = {
             <div class="form-group">
                 <label>Tipo</label>
                 <select id="reminder-type">
-                    <option value="study">📖 Estudio</option>
-                    <option value="water">💧 Beber agua</option>
-                    <option value="task">✅ Entrega</option>
-                    <option value="exam">📝 Examen</option>
-                    <option value="class">📚 Clase</option>
-                    <option value="other">🔔 Otro</option>
+                    <option value="study">${Icons.bookOpen} Estudio</option>
+                    <option value="water">${Icons.droplet} Beber agua</option>
+                    <option value="task">${Icons.check} Entrega</option>
+                    <option value="exam">${Icons.edit} Examen</option>
+                    <option value="class">${Icons.book} Clase</option>
+                    <option value="other">${Icons.bell} Otro</option>
                 </select>
             </div>
             <div class="form-group">

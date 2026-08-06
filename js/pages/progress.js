@@ -8,21 +8,21 @@ const ProgressPage = {
 
         <div class="grid-3" style="margin-bottom: 24px;">
             <div class="stat-card">
-                <div class="stat-icon purple">🎓</div>
+                <div class="stat-icon purple">${Icons.graduationCap}</div>
                 <div class="stat-info">
                     <h4 id="credits-approved">0</h4>
                     <p>Créditos aprobados</p>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon green">📊</div>
+                <div class="stat-icon green">${Icons.pieChart}</div>
                 <div class="stat-info">
                     <h4 id="degree-progress">0%</h4>
                     <p>Grado completado</p>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon orange">📈</div>
+                <div class="stat-icon orange">${Icons.trendUp}</div>
                 <div class="stat-info">
                     <h4 id="predicted-gpa">—</h4>
                     <p>Predicción nota media</p>

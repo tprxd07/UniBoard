@@ -498,8 +498,8 @@ const DB = {
         const existing = await this.getGroups();
         if (existing.length > 0) return;
         const defaults = [
-            { name: 'Cumpleaños', color: '#E84393', emoji: '🎂', isDefault: true },
-            { name: 'Festivos', color: '#00B894', emoji: '🎉', isDefault: true }
+            { name: 'Cumpleaños', color: '#E84393', isDefault: true },
+            { name: 'Festivos', color: '#00B894', isDefault: true }
         ];
         for (const g of defaults) {
             await this.addGroup(g);

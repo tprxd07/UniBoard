@@ -10,8 +10,8 @@ const ProfilePage = {
             <div class="profile-banner-section" id="profile-banner-wrapper" style="position:relative;width:100%;height:160px;background:#6C5CE7;cursor:pointer;overflow:hidden;border-radius:var(--radius-lg);margin-bottom:16px;">
                 <div id="profile-banner-display" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"></div>
                 <div class="profile-banner-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;gap:12px;opacity:0;transition:opacity 0.2s;color:#fff;font-size:13px;">
-                    <label for="profile-banner-input" style="cursor:pointer;padding:6px 14px;background:rgba(255,255,255,0.2);border-radius:6px;backdrop-filter:blur(4px);" onclick="event.stopPropagation();">📷 Foto</label>
-                    <span id="banner-remove-photo" style="cursor:pointer;padding:6px 14px;background:rgba(255,255,255,0.2);border-radius:6px;display:none;backdrop-filter:blur(4px);" onclick="event.stopPropagation(); ProfilePage.removeBannerPhoto();">✕ Quitar foto</span>
+                    <label for="profile-banner-input" style="cursor:pointer;padding:6px 14px;background:rgba(255,255,255,0.2);border-radius:6px;backdrop-filter:blur(4px);" onclick="event.stopPropagation();">${Icons.camera} Foto</label>
+                    <span id="banner-remove-photo" style="cursor:pointer;padding:6px 14px;background:rgba(255,255,255,0.2);border-radius:6px;display:none;backdrop-filter:blur(4px);" onclick="event.stopPropagation(); ProfilePage.removeBannerPhoto();">${Icons.x} Quitar foto</span>
                 </div>
                 <input type="file" id="profile-banner-input" accept="image/*" class="hidden">
             </div>
@@ -19,8 +19,8 @@ const ProfilePage = {
             <div class="profile-page-body">
                 <div class="profile-photo-section" style="margin-top:-50px;">
                     <div class="profile-photo-wrapper" id="profile-photo-wrapper" style="border:3px solid var(--bg-card);">
-                        <div class="profile-photo" id="profile-photo-display" style="width:80px;height:80px;font-size:32px;">👤</div>
-                        <div class="profile-photo-overlay">📷</div>
+                        <div class="profile-photo" id="profile-photo-display" style="width:80px;height:80px;font-size:32px;">${Icons.user}</div>
+                        <div class="profile-photo-overlay">${Icons.camera}</div>
                     </div>
                     <p class="profile-photo-hint">Arrastra una imagen o haz clic para cambiar</p>
                     <input type="file" id="profile-photo-input" accept="image/*" class="hidden">
@@ -28,7 +28,7 @@ const ProfilePage = {
 
                 <div class="card" style="margin-bottom:16px;">
                     <div class="card-header">
-                        <span class="card-title">🎨 Banner</span>
+                        <span class="card-title">${Icons.palette} Banner</span>
                     </div>
                     <div class="form-group" style="margin-bottom:0;">
                         <div class="color-options" id="banner-color-options">
@@ -50,7 +50,7 @@ const ProfilePage = {
 
                 <div class="card" style="margin-bottom:16px;">
                     <div class="card-header">
-                        <span class="card-title">👤 Información personal</span>
+                        <span class="card-title">${Icons.user} Información personal</span>
                     </div>
                     <div class="form-group">
                         <label>Nombre</label>
@@ -179,7 +179,7 @@ const ProfilePage = {
         const statsBar = document.getElementById('profile-stats-bar');
         statsBar.innerHTML = `
             <div style="text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--primary);">${friends.length}</div><div style="font-size:11px;color:var(--text-secondary);">Amigos</div></div>
-            <div style="text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--primary);">🔥 ${streak}</div><div style="font-size:11px;color:var(--text-secondary);">Racha</div></div>`;
+            <div style="text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--primary);">${Icons.fire} ${streak}</div><div style="font-size:11px;color:var(--text-secondary);">Racha</div></div>`;
 
         this._setupBannerUpload();
         this._setupPhotoUpload();

@@ -210,13 +210,13 @@ const CalendarPage = {
             dayTasks.forEach(t => {
                 const color = this.getTaskColor(t.priority);
                 eventsHtml += `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${t.title}">
-                    <span class="calendar-event-text">📋 ${t.title}</span>
+                    <span class="calendar-event-text">${Icons.clipboard} ${t.title}</span>
                 </div>`;
             });
             dayExams.forEach(ex => {
                 const color = this.getSubjectColor(ex.subject);
                 eventsHtml += `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${ex.subject}">
-                    <span class="calendar-event-text">📝 ${ex.topics || ex.subject}</span>
+                    <span class="calendar-event-text">${Icons.edit} ${ex.topics || ex.subject}</span>
                 </div>`;
             });
 
@@ -274,11 +274,11 @@ const CalendarPage = {
                 });
                 dayTasks.forEach(t => {
                     const color = this.getTaskColor(t.priority);
-                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer;" onclick="event.stopPropagation(); CalendarPage.goToTask('${t.id}')">📋 ${t.title}</div>`;
+                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer;" onclick="event.stopPropagation(); CalendarPage.goToTask('${t.id}')">${Icons.clipboard} ${t.title}</div>`;
                 });
                 dayExams.forEach(ex => {
                     const color = this.getSubjectColor(ex.subject);
-                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer;" onclick="event.stopPropagation(); CalendarPage.goToExam('${ex.id}')">📝 ${ex.topics || ex.subject}</div>`;
+                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer;" onclick="event.stopPropagation(); CalendarPage.goToExam('${ex.id}')">${Icons.edit} ${ex.topics || ex.subject}</div>`;
                 });
                 html += '</td>';
             });
@@ -318,11 +318,11 @@ const CalendarPage = {
             if (showTasks) {
                 dayTasks.forEach(t => {
                     const color = this.getTaskColor(t.priority);
-                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer;" onclick="CalendarPage.goToTask('${t.id}')">📋 ${t.title} (fecha límite)</div>`;
+                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer;" onclick="CalendarPage.goToTask('${t.id}')">${Icons.clipboard} ${t.title} (fecha límite)</div>`;
                 });
                 dayExams.forEach(ex => {
                     const color = this.getSubjectColor(ex.subject);
-                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer;" onclick="CalendarPage.goToExam('${ex.id}')">📝 ${ex.topics || ex.subject} · ${ex.room || ''} (${ex.startTime || ''}${ex.endTime ? ' - ' + ex.endTime : ''})</div>`;
+                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer;" onclick="CalendarPage.goToExam('${ex.id}')">${Icons.edit} ${ex.topics || ex.subject} · ${ex.room || ''} (${ex.startTime || ''}${ex.endTime ? ' - ' + ex.endTime : ''})</div>`;
                 });
             }
             html += '</td></tr>';
@@ -407,7 +407,7 @@ const CalendarPage = {
         items.sort((a, b) => a.order - b.order);
 
         if (items.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📅</div><h3>Sin contenido</h3><p>No hay eventos, tareas ni exámenes próximos</p></div>';
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.calendar + '</div><h3>Sin contenido</h3><p>No hay eventos, tareas ni exámenes próximos</p></div>';
             return;
         }
 
@@ -476,7 +476,7 @@ const CalendarPage = {
                     exams.forEach(item => {
                         html += `<div class="todos-item" style="border-left: 3px solid ${item.color};">
                             <div class="todos-item-content">
-                                <div class="todos-item-title">📝 ${item.title}</div>
+                                <div class="todos-item-title">${Icons.edit} ${item.title}</div>
                                 <div class="todos-item-subtitle">${item.subtitle}</div>
                             </div>
                             <button class="btn-icon btn-sm" onclick="event.stopPropagation(); CalendarPage.goToExam('${item.data.id}')" title="Editar">
@@ -496,7 +496,7 @@ const CalendarPage = {
                     tasks.forEach(item => {
                         html += `<div class="todos-item" style="border-left: 3px solid ${item.color};">
                             <div class="todos-item-content">
-                                <div class="todos-item-title">📋 ${item.title}</div>
+                                <div class="todos-item-title">${Icons.clipboard} ${item.title}</div>
                                 <div class="todos-item-subtitle">${item.subtitle}</div>
                             </div>
                             <button class="btn-icon btn-sm" onclick="event.stopPropagation(); CalendarPage.goToTask('${item.data.id}')" title="Editar">
@@ -755,8 +755,7 @@ const CalendarPage = {
         const colorOptions = colors.map(c => `<div class="color-option ${gr.color === c ? 'active' : ''}" style="background: ${c};" data-color="${c}" onclick="CalendarPage.selectGroupColor('${c}')"></div>`).join('');
 
         const hasEmoji = gr.emoji ? 'yes' : 'no';
-        const emojis = ['📚', '🎉', '🎂', '💪', '❤️', '⭐', '🔥', '🎯', '✈️', '🏃', '🎵', '💡', '📌', '🏆', '🌟', '🎓'];
-        const emojiGrid = emojis.map(e => `<button class="emoji-option ${gr.emoji === e ? 'active' : ''}" onclick="CalendarPage.selectEmoji('${e}')">${e}</button>`).join('');
+        const emojiGrid = '';
 
         const deleteBtn = isEdit && !gr.isDefault ? `<button class="btn btn-danger btn-sm" onclick="CalendarPage.confirmDeleteGroup('${gr.id}')">Eliminar</button>` : '';
 

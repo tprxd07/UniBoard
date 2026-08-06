@@ -1,7 +1,7 @@
 {
     "name": "UniBoard",
     "short_name": "UniBoard",
-    "description": "Tu compañera universitaria",
+    "description": "Planificador universitario",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#F8F9FE",

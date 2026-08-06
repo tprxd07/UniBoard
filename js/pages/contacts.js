@@ -63,7 +63,7 @@ const ContactsPage = {
 
     renderFriends(container) {
         if (this.friends.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👫</div><h3>Sin amigos en contactos</h3><p>Añade amigos desde la sección Amigos del menú</p></div>';
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.users + '</div><h3>Sin amigos en contactos</h3><p>Añade amigos desde la sección Amigos del menú</p></div>';
             return;
         }
         let html = '';
@@ -93,13 +93,13 @@ const ContactsPage = {
     renderStaff(container) {
         const allStaff = this.getStaffContacts();
         if (allStaff.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏫</div><h3>Sin personal</h3><p>Añade profesores u otro personal del centro</p></div>';
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.backpack + '</div><h3>Sin personal</h3><p>Añade profesores u otro personal del centro</p></div>';
             return;
         }
         let html = '';
         allStaff.forEach(contact => {
             const isProfessor = contact.type === 'profesor';
-            const icon = isProfessor ? '👨‍🏫' : '👤';
+            const icon = isProfessor ? Icons.user : Icons.user;
             const typeLabel = isProfessor ? 'Profesor' : 'Personal';
             const subjects = (contact.subjects && contact.subjects.length > 0) ? contact.subjects.join(', ') : (contact.subject || '');
             const details = [subjects, contact.email, contact.phone].filter(Boolean);

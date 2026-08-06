@@ -135,7 +135,7 @@ const TasksPage = {
         if (this.filter === 'completed') filtered = filtered.filter(t => t.completed);
 
         if (filtered.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div><h3>Sin tareas</h3><p>Añade tu primera tarea</p></div>';
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.check + '</div><h3>Sin tareas</h3><p>Añade tu primera tarea</p></div>';
             return;
         }
 
@@ -179,7 +179,7 @@ const TasksPage = {
                         </div>
                         <div class="task-card-actions">
                             <button class="btn-icon" onclick="TasksPage.showEditModal('${task.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
-                            <button class="btn-icon" onclick="TasksPage.deleteTask('${task.id}')">🗑️</button>
+                            <button class="btn-icon" onclick="TasksPage.deleteTask('${task.id}')">${Icons.trash}</button>
                         </div>
                     </div>`;
                 });
