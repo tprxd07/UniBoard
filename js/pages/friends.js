@@ -10,7 +10,7 @@ const FriendsPage = {
         <div class="friends-stats" id="friends-stats"></div>
 
         <div class="friends-search-bar">
-            <input type="text" id="friend-search-input" placeholder="Buscar por @usuario, nombre o email..." class="input-field" style="flex:1;">
+            <input type="text" id="friend-search-input" placeholder="Buscar por usuario, email o teléfono..." class="input-field" style="flex:1;">
             <button class="btn btn-primary btn-sm" id="friend-search-btn">Buscar</button>
         </div>
         <div id="friends-search-results" class="friends-search-results"></div>
@@ -117,6 +117,7 @@ const FriendsPage = {
                 <div class="friend-info">
                     <h4>${user.name || 'Sin nombre'}</h4>
                     ${user.username ? `<p style="color:var(--primary);font-size:12px;">@${user.username}</p>` : `<p>${user.email || ''}</p>`}
+                    ${user.phone ? `<p style="color:var(--text-secondary);font-size:11px;">📱 ${user.phone}</p>` : ''}
                 </div>
                 <div class="friend-actions">${actionBtn}</div>
             </div>`;

@@ -1,7 +1,7 @@
-// Subjects Page
 const SubjectsPage = {
     subjects: [],
     selectedSubject: null,
+    currentDetailTab: 'info',
 
     render() {
         return `
@@ -27,14 +27,13 @@ const SubjectsPage = {
 
     renderGrid() {
         const grid = document.getElementById('subjects-grid');
-
         if (this.subjects.length === 0) {
             grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📚</div><h3>No tienes asignaturas</h3><p>Añade tu primera asignatura para empezar</p></div>';
             return;
         }
-
         grid.innerHTML = this.subjects.map(s => {
             const periodLabel = this.getPeriodLabel(s);
+            const gradeInfo = this.getSubjectGradeInfo(s);
             return `
             <div class="subject-card" onclick="SubjectsPage.showDetail('${s.id}')">
                 <div class="subject-card-header">
@@ -42,10 +41,53 @@ const SubjectsPage = {
                     <span class="badge badge-primary">${s.credits || 0} créditos</span>
                 </div>
                 <h4>${s.name}</h4>
-                <p style="font-size: 12px; color: var(--text-secondary);">${s.professors && s.professors.length > 0 ? s.professors.join(', ') : (s.professor || 'Sin profesor')}</p>
-                ${periodLabel ? `<p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${periodLabel}</p>` : ''}
+                <p style="font-size:12px;color:var(--text-secondary);">${s.professors && s.professors.length > 0 ? s.professors.join(', ') : (s.professor || 'Sin profesor')}</p>
+                ${periodLabel ? `<p style="font-size:11px;color:var(--text-muted);margin-top:4px;">${periodLabel}</p>` : ''}
+                ${gradeInfo ? `<p style="font-size:13px;font-weight:700;margin-top:8px;color:${Utils.getGradeColor(gradeInfo.avg)};">${gradeInfo.avg.toFixed(2)} · ${gradeInfo.count} eval</p>` : ''}
             </div>`;
         }).join('');
+    },
+
+    getSubjectGradeInfo(subject) {
+        const gt = subject.gradeTable;
+        if (!gt || !gt.items || gt.items.length === 0) return null;
+        const graded = gt.items.filter(i => i.grade !== null && i.grade !== undefined && i.grade !== '');
+        if (graded.length === 0) return null;
+
+        if (gt.usePeriods && gt.periodWeights && gt.periodWeights.length > 0) {
+            const periodAvgs = {};
+            graded.forEach(item => {
+                const p = item.period || 1;
+                if (!periodAvgs[p]) periodAvgs[p] = { sum: 0, weight: 0 };
+                periodAvgs[p].sum += (parseFloat(item.grade) || 0) * (parseFloat(item.weight) || 0);
+                periodAvgs[p].weight += parseFloat(item.weight) || 0;
+            });
+
+            let totalWeighted = 0;
+            let totalPeriodWeight = 0;
+            gt.periodWeights.forEach(pw => {
+                const pa = periodAvgs[pw.period];
+                if (pa && pa.weight > 0) {
+                    const avg = pa.sum / pa.weight;
+                    totalWeighted += avg * (parseFloat(pw.weight) || 0);
+                    totalPeriodWeight += parseFloat(pw.weight) || 0;
+                }
+            });
+
+            if (totalPeriodWeight > 0) {
+                return { avg: totalWeighted / totalPeriodWeight, count: graded.length };
+            }
+        }
+
+        let sum = 0, totalW = 0;
+        graded.forEach(item => {
+            const g = parseFloat(item.grade) || 0;
+            const w = parseFloat(item.weight) || 0;
+            sum += g * w;
+            totalW += w;
+        });
+
+        return totalW > 0 ? { avg: sum / totalW, count: graded.length } : null;
     },
 
     getPeriodLabel(s) {
@@ -54,6 +96,289 @@ const SubjectsPage = {
         return s.periodNumber ? `${typeLabel} ${s.periodNumber}` : typeLabel;
     },
 
+    // ========== DETAIL VIEW ==========
+    async showDetail(id) {
+        const subject = this.subjects.find(s => s.id === id);
+        if (!subject) return;
+        this.selectedSubject = subject;
+        this.currentDetailTab = 'info';
+        this.renderDetail();
+    },
+
+    renderDetail() {
+        const s = this.selectedSubject;
+        if (!s) return;
+        const profList = (s.professors && s.professors.length > 0) ? s.professors : (s.professor ? [s.professor] : []);
+        const periodLabel = this.getPeriodLabel(s) || '—';
+        const gradeInfo = this.getSubjectGradeInfo(s);
+
+        let headerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+            <div style="width:14px;height:14px;border-radius:50%;background:${s.color};flex-shrink:0;"></div>
+            <h3 style="font-size:20px;font-weight:700;">${s.name}</h3>
+        </div>`;
+
+        if (gradeInfo) {
+            headerHTML += `
+            <div style="text-align:center;margin:12px 0 16px;padding:12px;background:var(--bg-input);border-radius:var(--radius-sm);">
+                <div style="font-size:32px;font-weight:800;color:${Utils.getGradeColor(gradeInfo.avg)};">${gradeInfo.avg.toFixed(2)}</div>
+                <div style="font-size:12px;color:var(--text-secondary);">${gradeInfo.count} evaluaciones · Nota actual</div>
+            </div>`;
+        }
+
+        headerHTML += `
+        <div class="uni-life-tabs" style="margin-bottom:16px;">
+            <button class="tab ${this.currentDetailTab === 'info' ? 'active' : ''}" onclick="SubjectsPage.switchDetailTab('info')">Info</button>
+            <button class="tab ${this.currentDetailTab === 'grades' ? 'active' : ''}" onclick="SubjectsPage.switchDetailTab('grades')">Calificaciones</button>
+        </div>`;
+
+        let bodyHTML = '';
+        if (this.currentDetailTab === 'info') {
+            bodyHTML = `
+            <div class="grid-2" style="gap:10px;margin-bottom:16px;">
+                <div class="stat-card"><div class="stat-icon purple">👨‍🏫</div><div class="stat-info"><h4 style="font-size:13px;">${profList.length > 0 ? profList.join(', ') : '—'}</h4><p>Profesor${profList.length > 1 ? 'es' : ''}</p></div></div>
+                <div class="stat-card"><div class="stat-icon green">🏫</div><div class="stat-info"><h4 style="font-size:13px;">${s.room || '—'}</h4><p>Aula</p></div></div>
+                <div class="stat-card"><div class="stat-icon blue">📅</div><div class="stat-info"><h4 style="font-size:13px;">${periodLabel}</h4><p>Período</p></div></div>
+                <div class="stat-card"><div class="stat-icon orange">📜</div><div class="stat-info"><h4 style="font-size:13px;">${s.credits || 0}</h4><p>Créditos</p></div></div>
+            </div>
+            ${s.guideUrl ? `<a href="${s.guideUrl}" target="_blank" class="btn btn-ghost btn-full" style="margin-bottom:12px;">📄 Ver guía docente</a>` : ''}
+            <div style="display:flex;gap:8px;">
+                <button class="btn btn-ghost" style="flex:1;" onclick="SubjectsPage.showAddModal(SubjectsPage.selectedSubject); Utils.closeModal();">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> Editar
+                </button>
+                <button class="btn btn-danger" style="flex:1;" onclick="SubjectsPage.deleteSubject('${s.id}')">🗑️ Eliminar</button>
+            </div>`;
+        } else {
+            bodyHTML = this.renderGradeTable(s);
+        }
+
+        Utils.showModal(s.name, headerHTML + bodyHTML);
+    },
+
+    switchDetailTab(tab) {
+        this.currentDetailTab = tab;
+        this.renderDetail();
+    },
+
+    // ========== GRADE TABLE ==========
+    renderGradeTable(subject) {
+        const gt = subject.gradeTable || { items: [], usePeriods: false, periodWeights: [] };
+        const hasPeriods = subject.periodType;
+        const usePeriods = gt.usePeriods || false;
+
+        let html = '';
+
+        // Period weights toggle
+        if (hasPeriods) {
+            const periodCount = subject.periodType === 'trimestre' ? 3 : 2;
+            const typeLabel = subject.periodType === 'trimestre' ? 'Trimestres' : 'Cuatrimestres';
+            html += `
+            <div class="card" style="margin-bottom:12px;">
+                <div class="card-header" style="padding:12px 14px;">
+                    <span class="card-title" style="font-size:13px;">⚖️ Peso por ${subject.periodType}</span>
+                    <label class="toggle" style="flex-shrink:0;">
+                        <input type="checkbox" id="gt-use-periods" ${usePeriods ? 'checked' : ''} onchange="SubjectsPage.togglePeriods()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div id="period-weights-section" style="display:${usePeriods ? '' : 'none'};padding:0 14px 12px;">
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        ${Array.from({length: periodCount}, (_, i) => {
+                            const pw = (gt.periodWeights || []).find(p => p.period === i + 1);
+                            return `<div style="flex:1;min-width:80px;">
+                                <label style="font-size:11px;color:var(--text-secondary);">${typeLabel.slice(0, -1)} ${i + 1}</label>
+                                <input type="number" class="input-field gt-period-weight" data-period="${i + 1}"
+                                    value="${pw ? pw.weight : Math.round(100 / periodCount)}"
+                                    min="0" max="100" style="width:100%;padding:8px;font-size:13px;text-align:center;">
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        // Grade items table
+        html += `
+        <div class="card">
+            <div class="card-header" style="padding:12px 14px;">
+                <span class="card-title" style="font-size:13px;">📋 Evaluaciones</span>
+                <button class="btn btn-primary btn-sm" onclick="SubjectsPage.addGradeItem()" style="font-size:12px;padding:5px 10px;">+ Añadir</button>
+            </div>
+            <div class="grade-table-wrapper">
+                <table class="grade-table">
+                    <thead>
+                        <tr>
+                            <th style="width:35%;"></th>
+                            <th style="width:20%;">Tipo</th>
+                            <th style="width:15%;">Peso %</th>
+                            ${usePeriods ? '<th style="width:15%;">Período</th>' : ''}
+                            <th style="width:${usePeriods ? '15%' : '30%'};">Nota</th>
+                            <th style="width:30px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="gt-items-body">
+                        ${(gt.items || []).map((item, idx) => this.renderGradeRow(item, idx, usePeriods, subject)).join('')}
+                    </tbody>
+                </table>
+            </div>
+            ${(!gt.items || gt.items.length === 0) ? '<p style="text-align:center;color:var(--text-secondary);padding:16px;font-size:12px;">Añade exámenes, trabajos, etc.</p>' : ''}
+            <div style="padding:12px 14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:13px;color:var(--text-secondary);">Nota actual:</span>
+                <span id="gt-calculated-grade" style="font-size:20px;font-weight:800;color:var(--primary);">${this.calculateGrade(subject).toFixed(2)}</span>
+            </div>
+        </div>`;
+
+        return html;
+    },
+
+    renderGradeRow(item, idx, usePeriods, subject) {
+        const periodCount = subject.periodType === 'trimestre' ? 3 : 2;
+        const typeLabel = subject.periodType === 'trimestre' ? 'Trimestre' : 'Cuatrimestre';
+        const types = [
+            { value: 'exam', label: 'Examen' },
+            { value: 'assignment', label: 'Trabajo' },
+            { value: 'project', label: 'Proyecto' },
+            { value: 'participation', label: 'Participación' },
+            { value: 'other', label: 'Otro' }
+        ];
+
+        return `
+        <tr class="grade-row">
+            <td><input type="text" class="gt-name" value="${item.name || ''}" placeholder="Nombre" onchange="SubjectsPage.saveGradeTable()"></td>
+            <td>
+                <select class="gt-type" onchange="SubjectsPage.saveGradeTable()" style="padding:6px 8px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-input);color:var(--text);width:100%;">
+                    ${types.map(t => `<option value="${t.value}" ${item.type === t.value ? 'selected' : ''}>${t.label}</option>`).join('')}
+                </select>
+            </td>
+            <td><input type="number" class="gt-weight" value="${item.weight || ''}" min="0" max="100" placeholder="%" style="width:100%;text-align:center;" onchange="SubjectsPage.saveGradeTable()"></td>
+            ${usePeriods ? `<td>
+                <select class="gt-period" onchange="SubjectsPage.saveGradeTable()" style="padding:6px 8px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-input);color:var(--text);width:100%;">
+                    ${Array.from({length: periodCount}, (_, i) => `<option value="${i + 1}" ${item.period == i + 1 ? 'selected' : ''}>${typeLabel.charAt(0)}${i + 1}</option>`).join('')}
+                </select>
+            </td>` : ''}
+            <td><input type="number" class="gt-grade" value="${item.grade !== null && item.grade !== undefined ? item.grade : ''}" min="0" max="10" step="0.1" placeholder="—" style="width:100%;text-align:center;font-weight:700;" onchange="SubjectsPage.saveGradeTable()"></td>
+            <td><button class="btn-icon" onclick="SubjectsPage.removeGradeItem(${idx})" style="font-size:14px;padding:4px;" title="Eliminar">✕</button></td>
+        </tr>`;
+    },
+
+    addGradeItem() {
+        const gt = this.selectedSubject.gradeTable || { items: [], usePeriods: false, periodWeights: [] };
+        if (!gt.items) gt.items = [];
+        gt.items.push({ name: '', type: 'exam', weight: '', grade: null, period: 1 });
+        this.selectedSubject.gradeTable = gt;
+        this.renderDetail();
+    },
+
+    removeGradeItem(idx) {
+        const gt = this.selectedSubject.gradeTable;
+        if (!gt || !gt.items) return;
+        gt.items.splice(idx, 1);
+        this.saveGradeTable();
+        this.renderDetail();
+    },
+
+    togglePeriods() {
+        const gt = this.selectedSubject.gradeTable || { items: [], usePeriods: false, periodWeights: [] };
+        const checkbox = document.getElementById('gt-use-periods');
+        gt.usePeriods = checkbox.checked;
+        if (checkbox.checked && (!gt.periodWeights || gt.periodWeights.length === 0)) {
+            const periodCount = this.selectedSubject.periodType === 'trimestre' ? 3 : 2;
+            gt.periodWeights = Array.from({length: periodCount}, (_, i) => ({ period: i + 1, weight: Math.round(100 / periodCount) }));
+        }
+        this.selectedSubject.gradeTable = gt;
+        this.renderDetail();
+    },
+
+    async saveGradeTable() {
+        const s = this.selectedSubject;
+        if (!s) return;
+        const gt = s.gradeTable || { items: [], usePeriods: false, periodWeights: [] };
+
+        // Read items from DOM
+        const rows = document.querySelectorAll('#gt-items-body .grade-row');
+        gt.items = [];
+        rows.forEach(row => {
+            gt.items.push({
+                name: row.querySelector('.gt-name')?.value || '',
+                type: row.querySelector('.gt-type')?.value || 'exam',
+                weight: parseFloat(row.querySelector('.gt-weight')?.value) || 0,
+                grade: row.querySelector('.gt-grade')?.value !== '' ? parseFloat(row.querySelector('.gt-grade')?.value) : null,
+                period: row.querySelector('.gt-period')?.value ? parseInt(row.querySelector('.gt-period')?.value) : null
+            });
+        });
+
+        // Read period weights from DOM
+        const periodInputs = document.querySelectorAll('.gt-period-weight');
+        if (periodInputs.length > 0) {
+            gt.periodWeights = [];
+            periodInputs.forEach(input => {
+                gt.periodWeights.push({
+                    period: parseInt(input.dataset.period),
+                    weight: parseFloat(input.value) || 0
+                });
+            });
+        }
+
+        s.gradeTable = gt;
+
+        // Update calculated grade display
+        const gradeEl = document.getElementById('gt-calculated-grade');
+        if (gradeEl) {
+            const avg = this.calculateGrade(s);
+            gradeEl.textContent = avg.toFixed(2);
+            gradeEl.style.color = Utils.getGradeColor(avg);
+        }
+
+        // Save to DB
+        try {
+            await DB.updateSubject(s.id, { gradeTable: gt });
+        } catch (e) {
+            console.error('Error saving grade table:', e);
+        }
+
+        // Update grid card grade display
+        this.renderGrid();
+    },
+
+    calculateGrade(subject) {
+        const gt = subject.gradeTable;
+        if (!gt || !gt.items || gt.items.length === 0) return 0;
+        const graded = gt.items.filter(i => i.grade !== null && i.grade !== undefined && i.grade !== '');
+        if (graded.length === 0) return 0;
+
+        if (gt.usePeriods && gt.periodWeights && gt.periodWeights.length > 0) {
+            const periodAvgs = {};
+            graded.forEach(item => {
+                const p = item.period || 1;
+                if (!periodAvgs[p]) periodAvgs[p] = { sum: 0, weight: 0 };
+                periodAvgs[p].sum += (parseFloat(item.grade) || 0) * (parseFloat(item.weight) || 0);
+                periodAvgs[p].weight += parseFloat(item.weight) || 0;
+            });
+
+            let totalWeighted = 0;
+            let totalPeriodWeight = 0;
+            gt.periodWeights.forEach(pw => {
+                const pa = periodAvgs[pw.period];
+                if (pa && pa.weight > 0) {
+                    const avg = pa.sum / pa.weight;
+                    totalWeighted += avg * (parseFloat(pw.weight) || 0);
+                    totalPeriodWeight += parseFloat(pw.weight) || 0;
+                }
+            });
+
+            return totalPeriodWeight > 0 ? totalWeighted / totalPeriodWeight : 0;
+        }
+
+        let sum = 0, totalW = 0;
+        graded.forEach(item => {
+            sum += (parseFloat(item.grade) || 0) * (parseFloat(item.weight) || 0);
+            totalW += parseFloat(item.weight) || 0;
+        });
+
+        return totalW > 0 ? sum / totalW : 0;
+    },
+
+    // ========== ADD/EDIT MODAL ==========
     showAddModal(subject = null) {
         const isEdit = !!subject;
         const s = subject || {};
@@ -108,15 +433,15 @@ const SubjectsPage = {
                 <div class="color-options" id="subj-colors">
                     ${presetColors.map(c =>
                         `<div class="color-option ${currentColor === c ? 'active' : ''}"
-                              style="background: ${c};"
-                              onclick="document.querySelectorAll('#subj-colors .color-option').forEach(e=>e.classList.remove('active')); this.classList.add('active');"
+                              style="background:${c};"
+                              onclick="document.querySelectorAll('#subj-colors .color-option').forEach(e=>e.classList.remove('active'));this.classList.add('active');"
                               data-color="${c}"></div>`
                     ).join('')}
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
-                    <label style="font-size: 12px; color: var(--text-secondary);">Custom:</label>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                    <label style="font-size:12px;color:var(--text-secondary);">Custom:</label>
                     <input type="color" id="subj-color-picker" value="${isPreset ? '#6C5CE7' : currentColor}"
-                        style="width: 32px; height: 32px; border: none; border-radius: 50%; cursor: pointer; padding: 0;">
+                        style="width:32px;height:32px;border:none;border-radius:50%;cursor:pointer;padding:0;">
                 </div>
             </div>`;
 
@@ -140,10 +465,7 @@ const SubjectsPage = {
                 color: color
             };
 
-            if (!data.name) {
-                Utils.showToast('El nombre es obligatorio', 'error');
-                return;
-            }
+            if (!data.name) { Utils.showToast('El nombre es obligatorio', 'error'); return; }
 
             try {
                 if (isEdit) {
@@ -154,77 +476,15 @@ const SubjectsPage = {
                     Utils.showToast('Asignatura añadida', 'success');
                 }
                 this.loadSubjects();
-            } catch (e) {
-                Utils.showToast('Error al guardar', 'error');
-            }
+            } catch (e) { Utils.showToast('Error al guardar', 'error'); }
         });
 
-        // Toggle period number visibility
-        const periodType = document.getElementById('subj-period-type');
-        periodType.addEventListener('change', () => {
-            document.getElementById('period-number-group').style.display = periodType.value ? '' : 'none';
+        document.getElementById('subj-period-type').addEventListener('change', function() {
+            document.getElementById('period-number-group').style.display = this.value ? '' : 'none';
         });
-
-        // Color picker deselects preset colors
-        document.getElementById('subj-color-picker').addEventListener('input', (e) => {
+        document.getElementById('subj-color-picker').addEventListener('input', () => {
             document.querySelectorAll('#subj-colors .color-option').forEach(o => o.classList.remove('active'));
         });
-    },
-
-    async showDetail(id) {
-        const subject = this.subjects.find(s => s.id === id);
-        if (!subject) return;
-        this.selectedSubject = subject;
-
-        const periodLabel = this.getPeriodLabel(subject) || '—';
-        const profList = (subject.professors && subject.professors.length > 0) ? subject.professors : (subject.professor ? [subject.professor] : []);
-
-        const html = `
-        <div style="margin-bottom: 20px;">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                <div style="width: 16px; height: 16px; border-radius: 50%; background: ${subject.color};"></div>
-                <h3 style="font-size: 20px;">${subject.name}</h3>
-            </div>
-            <div class="grid-2" style="gap: 12px;">
-                <div class="stat-card">
-                    <div class="stat-icon purple">👨‍🏫</div>
-                    <div class="stat-info">
-                        <h4 style="font-size: 14px;">${profList.length > 0 ? profList.join(', ') : '—'}</h4>
-                        <p>Profesor${profList.length > 1 ? 'es' : ''}</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon green">🏫</div>
-                    <div class="stat-info">
-                        <h4 style="font-size: 14px;">${subject.room || '—'}</h4>
-                        <p>Aula</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon blue">📅</div>
-                    <div class="stat-info">
-                        <h4 style="font-size: 14px;">${periodLabel}</h4>
-                        <p>Período</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon orange">📜</div>
-                    <div class="stat-info">
-                        <h4 style="font-size: 14px;">${subject.credits || 0}</h4>
-                        <p>Créditos</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        ${subject.guideUrl ? `<a href="${subject.guideUrl}" target="_blank" class="btn btn-ghost btn-full" style="margin-top: 8px;">📄 Ver guía docente</a>` : ''}
-
-        <div style="display: flex; gap: 8px; margin-top: 16px;">
-            <button class="btn btn-ghost" style="flex: 1;" onclick="SubjectsPage.showAddModal(SubjectsPage.selectedSubject); Utils.closeModal();"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> Editar</button>
-            <button class="btn btn-danger" style="flex: 1;" onclick="SubjectsPage.deleteSubject('${id}')">🗑️ Eliminar</button>
-        </div>`;
-
-        Utils.showModal(subject.name, html);
     },
 
     async deleteSubject(id) {
@@ -234,9 +494,7 @@ const SubjectsPage = {
                 Utils.showToast('Asignatura eliminada', 'success');
                 Utils.closeModal();
                 this.loadSubjects();
-            } catch (e) {
-                Utils.showToast('Error al eliminar', 'error');
-            }
+            } catch (e) { Utils.showToast('Error al eliminar', 'error'); }
         }
     }
 };

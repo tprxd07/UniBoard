@@ -546,21 +546,21 @@ const DB = {
         const addResult = (doc) => {
             if (doc.id !== Auth.currentUser.uid && !results.has(doc.id)) {
                 const d = doc.data();
-                results.set(doc.id, { uid: doc.id, name: d.name || '', email: d.email || '', photoURL: d.photoURL || '', username: d.username || '' });
+                results.set(doc.id, { uid: doc.id, name: d.name || '', email: d.email || '', photoURL: d.photoURL || '', username: d.username || '', phone: d.phone || '' });
             }
         };
         const usernameSnap = await db.collection('users')
             .where('usernameLower', '>=', q).where('usernameLower', '<=', q + '\uf8ff')
             .limit(10).get();
         usernameSnap.docs.forEach(addResult);
-        const nameSnap = await db.collection('users')
-            .where('name', '>=', q).where('name', '<=', q + '\uf8ff')
-            .limit(10).get();
-        nameSnap.docs.forEach(addResult);
         const emailSnap = await db.collection('users')
             .where('email', '>=', q).where('email', '<=', q + '\uf8ff')
             .limit(10).get();
         emailSnap.docs.forEach(addResult);
+        const phoneSnap = await db.collection('users')
+            .where('phone', '>=', q).where('phone', '<=', q + '\uf8ff')
+            .limit(10).get();
+        phoneSnap.docs.forEach(addResult);
         return Array.from(results.values());
     },
 

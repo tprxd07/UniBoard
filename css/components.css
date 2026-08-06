@@ -493,4 +493,30 @@
     .timer-display {
         font-size: 48px;
     }
+
+    .pomodoro-controls .btn {
+        min-width: 56px;
+        min-height: 56px;
+        border-radius: 50%;
+    }
+
+    .task-group {
+        margin-bottom: 16px;
+    }
+
+    .task-item {
+        padding: 12px;
+    }
+
+    .task-info {
+        min-width: 0;
+    }
+
+    .task-title {
+        font-size: 14px;
+    }
+
+    .task-meta {
+        font-size: 11px;
+    }
 }
