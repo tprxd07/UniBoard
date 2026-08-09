@@ -82,8 +82,7 @@ const GoalsPage = {
                         <span class="card-title">Rastreador de hábitos semanal</span>
                     </div>
                     <div id="habit-tracker"></div>
-                </div>
-                <button class="btn btn-primary btn-sm" onclick="GoalsPage.addHabit()">+ Añadir hábito</button>`;
+                </div>`;
 
             this.renderHabitTracker(habits);
         }
@@ -186,37 +185,6 @@ const GoalsPage = {
             await DB.updateGoal(id, { completedDays: days });
             this.loadGoals();
         } catch (e) {}
-    },
-
-    addHabit() {
-        const html = `
-            <div class="form-group">
-                <label>Nombre del hábito</label>
-                <input type="text" id="habit-name" placeholder="Ej: Meditar 10 minutos">
-            </div>`;
-
-        Utils.showModal('Nuevo Hábito', html, async () => {
-            const data = {
-                type: 'habit',
-                title: document.getElementById('habit-name').value,
-                progress: 0,
-                completed: false,
-                completedDays: []
-            };
-
-            if (!data.title) {
-                Utils.showToast('El nombre es obligatorio', 'error');
-                return;
-            }
-
-            try {
-                await DB.addGoal(data);
-                Utils.showToast('Hábito creado', 'success');
-                this.loadGoals();
-            } catch (e) {
-                Utils.showToast('Error al guardar', 'error');
-            }
-        });
     },
 
     async deleteGoal(id) {

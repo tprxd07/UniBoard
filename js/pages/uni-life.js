@@ -249,8 +249,7 @@ const UniLifePage = {
                                 }).join('')}
                             </div>
                         </div>`).join('')}
-                </div>
-                <button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="UniLifePage.addHabit()">+ Añadir hábito</button>`;
+                </div>`;
         }
     },
 
@@ -305,15 +304,6 @@ const UniLifePage = {
         const idx = days.indexOf(dayIndex);
         if (idx > -1) days.splice(idx, 1); else days.push(dayIndex);
         try { await DB.updateGoal(id, { completedDays: days }); this.loadData(); } catch (e) {}
-    },
-
-    addHabit() {
-        const html = `<div class="form-group"><label>Nombre del hábito</label><input type="text" id="habit-name" placeholder="Ej: Meditar 10 min"></div>`;
-        Utils.showModal('Nuevo Hábito', html, async () => {
-            const data = { type: 'habit', title: document.getElementById('habit-name').value, progress: 0, completed: false, completedDays: [] };
-            if (!data.title) { Utils.showToast('El nombre es obligatorio', 'error'); return; }
-            try { await DB.addGoal(data); Utils.showToast('Hábito creado', 'success'); this.loadData(); } catch (e) { Utils.showToast('Error', 'error'); }
-        });
     },
 
     async deleteGoal(id) {
