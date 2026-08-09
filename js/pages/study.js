@@ -34,6 +34,7 @@ const StudyPage = {
     },
 
     init() {
+        this.activeTab = 'pomodoro';
         this.loadSettings();
 
         document.querySelectorAll('.tab').forEach(tab => {

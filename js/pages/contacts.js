@@ -28,6 +28,7 @@ const ContactsPage = {
     },
 
     async init() {
+        this.activeTab = 'friends';
         document.getElementById('add-contact-btn').addEventListener('click', () => {
             if (this.activeTab === 'friends') {
                 Utils.showToast('Los amigos se añaden desde la sección Amigos', 'info');

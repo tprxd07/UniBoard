@@ -31,6 +31,9 @@ const ActivitiesPage = {
     },
 
     async init() {
+        this.activeTab = 'tasks';
+        this.filter = 'all';
+        this.collapsedDays = {};
         document.getElementById('add-activity-btn').addEventListener('click', () => {
             if (this.activeTab === 'tasks') this.showAddTaskModal();
             else this.showAddExamModal();

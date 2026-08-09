@@ -42,7 +42,15 @@ const CalendarPage = {
 
     async init() {
         this.currentDate = new Date();
+        this.view = 'month';
         await DB.initDefaultGroups();
+
+        document.querySelectorAll('.calendar-topbar .tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.view === 'month');
+        });
+
+        document.getElementById('cal-prev').style.display = '';
+        document.getElementById('cal-next').style.display = '';
 
         document.querySelectorAll('.calendar-topbar .tab').forEach(tab => {
             tab.addEventListener('click', () => {
