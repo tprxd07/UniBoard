@@ -5,6 +5,16 @@ const TasksPage = {
     collapsedDays: {},
 
     render() {
+        const skel = Array.from({length: 4}, () => `
+            <div class="skeleton-task-card">
+                <div class="skeleton skeleton-circle"></div>
+                <div style="flex:1;">
+                    <div class="skeleton skeleton-text-sm" style="width:30%;"></div>
+                    <div class="skeleton skeleton-text" style="width:75%;"></div>
+                </div>
+                <div class="skeleton skeleton-badge"></div>
+            </div>`).join('');
+
         return `
         <div class="section-header">
             <span class="section-title">Tareas</span>
@@ -17,7 +27,7 @@ const TasksPage = {
             <button class="tab" data-filter="completed">Completadas</button>
         </div>
 
-        <div id="tasks-list"></div>`;
+        <div id="tasks-list">${skel}</div>`;
     },
 
     init() {

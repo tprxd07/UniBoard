@@ -17,14 +17,33 @@ const DashboardPage = {
                     <span class="card-title">${Icons.check} Tareas de hoy</span>
                     <a href="#" onclick="App.loadPage('tasks'); return false;" class="badge badge-primary">Ver todas</a>
                 </div>
-                <div id="dashboard-tasks"></div>
+                <div id="dashboard-tasks">
+                    ${Array.from({length: 3}, () => `
+                    <div class="skeleton-task-card">
+                        <div class="skeleton skeleton-circle"></div>
+                        <div style="flex:1;">
+                            <div class="skeleton skeleton-text-sm" style="width:40%;"></div>
+                            <div class="skeleton skeleton-text" style="width:80%;"></div>
+                        </div>
+                    </div>`).join('')}
+                </div>
             </div>
 
             <div class="card dashboard-events-scroll">
                 <div class="card-header">
                     <span class="card-title">${Icons.flag} Examenes y eventos</span>
                 </div>
-                <div id="dashboard-events"></div>
+                <div id="dashboard-events">
+                    ${Array.from({length: 4}, () => `
+                    <div class="skeleton-list-item">
+                        <div class="skeleton skeleton-icon"></div>
+                        <div style="flex:1;">
+                            <div class="skeleton skeleton-text" style="width:70%;"></div>
+                            <div class="skeleton skeleton-text-sm" style="width:50%;"></div>
+                        </div>
+                        <div class="skeleton skeleton-badge"></div>
+                    </div>`).join('')}
+                </div>
             </div>
         </div>`;
     },

@@ -566,13 +566,105 @@
     margin-bottom: 6px;
 }
 
+.skeleton-text-lg {
+    height: 20px;
+    width: 40%;
+    margin-bottom: 8px;
+}
+
 .skeleton-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
 }
 
+.skeleton-avatar-lg {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+}
+
 .skeleton-card {
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+}
+
+.skeleton-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+}
+
+.skeleton-badge {
+    width: 60px;
+    height: 22px;
+    border-radius: 12px;
+}
+
+.skeleton-btn {
+    width: 80px;
+    height: 32px;
+    border-radius: 8px;
+}
+
+.skeleton-line {
+    height: 12px;
+    margin-bottom: 6px;
+}
+
+.skeleton-circle {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+/* Skeleton layout helpers */
+.skeleton-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+}
+
+.skeleton-list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    margin-bottom: 8px;
+}
+
+.skeleton-subject-card {
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+}
+
+.skeleton-task-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    margin-bottom: 8px;
+}
+
+.skeleton-folder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
     padding: 20px;
     border: 1px solid var(--border);
     border-radius: var(--radius);

@@ -7,6 +7,17 @@ const ActivitiesPage = {
     activeTab: 'tasks',
 
     render() {
+        const skeletonTasks = Array.from({length: 4}, () => `
+            <div class="skeleton-task-card">
+                <div class="skeleton skeleton-circle"></div>
+                <div style="flex:1;">
+                    <div class="skeleton skeleton-text-sm" style="width:30%;"></div>
+                    <div class="skeleton skeleton-text" style="width:75%;"></div>
+                    <div class="skeleton skeleton-text-sm" style="width:45%;"></div>
+                </div>
+                <div class="skeleton skeleton-badge"></div>
+            </div>`).join('');
+
         return `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
             <div class="tabs" style="max-width: 400px;">
@@ -22,11 +33,11 @@ const ActivitiesPage = {
                 <button class="tab" data-filter="pending" onclick="ActivitiesPage.setFilter('pending', this)">Pendientes</button>
                 <button class="tab" data-filter="completed" onclick="ActivitiesPage.setFilter('completed', this)">Completadas</button>
             </div>
-            <div id="tasks-list"></div>
+            <div id="tasks-list">${skeletonTasks}</div>
         </div>
 
         <div id="exams-tab" style="display:none;">
-            <div id="exams-list"></div>
+            <div id="exams-list">${skeletonTasks}</div>
         </div>`;
     },
 

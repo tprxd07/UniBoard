@@ -3,12 +3,27 @@ const ExamsPage = {
     exams: [],
 
     render() {
+        const skel = Array.from({length: 3}, () => `
+            <div class="skeleton-card" style="margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
+                    <div style="flex:1;">
+                        <div class="skeleton skeleton-text-lg" style="width:60%;"></div>
+                        <div class="skeleton skeleton-text-sm" style="width:80%;"></div>
+                    </div>
+                    <div class="skeleton" style="width:50px;height:50px;border-radius:12px;"></div>
+                </div>
+                <div style="display:flex;gap:12px;">
+                    <div class="skeleton" style="flex:1;height:50px;border-radius:8px;"></div>
+                    <div class="skeleton" style="flex:1;height:50px;border-radius:8px;"></div>
+                </div>
+            </div>`).join('');
+
         return `
         <div class="section-header">
             <span class="section-title">Exámenes</span>
             <button class="btn btn-primary btn-sm" id="add-exam-btn">+ Añadir</button>
         </div>
-        <div id="exams-list"></div>`;
+        <div id="exams-list">${skel}</div>`;
     },
 
     init() {

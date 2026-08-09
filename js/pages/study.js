@@ -20,7 +20,16 @@ const StudyPage = {
             <button class="tab" data-tab="stats">Estadísticas</button>
         </div>
 
-        <div id="study-content"></div>
+        <div id="study-content">
+            <div style="text-align:center;max-width:500px;margin:0 auto;">
+                <div class="skeleton" style="width:200px;height:48px;margin:0 auto 24px;border-radius:12px;"></div>
+                <div class="skeleton" style="width:240px;height:80px;margin:0 auto 24px;border-radius:16px;"></div>
+                <div style="display:flex;gap:12px;justify-content:center;">
+                    <div class="skeleton" style="width:100px;height:100px;border-radius:50%;"></div>
+                    <div class="skeleton" style="width:100px;height:100px;border-radius:50%;"></div>
+                </div>
+            </div>
+        </div>
 
         <!-- Concentration Mode Overlay -->
         <div id="concentration-overlay" class="concentration-overlay hidden">

@@ -8,7 +8,19 @@ const SubjectsPage = {
         <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
             <button class="btn btn-primary btn-sm" id="add-subject-btn">+ Añadir</button>
         </div>
-        <div id="subjects-grid" class="grid-3"></div>`;
+        <div id="subjects-grid" class="grid-3">
+            ${Array.from({length: 6}, () => `
+            <div class="skeleton-subject-card">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                    <div class="skeleton skeleton-circle"></div>
+                    <div class="skeleton skeleton-text" style="flex:1;margin:0;"></div>
+                    <div class="skeleton skeleton-badge"></div>
+                </div>
+                <div class="skeleton skeleton-text-lg" style="width:70%;"></div>
+                <div class="skeleton skeleton-text-sm" style="width:50%;"></div>
+                <div class="skeleton skeleton-text-sm" style="width:30%;margin-top:12px;"></div>
+            </div>`).join('')}
+        </div>`;
     },
 
     init() {

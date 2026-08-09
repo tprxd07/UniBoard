@@ -4,6 +4,13 @@ const DocumentsPage = {
     activeView: 'archivos',
 
     render() {
+        const skeletonFolders = Array.from({length: 4}, () => `
+            <div class="skeleton-folder">
+                <div class="skeleton skeleton-icon" style="width:40px;height:40px;"></div>
+                <div class="skeleton skeleton-text" style="width:60%;"></div>
+                <div class="skeleton skeleton-text-sm" style="width:40%;"></div>
+            </div>`).join('');
+
         return `
         <div class="tabs" style="max-width: 400px; margin-bottom: 20px;">
             <button class="tab active" data-view="archivos">Archivos</button>
@@ -11,7 +18,7 @@ const DocumentsPage = {
         </div>
 
         <div id="docs-actions-bar" style="display:flex;justify-content:flex-end;margin-bottom:16px;"></div>
-        <div id="docs-content"></div>`;
+        <div id="docs-content"><div class="doc-grid">${skeletonFolders}</div></div>`;
     },
 
     init() {
