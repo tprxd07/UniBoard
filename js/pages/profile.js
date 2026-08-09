@@ -146,8 +146,8 @@ const ProfilePage = {
 
         // Photo display
         const display = document.getElementById('profile-photo-display');
-        if (profile.photoURL) {
-            display.innerHTML = `<img src="${profile.photoURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        if (profile.photoURL && Utils.isValidURL(profile.photoURL)) {
+            display.innerHTML = Utils.sanitize(`<img src="${Utils.escapeHTML(profile.photoURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`);
         }
 
         // Banner
@@ -158,8 +158,8 @@ const ProfilePage = {
 
         const bannerDisplay = document.getElementById('profile-banner-display');
         const removeBtn = document.getElementById('banner-remove-photo');
-        if (profile.bannerURL) {
-            bannerDisplay.innerHTML = `<img src="${profile.bannerURL}" style="width:100%;height:100%;object-fit:cover;">`;
+        if (profile.bannerURL && Utils.isValidURL(profile.bannerURL)) {
+            bannerDisplay.innerHTML = Utils.sanitize(`<img src="${Utils.escapeHTML(profile.bannerURL)}" style="width:100%;height:100%;object-fit:cover;">`);
             if (removeBtn) removeBtn.style.display = '';
         } else {
             bannerDisplay.innerHTML = '';

@@ -112,7 +112,7 @@ const DocumentsPage = {
             return;
         }
 
-        container.innerHTML = links.map(doc => `
+        container.innerHTML = Utils.sanitize(links.map(doc => `
             <div class="list-item">
                 <div class="list-item-icon">${Icons.externalLink}</div>
                 <div class="list-item-content">
@@ -124,14 +124,14 @@ const DocumentsPage = {
                     <button class="btn-icon" style="font-size: 14px;" onclick="DocumentsPage.deleteDocument('${doc.id}')">${Icons.trash}</button>
                 </div>
             </div>
-        `).join('');
+        `).join(''));
     },
 
     showFolder(name) {
         const docs = this.documents.filter(d => (d.subject || 'Sin asignatura') === name && (!d.url || d.docType === 'file'));
         const container = document.getElementById('docs-content');
 
-        container.innerHTML = `
+        container.innerHTML = Utils.sanitize(`
             <div style="margin-bottom: 16px;">
                 <button class="btn btn-ghost btn-sm" onclick="DocumentsPage.renderContent()">← Volver</button>
                 <h3 style="display: inline; margin-left: 12px;">${name}</h3>
@@ -149,7 +149,7 @@ const DocumentsPage = {
                         <button class="btn-icon" style="font-size: 14px;" onclick="DocumentsPage.deleteDocument('${doc.id}')">${Icons.trash}</button>
                     </div>
                 </div>`;
-            }).join('')}`;
+            }).join('')}`);
     },
 
     setupDropzone() {

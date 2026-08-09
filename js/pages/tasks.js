@@ -199,7 +199,7 @@ const TasksPage = {
             html += '</div>';
         });
 
-        container.innerHTML = html;
+        container.innerHTML = Utils.sanitize(html);
     },
 
     toggleGroup(label) {

@@ -287,7 +287,7 @@ const CalendarPage = {
         }
 
         html += '</div>';
-        container.innerHTML = html;
+        container.innerHTML = Utils.sanitize(html);
     },
 
     // ============ WEEK VIEW ============
@@ -363,7 +363,7 @@ const CalendarPage = {
         });
 
         html += '</div></div>';
-        container.innerHTML = html;
+        container.innerHTML = Utils.sanitize(html);
         this._scrollToCurrentTime(container);
     },
 
@@ -428,7 +428,7 @@ const CalendarPage = {
         });
 
         html += '</div></div></div>';
-        container.innerHTML = html;
+        container.innerHTML = Utils.sanitize(html);
         this._scrollToCurrentTime(container);
     },
 
@@ -614,9 +614,8 @@ const CalendarPage = {
         });
 
         html += '</div>';
-        container.innerHTML = html;
+        container.innerHTML = Utils.sanitize(html);
     },
-
     toggleTodosDay(dateStr) {
         this._collapsedTodos[dateStr] = !this._collapsedTodos[dateStr];
         this.renderCalendar();
@@ -721,7 +720,7 @@ const CalendarPage = {
 
         const modal = document.getElementById('modal');
         document.getElementById('modal-title').textContent = isEdit ? 'Editar evento' : 'Añadir evento';
-        document.getElementById('modal-body').innerHTML = bodyHtml;
+        document.getElementById('modal-body').innerHTML = Utils.sanitize(bodyHtml);
         document.getElementById('modal-confirm').classList.add('hidden');
         document.querySelector('.modal-footer .btn-ghost').classList.add('hidden');
         modal.classList.remove('hidden');
@@ -834,7 +833,7 @@ const CalendarPage = {
 
         const modal = document.getElementById('modal');
         document.getElementById('modal-title').textContent = 'Modificar grupo';
-        document.getElementById('modal-body').innerHTML = bodyHtml;
+        document.getElementById('modal-body').innerHTML = Utils.sanitize(bodyHtml);
         document.getElementById('modal-confirm').classList.add('hidden');
         document.querySelector('.modal-footer .btn-ghost').classList.add('hidden');
         modal.classList.remove('hidden');
@@ -899,7 +898,7 @@ const CalendarPage = {
 
         const modal = document.getElementById('modal');
         document.getElementById('modal-title').textContent = isEdit ? 'Editar grupo' : 'Añadir grupo';
-        document.getElementById('modal-body').innerHTML = bodyHtml;
+        document.getElementById('modal-body').innerHTML = Utils.sanitize(bodyHtml);
         document.getElementById('modal-confirm').classList.add('hidden');
         document.querySelector('.modal-footer .btn-ghost').classList.add('hidden');
         modal.classList.remove('hidden');
@@ -980,7 +979,7 @@ const CalendarPage = {
 
         const modal = document.getElementById('modal');
         document.getElementById('modal-title').textContent = 'Eliminar grupo';
-        document.getElementById('modal-body').innerHTML = bodyHtml;
+        document.getElementById('modal-body').innerHTML = Utils.sanitize(bodyHtml);
         document.getElementById('modal-confirm').classList.add('hidden');
         document.querySelector('.modal-footer .btn-ghost').classList.add('hidden');
     },

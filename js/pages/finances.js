@@ -108,7 +108,7 @@ const FinancesPage = {
         const categoryIcons = { photocopies: Icons.file, transport: Icons.backpack, cafeteria: Icons.coffee, other: Icons.zap };
         const categoryNames = { photocopies: 'Fotocopias', transport: 'Transporte', cafeteria: 'Cafetería', other: 'Otro' };
 
-        container.innerHTML = recent.map(t => `
+        container.innerHTML = Utils.sanitize(recent.map(t => `
             <div class="list-item">
                 <div class="list-item-icon">${categoryIcons[t.category] || Icons.zap}</div>
                 <div class="list-item-content">
@@ -118,7 +118,7 @@ const FinancesPage = {
                 <span style="font-weight: 700; color: var(--danger);">-${Utils.formatCurrency(t.amount)}</span>
                 <button class="btn-icon" style="font-size: 14px;" onclick="FinancesPage.deleteTransaction('${t.id}')">${Icons.trash}</button>
             </div>
-        `).join('');
+        `).join(''));
     },
 
     showAddModal() {

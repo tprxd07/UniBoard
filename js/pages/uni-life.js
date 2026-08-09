@@ -172,7 +172,7 @@ const UniLifePage = {
             return;
         }
 
-        container.innerHTML = links.map(link => {
+        container.innerHTML = Utils.sanitize(links.map(link => {
             const icon = Icons[link.icon] || Icons.link;
             return `<div class="list-item" style="cursor:pointer;">
                 <div class="list-item-icon" onclick="Utils.openExternalLink('${link.url}')">${icon}</div>
@@ -183,7 +183,7 @@ const UniLifePage = {
                 <button class="btn-icon" onclick="event.stopPropagation(); UniLifePage.editLink('${link.id}')" title="Editar">${Icons.edit}</button>
                 <button class="btn-icon" onclick="event.stopPropagation(); UniLifePage.deleteLink('${link.id}')" title="Eliminar">${Icons.trash}</button>
             </div>`;
-        }).join('');
+        }).join(''));
     },
 
     addLink() {
@@ -311,7 +311,7 @@ const UniLifePage = {
                 container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.target + '</div><h3>Sin metas</h3><p>Crea tu primer objetivo semanal</p></div>';
                 return;
             }
-            container.innerHTML = goals.map(goal => `
+            container.innerHTML = Utils.sanitize(goals.map(goal => `
                 <div class="goal-card">
                     <div class="goal-header">
                         <span class="goal-title">${goal.title}</span>
@@ -328,7 +328,7 @@ const UniLifePage = {
                         <button class="btn btn-ghost btn-sm" onclick="UniLifePage.updateGoalProgress('${goal.id}',${Math.min((goal.progress||0)+10,100)})">+10%</button>
                         <button class="btn btn-ghost btn-sm" onclick="UniLifePage.updateGoalProgress('${goal.id}',100)">Completar</button>
                     </div>
-                </div>`).join('');
+                </div>`).join(''));
         } else {
             const allHabits = habits.length > 0 ? habits : [
                 { id: '_d1', title: 'Beber agua', completedDays: [] },
@@ -336,7 +336,7 @@ const UniLifePage = {
             ];
             const days = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
-            container.innerHTML = `
+            container.innerHTML = Utils.sanitize(`
                 <div class="card">
                     <div class="card-header"><span class="card-title">Hábitos semanales</span></div>
                     ${allHabits.map(h => `
@@ -349,7 +349,7 @@ const UniLifePage = {
                                 }).join('')}
                             </div>
                         </div>`).join('')}
-                </div>`;
+                </div>`);
         }
     },
 
@@ -455,7 +455,7 @@ const UniLifePage = {
                 });
                 html += '</div>';
             });
-            sc.innerHTML = html;
+            sc.innerHTML = Utils.sanitize(html);
         } catch (e) {
             document.getElementById('schedule-content').innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px;">Error al cargar horario</p>';
         }
@@ -523,7 +523,7 @@ const UniLifePage = {
         }
         const pct = saved.totalCredits > 0 ? Math.round((saved.approvedCredits / saved.totalCredits) * 100) : 0;
 
-        container.innerHTML = `
+        container.innerHTML = Utils.sanitize(`
         <div class="uni-overview-stats" style="margin-bottom:20px;">
             <div class="uni-stat-card">
                 <div class="uni-stat-icon">${Icons.graduationCap}</div>
@@ -573,7 +573,7 @@ const UniLifePage = {
                     </div>`;
                 }).join('')}
             </div>
-        </div>`;
+        </div>`);
     },
 
     saveCredits() {

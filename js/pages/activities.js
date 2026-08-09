@@ -149,7 +149,7 @@ const ActivitiesPage = {
             }
             html += '</div>';
         });
-        container.innerHTML = html;
+        container.innerHTML = Utils.sanitize(html);
     },
 
     groupTasksByDay(tasks) {
@@ -335,7 +335,7 @@ const ActivitiesPage = {
             return;
         }
         const sorted = [...this.exams].sort((a, b) => new Date(a.date) - new Date(b.date));
-        container.innerHTML = sorted.map(exam => {
+        container.innerHTML = Utils.sanitize(sorted.map(exam => {
             const days = Utils.daysUntil(exam.date);
             const isPast = days < 0;
             const color = this.getSubjectColor(exam.subject);
@@ -357,7 +357,7 @@ const ActivitiesPage = {
                     <button class="btn-icon" onclick="ActivitiesPage.deleteExam('${exam.id}')">${Icons.trash}</button>
                 </div>
             </div>`;
-        }).join('');
+        }).join(''));
     },
 
     showAddExamModal(exam = null) {

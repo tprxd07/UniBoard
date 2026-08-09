@@ -49,7 +49,7 @@ const GoalsPage = {
                 return;
             }
 
-            container.innerHTML = this.goals.map(goal => `
+            container.innerHTML = Utils.sanitize(this.goals.map(goal => `
                 <div class="goal-card">
                     <div class="goal-header">
                         <span class="goal-title">${goal.title}</span>
@@ -70,7 +70,7 @@ const GoalsPage = {
                         <button class="btn btn-ghost btn-sm" onclick="GoalsPage.updateProgress('${goal.id}', 100)">Completar</button>
                     </div>
                 </div>
-            `).join('');
+            `).join(''));
         } else {
             // Habits tracker
             const habits = this.goals.filter(g => g.type === 'habit');
@@ -100,7 +100,7 @@ const GoalsPage = {
         const days = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
         const now = new Date();
 
-        container.innerHTML = habits.map(habit => `
+        container.innerHTML = Utils.sanitize(habits.map(habit => `
             <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border);">
                 <span style="font-size: 13px; font-weight: 600; min-width: 100px;">${habit.title}</span>
                 <div class="habit-tracker">
@@ -110,7 +110,7 @@ const GoalsPage = {
                     }).join('')}
                 </div>
             </div>
-        `).join('');
+        `).join(''));
     },
 
     showAddModal() {

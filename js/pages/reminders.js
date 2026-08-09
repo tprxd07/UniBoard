@@ -43,7 +43,7 @@ const RemindersPage = {
             other: Icons.bell
         };
 
-        container.innerHTML = this.reminders.map(r => `
+        container.innerHTML = Utils.sanitize(this.reminders.map(r => `
             <div class="reminder-item">
                 <div class="reminder-icon">${iconMap[r.type] || Icons.bell}</div>
                 <div class="list-item-content">
@@ -62,7 +62,7 @@ const RemindersPage = {
                     <button class="btn-icon" style="font-size: 14px;" onclick="RemindersPage.deleteReminder('${r.id}')">${Icons.trash}</button>
                 </div>
             </div>
-        `).join('');
+        `).join(''));
     },
 
     formatDays(days) {

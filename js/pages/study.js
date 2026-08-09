@@ -380,7 +380,7 @@ const StudyPage = {
             list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.bookOpen + '</div><h3>Sin sesiones</h3><p>Registra tu primera sesión de estudio</p></div>';
             return;
         }
-        list.innerHTML = recent.map(s => `
+        list.innerHTML = Utils.sanitize(recent.map(s => `
             <div class="study-session">
                 <div class="study-session-time">${s.duration || 0}min</div>
                 <div class="study-session-info" style="flex: 1;">
@@ -389,7 +389,7 @@ const StudyPage = {
                 </div>
                 <button class="btn-icon" style="font-size: 14px;" onclick="StudyPage.deleteSession('${s.id}')">${Icons.trash}</button>
             </div>
-        `).join('');
+        `).join(''));
     },
 
     showAddSessionModal() {

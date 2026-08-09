@@ -1,5 +1,40 @@
 // Utility Functions
 const Utils = {
+    // Security: Sanitize HTML with DOMPurify
+    sanitize(html) {
+        if (typeof DOMPurify !== 'undefined') {
+            return DOMPurify.sanitize(html, { ALLOWED_TAGS: ['b','i','em','strong','span','br','p','div','a','ul','ol','li','h1','h2','h3','h4','h5','h6','label','button','input','select','option','textarea','svg','path','polyline','line','circle','rect','img','table','thead','tbody','tr','td','th'], ALLOWED_ATTR: ['class','style','id','href','target','src','alt','width','height','viewBox','fill','stroke','stroke-width','stroke-linecap','stroke-linejoin','d','points','x','y','cx','cy','r','rx','ry','x1','y1','x2','y2','data-id','data-color','data-page','data-tab','data-filter','data-mode','data-view','data-reading','data-icon-mode','data-period','data-emoji-toggle','data-color-bg','onclick','onchange','oninput','placeholder','value','type','min','max','step','rows','checked','selected','disabled','accept','for','rel'] });
+        }
+        return html;
+    },
+
+    // Security: Escape HTML entities for safe innerHTML/attribute injection
+    escapeHTML(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/`/g, '&#96;');
+    },
+
+    // Security: Validate URL scheme (reject javascript:, data: except images, vbscript:)
+    isValidURL(url) {
+        if (!url) return false;
+        const trimmed = url.trim().toLowerCase();
+        if (trimmed.startsWith('javascript:') || trimmed.startsWith('vbscript:') || trimmed.startsWith('data:text/html')) return false;
+        return true;
+    },
+
+    // Security: Safe URL for href/src attributes
+    safeURL(url) {
+        if (!url) return '';
+        if (!this.isValidURL(url)) return '#';
+        return url;
+    },
+
     // Format date
     formatDate(date, format = 'short') {
         const d = new Date(date);
@@ -218,7 +253,10 @@ const Utils = {
     },
 
     openExternalLink(url) {
-        if (!url) return;
+        if (!url || !this.isValidURL(url)) {
+            this.showToast('URL no válida', 'error');
+            return;
+        }
         const approved = this._getApprovedLinks();
         if (approved.includes(url)) {
             window.open(url, '_blank');

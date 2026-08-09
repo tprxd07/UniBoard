@@ -7,7 +7,7 @@ const DashboardPage = {
         const greeting = Utils.getGreeting();
         return `
         <div class="dashboard-greeting">
-            <h2>${greeting}, ${name}</h2>
+            <h2>${greeting}, ${Utils.escapeHTML(name)}</h2>
             <p>Aquí tienes tu resumen de la semana</p>
         </div>
 
@@ -169,7 +169,7 @@ const DashboardPage = {
                     </div>`;
             });
 
-            container.innerHTML = html;
+            container.innerHTML = Utils.sanitize(html);
         } catch (e) {
             console.error('Error loading upcoming items:', e);
         }
@@ -290,7 +290,7 @@ const DashboardPage = {
                 html += '</div>';
             });
 
-            container.innerHTML = html;
+            container.innerHTML = Utils.sanitize(html);
         } catch (e) {
             console.error('Error loading tasks:', e);
         }

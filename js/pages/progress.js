@@ -118,7 +118,7 @@ const ProgressPage = {
             return;
         }
 
-        container.innerHTML = subjects.map(s => {
+        container.innerHTML = Utils.sanitize(subjects.map(s => {
             const grade = s.currentGrade || 0;
             const percentage = grade * 10;
             const color = grade >= 9 ? 'green' : grade >= 7 ? 'blue' : grade >= 5 ? 'orange' : 'red';
@@ -137,7 +137,7 @@ const ProgressPage = {
                     <span style="font-size: 11px; color: var(--text-secondary);">${Math.round(percentage)}%</span>
                 </div>
             </div>`;
-        }).join('');
+        }).join(''));
     },
 
     saveProgress() {

@@ -471,7 +471,7 @@ const FriendsPage = {
     },
 
     esc(str) {
-        return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        return Utils.escapeHTML(str);
     },
 
     copyInviteLink() {

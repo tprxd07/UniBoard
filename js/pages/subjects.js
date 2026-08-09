@@ -43,7 +43,7 @@ const SubjectsPage = {
             grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">' + Icons.book + '</div><h3>No tienes asignaturas</h3><p>Añade tu primera asignatura para empezar</p></div>';
             return;
         }
-        grid.innerHTML = this.subjects.map(s => {
+        grid.innerHTML = Utils.sanitize(this.subjects.map(s => {
             const periodLabel = this.getPeriodLabel(s);
             const gradeInfo = this.getSubjectGradeInfo(s);
             return `
@@ -65,7 +65,7 @@ const SubjectsPage = {
                     ${s.studyMinutes ? `<span style="font-size:11px;color:var(--text-secondary);">${Icons.clock} ${(s.studyMinutes / 60).toFixed(1)}h</span>` : ''}
                 </div>
             </div>`;
-        }).join('');
+        }).join(''));
     },
 
     getSubjectGradeInfo(subject) {

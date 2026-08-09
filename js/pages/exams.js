@@ -51,7 +51,7 @@ const ExamsPage = {
         // Sort by date
         const sorted = [...this.exams].sort((a, b) => new Date(a.date) - new Date(b.date));
 
-        container.innerHTML = sorted.map(exam => {
+        container.innerHTML = Utils.sanitize(sorted.map(exam => {
             const days = Utils.daysUntil(exam.date);
             const isPast = days < 0;
             const countdown = isPast ? 'Finalizado' : `${days} días`;
@@ -100,7 +100,7 @@ const ExamsPage = {
                     <div style="font-size: 13px;">${exam.studyPlan}</div>
                 </div>` : ''}
             </div>`;
-        }).join('');
+        }).join(''));
     },
 
     showAddModal(exam = null) {

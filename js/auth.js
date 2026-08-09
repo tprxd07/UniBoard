@@ -194,8 +194,14 @@ const Auth = {
             return;
         }
 
-        if (password.length < 6) {
-            errorEl.textContent = 'La contraseña debe tener al menos 6 caracteres';
+        if (password.length < 8) {
+            errorEl.textContent = 'La contraseña debe tener al menos 8 caracteres';
+            errorEl.classList.remove('hidden');
+            return;
+        }
+
+        if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+            errorEl.textContent = 'La contraseña debe contener al menos una letra y un número';
             errorEl.classList.remove('hidden');
             return;
         }

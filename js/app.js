@@ -209,9 +209,9 @@ const App = {
     async loadSidebarAvatar() {
         try {
             const profile = await DB.getProfile();
-            if (profile.photoURL) {
+            if (profile.photoURL && Utils.isValidURL(profile.photoURL)) {
                 const avatarEl = document.getElementById('user-avatar');
-                avatarEl.innerHTML = `<img src="${profile.photoURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                avatarEl.innerHTML = Utils.sanitize(`<img src="${Utils.escapeHTML(profile.photoURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`);
             }
         } catch (e) {}
     },
