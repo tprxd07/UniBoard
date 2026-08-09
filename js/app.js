@@ -284,14 +284,14 @@ const App = {
     async loadSettings() {
         try {
             const settings = await DB.getSettings();
-            if (settings.theme) {
-                document.documentElement.dataset.theme = settings.theme;
-            }
             if (settings.accentColor) {
                 document.documentElement.style.setProperty('--primary', settings.accentColor);
             }
             if (settings.bgColor) {
                 SettingsPage.applyBgColor(settings.bgColor);
+            }
+            if (settings.readingMode && settings.readingMode !== 'off') {
+                SettingsPage.applyReadingMode(settings.readingMode);
             }
         } catch (e) {
             console.log('Using default settings');

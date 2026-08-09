@@ -45,12 +45,13 @@ const SettingsPage = {
 
             <div class="settings-item">
                 <div class="settings-item-info">
-                    <h4>Tema</h4>
-                    <p>Cambia entre claro y oscuro</p>
+                    <h4>Modo lectura</h4>
+                    <p>Filtro suave para facilitar la lectura</p>
                 </div>
                 <div class="pill-selector">
-                    <button class="pill" data-theme="light">${Icons.sun} Claro</button>
-                    <button class="pill" data-theme="dark">${Icons.moon} Oscuro</button>
+                    <button class="pill" data-reading="off">${Icons.x} Desactivado</button>
+                    <button class="pill" data-reading="warm">${Icons.sun} Cálido</button>
+                    <button class="pill" data-reading="sepia">${Icons.bookOpen} Sepia</button>
                 </div>
             </div>
 
@@ -158,14 +159,14 @@ const SettingsPage = {
     init() {
         this.loadSettings();
 
-        // Theme pills
-        document.querySelectorAll('.pill[data-theme]').forEach(pill => {
+        // Reading mode pills
+        document.querySelectorAll('.pill[data-reading]').forEach(pill => {
             pill.addEventListener('click', () => {
-                document.querySelectorAll('.pill[data-theme]').forEach(p => p.classList.remove('active'));
+                document.querySelectorAll('.pill[data-reading]').forEach(p => p.classList.remove('active'));
                 pill.classList.add('active');
-                const theme = pill.dataset.theme;
-                document.documentElement.dataset.theme = theme;
-                this.saveSetting('theme', theme);
+                const mode = pill.dataset.reading;
+                this.applyReadingMode(mode);
+                this.saveSetting('readingMode', mode);
             });
         });
 
@@ -257,6 +258,26 @@ const SettingsPage = {
         document.documentElement.style.setProperty('--border-light', isLight ? '#F1F3F8' : '#2A2A4A');
     },
 
+    applyReadingMode(mode) {
+        const overlay = document.getElementById('reading-mode-overlay');
+        if (mode === 'off') {
+            if (overlay) overlay.remove();
+            return;
+        }
+        let el = overlay;
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'reading-mode-overlay';
+            el.style.cssText = 'position:fixed;inset:0;z-index:9998;pointer-events:none;transition:background 0.3s;';
+            document.body.appendChild(el);
+        }
+        if (mode === 'warm') {
+            el.style.background = 'rgba(255, 200, 100, 0.06)';
+        } else if (mode === 'sepia') {
+            el.style.background = 'rgba(112, 66, 20, 0.08)';
+        }
+    },
+
     isLight(hex) {
         const r = parseInt(hex.slice(1, 3), 16);
         const g = parseInt(hex.slice(3, 5), 16);
@@ -306,10 +327,12 @@ const SettingsPage = {
         try {
             const settings = await DB.getSettings();
 
-            // Apply theme
-            if (settings.theme) {
-                document.documentElement.dataset.theme = settings.theme;
-                document.querySelector(`.pill[data-theme="${settings.theme}"]`)?.classList.add('active');
+            // Apply reading mode
+            if (settings.readingMode) {
+                this.applyReadingMode(settings.readingMode);
+                document.querySelector(`.pill[data-reading="${settings.readingMode}"]`)?.classList.add('active');
+            } else {
+                document.querySelector('.pill[data-reading="off"]')?.classList.add('active');
             }
 
             // Apply icon mode
