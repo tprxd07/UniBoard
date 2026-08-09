@@ -341,6 +341,7 @@ const ActivitiesPage = {
                 </div>
                 <div class="task-card-actions">
                     ${!isPast ? `<span class="badge badge-primary" style="font-size:11px;">${days}d</span>` : '<span class="badge" style="font-size:11px;background:var(--border);">Finalizado</span>'}
+                    <span style="font-size:13px;font-weight:700;color:${exam.grade != null ? Utils.getGradeColor(exam.grade) : 'var(--text-secondary)'};">${exam.grade != null ? exam.grade.toFixed(2) : '-.--'}</span>
                     <button class="btn-icon" onclick="ActivitiesPage.showEditExamModal('${exam.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
                     <button class="btn-icon" onclick="ActivitiesPage.deleteExam('${exam.id}')">${Icons.trash}</button>
                 </div>
@@ -380,9 +381,14 @@ const ActivitiesPage = {
             <div class="form-group">
                 <label>Descripción (opcional)</label>
                 <textarea id="exam-description" rows="2" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--bg-input);color:var(--text);font-family:var(--font-family);">${exam?.description || ''}</textarea>
+            </div>
+            <div class="form-group">
+                <label>Nota</label>
+                <input type="number" id="exam-grade" value="${exam?.grade != null ? exam.grade : ''}" placeholder="-.--" min="0" max="10" step="0.1">
             </div>`;
 
         Utils.showModal(isEdit ? 'Editar Examen' : 'Nuevo Examen', html, async () => {
+            const gradeVal = document.getElementById('exam-grade').value;
             const data = {
                 subject: document.getElementById('exam-subject').value,
                 topics: document.getElementById('exam-topics').value,
@@ -390,12 +396,16 @@ const ActivitiesPage = {
                 startTime: document.getElementById('exam-start-time').value,
                 endTime: document.getElementById('exam-end-time').value,
                 room: document.getElementById('exam-room').value,
-                description: document.getElementById('exam-description').value
+                description: document.getElementById('exam-description').value,
+                grade: gradeVal !== '' ? parseFloat(gradeVal) : null
             };
             if (!data.subject || !data.date) { Utils.showToast('Asignatura y fecha son obligatorios', 'error'); return; }
             try {
                 if (isEdit) { await DB.updateExam(exam.id, data); Utils.showToast('Examen actualizado', 'success'); }
                 else { await DB.addExam(data); Utils.showToast('Examen añadido', 'success'); }
+                if (data.grade != null) {
+                    await this.syncGradeToSubject(data.subject, data.grade);
+                }
                 this.loadData();
             } catch (e) { Utils.showToast('Error al guardar', 'error'); }
         });
@@ -413,5 +423,24 @@ const ActivitiesPage = {
             Utils.showToast('Examen eliminado', 'success');
             this.loadData();
         } catch (e) { Utils.showToast('Error al eliminar', 'error'); }
+    },
+
+    async syncGradeToSubject(subjectName, grade) {
+        try {
+            const subjects = await DB.getSubjects();
+            const subject = subjects.find(s => s.name.toLowerCase() === subjectName.toLowerCase());
+            if (!subject) return;
+            const gt = subject.gradeTable || { items: [], usePeriods: false, periodWeights: [] };
+            if (!gt.items) gt.items = [];
+            const existingIdx = gt.items.findIndex(i => i.name === subjectName && i.type === 'exam');
+            if (existingIdx >= 0) {
+                gt.items[existingIdx].grade = grade;
+            } else {
+                gt.items.push({ name: subjectName, type: 'exam', weight: 0, grade: grade, period: null });
+            }
+            await DB.updateSubject(subject.id, { gradeTable: gt });
+        } catch (e) {
+            console.error('Error syncing grade to subject:', e);
+        }
     }
 };

@@ -68,8 +68,12 @@ const ExamsPage = {
                         <div style="font-size: 20px; font-weight: 700; color: var(--primary);">${exam.percentage}%</div>
                         <div style="font-size: 11px; color: var(--text-secondary);">Peso</div>
                     </div>` : ''}
+                    <div style="text-align: center; padding: 10px; background: var(--bg-input); border-radius: 8px;">
+                        <div style="font-size: 20px; font-weight: 700; color: ${exam.grade != null ? Utils.getGradeColor(exam.grade) : 'var(--text-secondary)'};">${exam.grade != null ? exam.grade.toFixed(2) : '-.--'}</div>
+                        <div style="font-size: 11px; color: var(--text-secondary);">Nota</div>
+                    </div>
                     ${exam.topics ? `
-                    <div style="padding: 10px; background: var(--bg-input); border-radius: 8px;">
+                    <div style="padding: 10px; background: var(--bg-input); border-radius: 8px; grid-column: 1 / -1;">
                         <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Temario:</div>
                         <div style="font-size: 13px;">${exam.topics}</div>
                     </div>` : ''}
@@ -106,6 +110,10 @@ const ExamsPage = {
                 <input type="number" id="exam-percentage" value="${exam?.percentage || ''}" placeholder="30" min="0" max="100">
             </div>
             <div class="form-group">
+                <label>Nota</label>
+                <input type="number" id="exam-grade" value="${exam?.grade != null ? exam.grade : ''}" placeholder="-.--" min="0" max="10" step="0.1">
+            </div>
+            <div class="form-group">
                 <label>Temario</label>
                 <textarea id="exam-topics" rows="3" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--bg-input);color:var(--text);font-family:var(--font-family);">${exam?.topics || ''}</textarea>
             </div>
@@ -115,13 +123,15 @@ const ExamsPage = {
             </div>`;
 
         Utils.showModal(isEdit ? 'Editar Examen' : 'Nuevo Examen', html, async () => {
+            const gradeVal = document.getElementById('exam-grade').value;
             const data = {
                 subject: document.getElementById('exam-subject').value,
                 date: document.getElementById('exam-date').value,
                 room: document.getElementById('exam-room').value,
                 percentage: parseInt(document.getElementById('exam-percentage').value) || null,
                 topics: document.getElementById('exam-topics').value,
-                studyPlan: document.getElementById('exam-study-plan').value
+                studyPlan: document.getElementById('exam-study-plan').value,
+                grade: gradeVal !== '' ? parseFloat(gradeVal) : null
             };
 
             if (!data.subject || !data.date) {
@@ -136,6 +146,9 @@ const ExamsPage = {
                 } else {
                     await DB.addExam(data);
                     Utils.showToast('Examen añadido', 'success');
+                }
+                if (data.grade != null) {
+                    await this.syncGradeToSubject(data.subject, data.grade);
                 }
                 this.loadExams();
             } catch (e) {
@@ -153,6 +166,25 @@ const ExamsPage = {
             } catch (e) {
                 Utils.showToast('Error al eliminar', 'error');
             }
+        }
+    },
+
+    async syncGradeToSubject(subjectName, grade) {
+        try {
+            const subjects = await DB.getSubjects();
+            const subject = subjects.find(s => s.name.toLowerCase() === subjectName.toLowerCase());
+            if (!subject) return;
+            const gt = subject.gradeTable || { items: [], usePeriods: false, periodWeights: [] };
+            if (!gt.items) gt.items = [];
+            const existingIdx = gt.items.findIndex(i => i.name === subjectName && i.type === 'exam');
+            if (existingIdx >= 0) {
+                gt.items[existingIdx].grade = grade;
+            } else {
+                gt.items.push({ name: subjectName, type: 'exam', weight: 0, grade: grade, period: null });
+            }
+            await DB.updateSubject(subject.id, { gradeTable: gt });
+        } catch (e) {
+            console.error('Error syncing grade to subject:', e);
         }
     }
 };
