@@ -240,6 +240,7 @@ const App = {
             profile: 'Perfil'
         };
         document.getElementById('page-title').textContent = titles[pageName] || pageName;
+        document.title = `${titles[pageName] || pageName} - UniBoard`;
 
         const container = document.getElementById('page-content');
 
