@@ -414,6 +414,13 @@
     border: 2px dashed var(--text-secondary) !important;
 }
 
+.color-picker-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    align-items: center;
+}
+
 .color-option-bg {
     border: 2px solid var(--border);
 }

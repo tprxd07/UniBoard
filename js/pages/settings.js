@@ -79,6 +79,10 @@ const SettingsPage = {
                             <input type="color" id="accent-color-picker" value="#6C5CE7" style="opacity:0;width:100%;height:100%;cursor:pointer;border:none;">
                         </div>
                     </div>
+                    <div id="accent-picker-actions" class="color-picker-actions" style="display:none;">
+                        <button class="btn btn-primary btn-sm" id="accent-picker-save">Guardar</button>
+                        <button class="btn btn-ghost btn-sm" id="accent-picker-cancel">Cancelar</button>
+                    </div>
                 </div>
             </div>
 
@@ -94,6 +98,10 @@ const SettingsPage = {
                         <div class="color-option color-option-custom" title="Color personalizado">
                             <input type="color" id="bg-color-picker" value="#F8F9FE" style="opacity:0;width:100%;height:100%;cursor:pointer;border:none;">
                         </div>
+                    </div>
+                    <div id="bg-picker-actions" class="color-picker-actions" style="display:none;">
+                        <button class="btn btn-primary btn-sm" id="bg-picker-save">Guardar</button>
+                        <button class="btn btn-ghost btn-sm" id="bg-picker-cancel">Cancelar</button>
                     </div>
                 </div>
             </div>
@@ -200,12 +208,27 @@ const SettingsPage = {
 
         // Accent custom picker
         const accentPicker = document.getElementById('accent-color-picker');
+        const accentActions = document.getElementById('accent-picker-actions');
+        const accentPickerSave = document.getElementById('accent-picker-save');
+        const accentPickerCancel = document.getElementById('accent-picker-cancel');
         if (accentPicker) {
+            let previousAccent = document.documentElement.style.getPropertyValue('--primary').trim() || '#6C5CE7';
             accentPicker.addEventListener('input', (e) => {
                 document.querySelectorAll('.color-options:not(.color-options-bg) .color-option').forEach(o => o.classList.remove('active'));
                 this.applyAccentColor(e.target.value);
-                this.saveSetting('accentColor', e.target.value);
-                this.addRecentColor('accent', e.target.value);
+                accentActions.style.display = 'flex';
+            });
+            accentPickerCancel.addEventListener('click', () => {
+                this.applyAccentColor(previousAccent);
+                accentActions.style.display = 'none';
+            });
+            accentPickerSave.addEventListener('click', () => {
+                this.saveSetting('accentColor', accentPicker.value);
+                this.addRecentColor('accent', accentPicker.value);
+                accentActions.style.display = 'none';
+                const container = document.getElementById('page-content');
+                container.innerHTML = this.render();
+                this.init();
             });
         }
 
@@ -223,11 +246,27 @@ const SettingsPage = {
 
         // BG custom picker
         const bgPicker = document.getElementById('bg-color-picker');
+        const bgActions = document.getElementById('bg-picker-actions');
+        const bgPickerSave = document.getElementById('bg-picker-save');
+        const bgPickerCancel = document.getElementById('bg-picker-cancel');
         if (bgPicker) {
+            let previousBg = document.documentElement.style.getPropertyValue('--bg-base').trim() || '#F8F9FE';
             bgPicker.addEventListener('input', (e) => {
                 document.querySelectorAll('.color-option-bg').forEach(o => o.classList.remove('active'));
                 this.applyBgColor(e.target.value);
-                this.saveSetting('bgColor', e.target.value);
+                bgActions.style.display = 'flex';
+            });
+            bgPickerCancel.addEventListener('click', () => {
+                this.applyBgColor(previousBg);
+                bgActions.style.display = 'none';
+            });
+            bgPickerSave.addEventListener('click', () => {
+                this.saveSetting('bgColor', bgPicker.value);
+                this.addRecentColor('bg', bgPicker.value);
+                bgActions.style.display = 'none';
+                const container = document.getElementById('page-content');
+                container.innerHTML = this.render();
+                this.init();
             });
         }
 
