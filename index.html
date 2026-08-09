@@ -11,9 +11,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%236C5CE7'/%3E%3Ctext x='50' y='68' font-size='55' text-anchor='middle' fill='white'%3E🎓%3C/text%3E%3C/svg%3E">
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="css/main.css?v=6">
-    <link rel="stylesheet" href="css/components.css?v=6">
-    <link rel="stylesheet" href="css/pages.css?v=6">
+    <link rel="stylesheet" href="css/main.css?v=7">
+    <link rel="stylesheet" href="css/components.css?v=7">
+    <link rel="stylesheet" href="css/pages.css?v=7">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -221,6 +221,32 @@
         </div>
     </div>
 
+    <!-- EXTERNAL LINK MODAL -->
+    <div id="external-link-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Enlace externo</h3>
+                <button class="btn-icon modal-close" onclick="Utils.closeExternalLinkModal()">✕</button>
+            </div>
+            <div class="modal-body" style="text-align:center;padding:24px;">
+                <div style="margin-bottom:16px;">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--warning, #F39C12)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <p style="font-size:15px;font-weight:600;margin-bottom:8px;">¿Estás seguro de que quieres acceder a este enlace?</p>
+                <p id="external-link-url" style="font-size:12px;color:var(--primary);word-break:break-all;margin-bottom:16px;"></p>
+                <p style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:16px;">Este enlace pertenece a un sitio web de terceros. UniBoard no se hace responsable del contenido, la disponibilidad ni la seguridad de páginas externas.</p>
+                <label style="display:flex;align-items:center;gap:8px;justify-content:center;font-size:13px;color:var(--text-secondary);cursor:pointer;">
+                    <input type="checkbox" id="external-link-dont-show"> No mostrar de nuevo para este enlace
+                </label>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost modal-close" onclick="Utils.closeExternalLinkModal()">Cancelar</button>
+                <button id="external-link-confirm" class="btn btn-primary">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST -->
     <div id="toast-container" class="toast-container"></div>
 
@@ -231,25 +257,25 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
     <!-- App Scripts -->
-    <script src="js/firebase-config.js?v=6"></script>
-    <script src="js/auth.js?v=6"></script>
-    <script src="js/db.js?v=6"></script>
-    <script src="js/utils.js?v=6"></script>
-    <script src="js/icons.js?v=6"></script>
-    <script src="js/pages/dashboard.js?v=6"></script>
-    <script src="js/pages/calendar.js?v=6"></script>
-    <script src="js/pages/subjects.js?v=6"></script>
-    <script src="js/pages/tasks.js?v=6"></script>
-    <script src="js/pages/activities.js?v=6"></script>
-    <script src="js/pages/exams.js?v=6"></script>
-    <script src="js/pages/study.js?v=6"></script>
-    <script src="js/pages/timer.js?v=6"></script>
-    <script src="js/pages/documents.js?v=6"></script>
-    <script src="js/pages/uni-life.js?v=6"></script>
-    <script src="js/pages/contacts.js?v=6"></script>
-    <script src="js/pages/friends.js?v=6"></script>
-    <script src="js/pages/settings.js?v=6"></script>
-    <script src="js/pages/profile.js?v=6"></script>
-    <script src="js/app.js?v=6"></script>
+    <script src="js/firebase-config.js?v=7"></script>
+    <script src="js/auth.js?v=7"></script>
+    <script src="js/db.js?v=7"></script>
+    <script src="js/utils.js?v=7"></script>
+    <script src="js/icons.js?v=7"></script>
+    <script src="js/pages/dashboard.js?v=7"></script>
+    <script src="js/pages/calendar.js?v=7"></script>
+    <script src="js/pages/subjects.js?v=7"></script>
+    <script src="js/pages/tasks.js?v=7"></script>
+    <script src="js/pages/activities.js?v=7"></script>
+    <script src="js/pages/exams.js?v=7"></script>
+    <script src="js/pages/study.js?v=7"></script>
+    <script src="js/pages/timer.js?v=7"></script>
+    <script src="js/pages/documents.js?v=7"></script>
+    <script src="js/pages/uni-life.js?v=7"></script>
+    <script src="js/pages/contacts.js?v=7"></script>
+    <script src="js/pages/friends.js?v=7"></script>
+    <script src="js/pages/settings.js?v=7"></script>
+    <script src="js/pages/profile.js?v=7"></script>
+    <script src="js/app.js?v=7"></script>
 </body>
 </html>

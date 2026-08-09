@@ -149,7 +149,7 @@ const SubjectsPage = {
                 <div class="stat-card"><div class="stat-icon blue">${Icons.calendar}</div><div class="stat-info"><h4 style="font-size:13px;">${periodLabel}</h4><p>Período</p></div></div>
                 <div class="stat-card"><div class="stat-icon orange">${Icons.clock}</div><div class="stat-info"><h4 style="font-size:13px;">${s.studyMinutes ? (s.studyMinutes / 60).toFixed(1) + 'h' : '0h'}</h4><p>Estudiado</p></div></div>
             </div>
-            ${s.guideUrl ? `<a href="${s.guideUrl}" target="_blank" class="btn btn-ghost btn-full" style="margin-bottom:12px;">${Icons.file} Ver guía docente</a>` : ''}
+            ${s.guideUrl ? `<button class="btn btn-ghost btn-full" style="margin-bottom:12px;" onclick="Utils.openExternalLink('${s.guideUrl}')">${Icons.file} Ver guía docente</button>` : ''}
             <div style="display:flex;gap:8px;">
                 <button class="btn btn-ghost" style="flex:1;" onclick="Utils.closeModal(); setTimeout(() => SubjectsPage.showAddModal(SubjectsPage.selectedSubject), 200);">
                     ${Icons.edit} Editar

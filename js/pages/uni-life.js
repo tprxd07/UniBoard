@@ -175,8 +175,8 @@ const UniLifePage = {
         container.innerHTML = links.map(link => {
             const icon = Icons[link.icon] || Icons.link;
             return `<div class="list-item" style="cursor:pointer;">
-                <div class="list-item-icon" onclick="window.open('${link.url}', '_blank')">${icon}</div>
-                <div class="list-item-content" onclick="window.open('${link.url}', '_blank')">
+                <div class="list-item-icon" onclick="Utils.openExternalLink('${link.url}')">${icon}</div>
+                <div class="list-item-content" onclick="Utils.openExternalLink('${link.url}')">
                     <div class="list-item-title">${link.name}</div>
                     <div class="list-item-subtitle" style="font-size:11px;color:var(--text-muted);">${link.url}</div>
                 </div>

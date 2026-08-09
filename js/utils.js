@@ -212,6 +212,45 @@ const Utils = {
         document.getElementById('modal').classList.add('hidden');
     },
 
+    // External link confirmation
+    _getApprovedLinks() {
+        try { return JSON.parse(localStorage.getItem('approved_external_links') || '[]'); } catch { return []; }
+    },
+
+    openExternalLink(url) {
+        if (!url) return;
+        const approved = this._getApprovedLinks();
+        if (approved.includes(url)) {
+            window.open(url, '_blank');
+            return;
+        }
+        const modal = document.getElementById('external-link-modal');
+        const urlEl = document.getElementById('external-link-url');
+        const confirmBtn = document.getElementById('external-link-confirm');
+        const dontShow = document.getElementById('external-link-dont-show');
+        urlEl.textContent = url;
+        dontShow.checked = false;
+        modal.classList.remove('hidden');
+
+        const newConfirm = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirm, confirmBtn);
+        newConfirm.id = 'external-link-confirm';
+
+        newConfirm.addEventListener('click', () => {
+            if (dontShow.checked) {
+                const list = this._getApprovedLinks();
+                list.push(url);
+                localStorage.setItem('approved_external_links', JSON.stringify(list));
+            }
+            modal.classList.add('hidden');
+            window.open(url, '_blank');
+        });
+    },
+
+    closeExternalLinkModal() {
+        document.getElementById('external-link-modal').classList.add('hidden');
+    },
+
     // Format currency
     formatCurrency(amount) {
         return parseFloat(amount).toFixed(2) + ' €';
