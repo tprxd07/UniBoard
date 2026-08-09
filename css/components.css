@@ -410,6 +410,10 @@
     transform: scale(1.1);
 }
 
+.color-option-recent {
+    border: 2px dashed var(--text-secondary) !important;
+}
+
 .color-option-bg {
     border: 2px solid var(--border);
 }

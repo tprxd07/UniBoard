@@ -1,25 +1,40 @@
 // Settings Page
 const SettingsPage = {
     accentColors: [
-        '#6C5CE7', '#A29BFE', '#0984E3', '#74B9FF',
-        '#00B894', '#00CEC9', '#55EFC4',
-        '#E17055', '#FDCB6E', '#F39C12',
-        '#E84393', '#D63031', '#FF6348',
-        '#636E72', '#2D3436', '#000000'
+        '#6C5CE7', '#0984E3', '#00B894', '#E17055'
     ],
     bgColors: [
-        '#F8F9FE', '#F0F2F5', '#FFF8F0', '#F0FFF4',
-        '#FFF0F6', '#F0F8FF', '#FFFBF0', '#F5F5F5',
-        '#1A1A2E', '#0D1117', '#1E272E', '#2C3A47',
-        '#192A56', '#0A3D62', '#1B1464', '#0C0C0C'
+        '#F8F9FE', '#1A1A2E', '#0D1117', '#1E272E'
     ],
 
+    getRecentColors(type) {
+        try { return JSON.parse(localStorage.getItem(`recent_${type}_colors`) || '[]'); } catch { return []; }
+    },
+
+    addRecentColor(type, color) {
+        let recent = this.getRecentColors(type);
+        recent = recent.filter(c => c !== color);
+        recent.unshift(color);
+        if (recent.length > 4) recent = recent.slice(0, 4);
+        localStorage.setItem(`recent_${type}_colors`, JSON.stringify(recent));
+    },
+
     render() {
+        const recentAccent = this.getRecentColors('accent');
+        const recentBg = this.getRecentColors('bg');
+
         const accentHTML = this.accentColors.map(c =>
             `<div class="color-option" style="background:${c};" data-color="${c}" title="${c}"></div>`
         ).join('');
+        const accentRecentHTML = recentAccent.map(c =>
+            `<div class="color-option color-option-recent" style="background:${c};" data-color="${c}" title="${c} (reciente)"></div>`
+        ).join('');
+
         const bgHTML = this.bgColors.map(c =>
             `<div class="color-option color-option-bg" style="background:${c};${this.isLight(c) ? 'border:2px solid #ccc;' : ''}" data-color="${c}" title="${c}"></div>`
+        ).join('');
+        const bgRecentHTML = recentBg.map(c =>
+            `<div class="color-option color-option-bg color-option-recent" style="background:${c};${this.isLight(c) ? 'border:2px solid #ccc;' : ''}" data-color="${c}" title="${c} (reciente)"></div>`
         ).join('');
 
         return `
@@ -58,6 +73,7 @@ const SettingsPage = {
                 <div>
                     <div class="color-options" style="flex-wrap:wrap;">
                         ${accentHTML}
+                        ${accentRecentHTML}
                         <div class="color-option color-option-custom" title="Color personalizado">
                             <input type="color" id="accent-color-picker" value="#6C5CE7" style="opacity:0;width:100%;height:100%;cursor:pointer;border:none;">
                         </div>
@@ -73,6 +89,7 @@ const SettingsPage = {
                 <div>
                     <div class="color-options" style="flex-wrap:wrap;">
                         ${bgHTML}
+                        ${bgRecentHTML}
                         <div class="color-option color-option-custom" title="Color personalizado">
                             <input type="color" id="bg-color-picker" value="#F8F9FE" style="opacity:0;width:100%;height:100%;cursor:pointer;border:none;">
                         </div>
@@ -176,6 +193,7 @@ const SettingsPage = {
                 const color = opt.dataset.color;
                 this.applyAccentColor(color);
                 this.saveSetting('accentColor', color);
+                this.addRecentColor('accent', color);
             });
         });
 
@@ -186,6 +204,7 @@ const SettingsPage = {
                 document.querySelectorAll('.color-options:not(.color-options-bg) .color-option').forEach(o => o.classList.remove('active'));
                 this.applyAccentColor(e.target.value);
                 this.saveSetting('accentColor', e.target.value);
+                this.addRecentColor('accent', e.target.value);
             });
         }
 
@@ -197,6 +216,7 @@ const SettingsPage = {
                 const color = opt.dataset.color;
                 this.applyBgColor(color);
                 this.saveSetting('bgColor', color);
+                this.addRecentColor('bg', color);
             });
         });
 
