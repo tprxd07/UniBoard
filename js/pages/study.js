@@ -72,7 +72,7 @@ const StudyPage = {
                 <button class="btn btn-primary" id="timer-start" style="width: 100px; height: 100px; border-radius: 50%; font-size: 16px;">
                     ▶ Iniciar
                 </button>
-                <button class="btn btn-ghost" id="btn-concentration" style="width: 50px; height: 50px; border-radius: 50%; font-size: 18px; align-self: center;" title="Modo concentración">
+                <button class="btn btn-ghost" id="btn-concentration" style="width: 100px; height: 100px; border-radius: 50%; font-size: 28px; align-self: center;" title="Modo concentración">
                     ${Icons.monitor}
                 </button>
             </div>
