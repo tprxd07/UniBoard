@@ -130,33 +130,12 @@ const UniLifePage = {
             <div class="card">
                 <div class="card-header">
                     <span class="card-title">${Icons.link} Enlaces útiles</span>
+                    <button class="btn-icon" onclick="UniLifePage.addLink()" title="Añadir enlace">${Icons.plus}</button>
                 </div>
-                <div class="list-item" onclick="window.open('https://www.google.com', '_blank')">
-                    <div class="list-item-icon">${Icons.globe}</div>
-                    <div class="list-item-content">
-                        <div class="list-item-title">Web de la universidad</div>
-                    </div>
-                </div>
-                <div class="list-item" onclick="window.open('https://mail.google.com', '_blank')">
-                    <div class="list-item-icon">${Icons.mail}</div>
-                    <div class="list-item-content">
-                        <div class="list-item-title">Correo universitario</div>
-                    </div>
-                </div>
-                <div class="list-item" onclick="window.open('https://www.google.com', '_blank')">
-                    <div class="list-item-icon">${Icons.bookOpen}</div>
-                    <div class="list-item-content">
-                        <div class="list-item-title">Campus virtual</div>
-                    </div>
-                </div>
-                <div class="list-item" onclick="window.open('https://www.google.com', '_blank')">
-                    <div class="list-item-icon">${Icons.library}</div>
-                    <div class="list-item-content">
-                        <div class="list-item-title">Biblioteca</div>
-                    </div>
-                </div>
+                <div id="uni-links-container"></div>
             </div>
         </div>`;
+        this.renderLinks();
     },
 
     async saveProfileUni() {
@@ -173,6 +152,127 @@ const UniLifePage = {
         } catch (e) {
             Utils.showToast('Error al guardar', 'error');
         }
+    },
+
+    // ========== LINKS ==========
+    _defaultLinks: [
+        { id: '_d1', name: 'Web de la universidad', url: 'https://www.google.com', icon: 'globe' },
+        { id: '_d2', name: 'Correo universitario', url: 'https://mail.google.com', icon: 'mail' },
+        { id: '_d3', name: 'Campus virtual', url: 'https://www.google.com', icon: 'bookOpen' },
+        { id: '_d4', name: 'Biblioteca', url: 'https://www.google.com', icon: 'library' }
+    ],
+
+    renderLinks() {
+        const container = document.getElementById('uni-links-container');
+        if (!container) return;
+        const links = this._profile.links || this._defaultLinks;
+
+        if (links.length === 0) {
+            container.innerHTML = '<div class="empty-state" style="padding:20px;"><p style="font-size:13px;color:var(--text-secondary);">Sin enlaces. Añade uno con el botón +</p></div>';
+            return;
+        }
+
+        container.innerHTML = links.map(link => {
+            const icon = Icons[link.icon] || Icons.link;
+            return `<div class="list-item" style="cursor:pointer;">
+                <div class="list-item-icon" onclick="window.open('${link.url}', '_blank')">${icon}</div>
+                <div class="list-item-content" onclick="window.open('${link.url}', '_blank')">
+                    <div class="list-item-title">${link.name}</div>
+                    <div class="list-item-subtitle" style="font-size:11px;color:var(--text-muted);">${link.url}</div>
+                </div>
+                <button class="btn-icon" onclick="event.stopPropagation(); UniLifePage.editLink('${link.id}')" title="Editar">${Icons.edit}</button>
+                <button class="btn-icon" onclick="event.stopPropagation(); UniLifePage.deleteLink('${link.id}')" title="Eliminar">${Icons.trash}</button>
+            </div>`;
+        }).join('');
+    },
+
+    addLink() {
+        const iconOptions = ['globe','mail','bookOpen','library','link','calendar','check','edit','flag','star','graduationCap','clipboard','users'].map(k =>
+            `<option value="${k}">${k}</option>`
+        ).join('');
+
+        const html = `
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" id="link-name" placeholder="Ej: Campus virtual">
+            </div>
+            <div class="form-group">
+                <label>URL</label>
+                <input type="url" id="link-url" placeholder="https://...">
+            </div>
+            <div class="form-group">
+                <label>Icono</label>
+                <select id="link-icon">${iconOptions}</select>
+            </div>`;
+
+        Utils.showModal('Nuevo enlace', html, async () => {
+            const name = document.getElementById('link-name').value.trim();
+            const url = document.getElementById('link-url').value.trim();
+            const icon = document.getElementById('link-icon').value;
+            if (!name || !url) { Utils.showToast('Nombre y URL son obligatorios', 'error'); return; }
+
+            const links = this._profile.links || [...this._defaultLinks];
+            links.push({ id: '_l' + Date.now(), name, url, icon });
+            try {
+                await DB.updateProfile({ links });
+                this._profile.links = links;
+                Utils.showToast('Enlace añadido', 'success');
+                this.renderLinks();
+            } catch (e) { Utils.showToast('Error al guardar', 'error'); }
+        });
+    },
+
+    editLink(id) {
+        const links = this._profile.links || this._defaultLinks;
+        const link = links.find(l => l.id === id);
+        if (!link) return;
+
+        const iconOptions = ['globe','mail','bookOpen','library','link','calendar','check','edit','flag','star','graduationCap','clipboard','users'].map(k =>
+            `<option value="${k}" ${k === link.icon ? 'selected' : ''}>${k}</option>`
+        ).join('');
+
+        const html = `
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" id="link-name" value="${link.name}">
+            </div>
+            <div class="form-group">
+                <label>URL</label>
+                <input type="url" id="link-url" value="${link.url}">
+            </div>
+            <div class="form-group">
+                <label>Icono</label>
+                <select id="link-icon">${iconOptions}</select>
+            </div>`;
+
+        Utils.showModal('Editar enlace', html, async () => {
+            const name = document.getElementById('link-name').value.trim();
+            const url = document.getElementById('link-url').value.trim();
+            const icon = document.getElementById('link-icon').value;
+            if (!name || !url) { Utils.showToast('Nombre y URL son obligatorios', 'error'); return; }
+
+            link.name = name;
+            link.url = url;
+            link.icon = icon;
+            try {
+                await DB.updateProfile({ links });
+                this._profile.links = links;
+                Utils.showToast('Enlace actualizado', 'success');
+                this.renderLinks();
+            } catch (e) { Utils.showToast('Error al guardar', 'error'); }
+        });
+    },
+
+    async deleteLink(id) {
+        if (!confirm('¿Eliminar este enlace?')) return;
+        let links = this._profile.links || [...this._defaultLinks];
+        links = links.filter(l => l.id !== id);
+        try {
+            await DB.updateProfile({ links });
+            this._profile.links = links;
+            Utils.showToast('Enlace eliminado', 'success');
+            this.renderLinks();
+        } catch (e) { Utils.showToast('Error al eliminar', 'error'); }
     },
 
     // ========== GOALS ==========
