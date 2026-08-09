@@ -855,7 +855,8 @@ const CalendarPage = {
         const colorOptions = colors.map(c => `<div class="color-option ${gr.color === c ? 'active' : ''}" style="background: ${c};" data-color="${c}" onclick="CalendarPage.selectGroupColor('${c}')"></div>`).join('');
 
         const hasEmoji = gr.emoji ? 'yes' : 'no';
-        const emojiGrid = '';
+        const defaultEmojis = ['📚','📝','🔬','📐','🎨','💻','🎵','🏃','🌍','🧪','📊','✏️','🎓','📐','🧮','📖'];
+        const emojiGrid = defaultEmojis.map(e => `<div class="emoji-option ${gr.emoji === e ? 'active' : ''}" onclick="CalendarPage.selectEmoji('${e}')">${e}</div>`).join('');
 
         const deleteBtn = isEdit && !gr.isDefault ? `<button class="btn btn-danger btn-sm" onclick="CalendarPage.confirmDeleteGroup('${gr.id}')">Eliminar</button>` : '';
 
@@ -885,6 +886,7 @@ const CalendarPage = {
             </div>
             <div class="form-group" id="emoji-select-wrapper" style="display: ${hasEmoji === 'yes' ? 'flex' : 'none'}; flex-wrap: wrap; gap: 6px;">
                 ${emojiGrid}
+                <input type="text" id="grp-emoji-custom" maxlength="2" placeholder="😀" value="${gr.emoji && !defaultEmojis.includes(gr.emoji) ? gr.emoji : ''}" oninput="CalendarPage.selectCustomEmoji(this.value)" style="width:36px;height:36px;border:2px dashed var(--border);border-radius:var(--radius-sm);background:var(--bg-card);font-size:18px;text-align:center;cursor:pointer;padding:0;">
             </div>
             <input type="hidden" id="grp-emoji" value="${gr.emoji || ''}">
             <div class="modal-custom-footer">
@@ -928,6 +930,13 @@ const CalendarPage = {
     selectEmoji(emoji) {
         document.querySelectorAll('.emoji-option').forEach(e => e.classList.remove('active'));
         event.target.classList.add('active');
+        document.getElementById('grp-emoji').value = emoji;
+        const customInput = document.getElementById('grp-emoji-custom');
+        if (customInput) customInput.value = '';
+    },
+
+    selectCustomEmoji(emoji) {
+        document.querySelectorAll('.emoji-option').forEach(e => e.classList.remove('active'));
         document.getElementById('grp-emoji').value = emoji;
     },
 
