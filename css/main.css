@@ -634,7 +634,7 @@ a {
 
 .page-content {
     flex: 1;
-    padding: 0 24px 24px;
+    padding: 5px 24px 24px;
     padding-bottom: calc(24px + env(safe-area-inset-bottom));
     overflow-y: auto;
     overflow-x: hidden;
