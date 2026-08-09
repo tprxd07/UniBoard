@@ -157,7 +157,10 @@ const SubjectsPage = {
             bodyHTML = this.renderGradeTable(s);
         }
 
-        Utils.showModal(s.name, headerHTML + bodyHTML);
+        Utils.showModal(s.name, headerHTML + bodyHTML, async () => {
+            await this.saveGradeTable();
+            Utils.showToast('Calificaciones guardadas', 'success');
+        });
     },
 
     switchDetailTab(tab) {
