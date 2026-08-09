@@ -50,8 +50,8 @@ const SettingsPage = {
                 </div>
                 <div class="pill-selector">
                     <button class="pill" data-reading="off">${Icons.x} Desactivado</button>
+                    <button class="pill" data-reading="bluelight">${Icons.shield} Luz azul</button>
                     <button class="pill" data-reading="warm">${Icons.sun} Cálido</button>
-                    <button class="pill" data-reading="sepia">${Icons.bookOpen} Sepia</button>
                 </div>
             </div>
 
@@ -271,10 +271,10 @@ const SettingsPage = {
             el.style.cssText = 'position:fixed;inset:0;z-index:9998;pointer-events:none;transition:background 0.3s;';
             document.body.appendChild(el);
         }
-        if (mode === 'warm') {
+        if (mode === 'bluelight') {
+            el.style.background = 'rgba(255, 140, 0, 0.08)';
+        } else if (mode === 'warm') {
             el.style.background = 'rgba(255, 200, 100, 0.06)';
-        } else if (mode === 'sepia') {
-            el.style.background = 'rgba(112, 66, 20, 0.08)';
         }
     },
 
