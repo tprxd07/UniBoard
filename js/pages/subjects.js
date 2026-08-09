@@ -97,7 +97,7 @@ const SubjectsPage = {
 
     getPeriodLabel(s) {
         if (!s.periodType) return '';
-        const typeLabel = s.periodType === 'trimestre' ? 'Trimestre' : 'Cuatrimestre';
+        const typeLabel = 'Trimestre';
         return s.periodNumber ? `${typeLabel} ${s.periodNumber}` : typeLabel;
     },
 
@@ -175,8 +175,8 @@ const SubjectsPage = {
 
         // Period weights toggle
         if (hasPeriods) {
-            const periodCount = subject.periodType === 'trimestre' ? 3 : 2;
-            const typeLabel = subject.periodType === 'trimestre' ? 'Trimestres' : 'Cuatrimestres';
+            const periodCount = 3;
+            const typeLabel = 'Trimestres';
             html += `
             <div class="card" style="margin-bottom:12px;">
                 <div class="card-header" style="padding:12px 14px;">
@@ -237,8 +237,8 @@ const SubjectsPage = {
     },
 
     renderGradeRow(item, idx, usePeriods, subject) {
-        const periodCount = subject.periodType === 'trimestre' ? 3 : 2;
-        const typeLabel = subject.periodType === 'trimestre' ? 'Trimestre' : 'Cuatrimestre';
+        const periodCount = 3;
+        const typeLabel = 'Trimestre';
         const types = [
             { value: 'exam', label: 'Examen' },
             { value: 'assignment', label: 'Trabajo' },
@@ -287,7 +287,7 @@ const SubjectsPage = {
         const checkbox = document.getElementById('gt-use-periods');
         gt.usePeriods = checkbox.checked;
         if (checkbox.checked && (!gt.periodWeights || gt.periodWeights.length === 0)) {
-            const periodCount = this.selectedSubject.periodType === 'trimestre' ? 3 : 2;
+            const periodCount = 3;
             gt.periodWeights = Array.from({length: periodCount}, (_, i) => ({ period: i + 1, weight: Math.round(100 / periodCount) }));
         }
         this.selectedSubject.gradeTable = gt;
@@ -416,7 +416,6 @@ const SubjectsPage = {
                     <select id="subj-period-type">
                         <option value="">Ninguno</option>
                         <option value="trimestre" ${s.periodType === 'trimestre' ? 'selected' : ''}>Trimestre</option>
-                        <option value="cuatrimestre" ${s.periodType === 'cuatrimestre' ? 'selected' : ''}>Cuatrimestre</option>
                     </select>
                 </div>
             </div>
@@ -424,15 +423,7 @@ const SubjectsPage = {
                 <label>Número de período</label>
                 <select id="subj-period-number">
                     <option value="">—</option>
-                    ${(() => {
-                        const type = document.getElementById('subj-period-type')?.value || s.periodType;
-                        if (type === 'trimestre') {
-                            return ['Primero','Segundo','Tercero'].map((label, i) => `<option value="${i+1}" ${s.periodNumber == i+1 ? 'selected' : ''}>${label}</option>`).join('');
-                        } else if (type === 'cuatrimestre') {
-                            return Array.from({length:8}, (_, i) => `<option value="${i+1}" ${s.periodNumber == i+1 ? 'selected' : ''}>${i+1}º</option>`).join('');
-                        }
-                        return '';
-                    })()}
+                    ${['Primero','Segundo','Tercero'].map((label, i) => `<option value="${i+1}" ${s.periodNumber == i+1 ? 'selected' : ''}>${label}</option>`).join('')}
                 </select>
             </div>
             <div class="form-group">
@@ -497,8 +488,6 @@ const SubjectsPage = {
             let options = '<option value="">—</option>';
             if (this.value === 'trimestre') {
                 options += ['Primero','Segundo','Tercero'].map((label, i) => `<option value="${i+1}" ${current == i+1 ? 'selected' : ''}>${label}</option>`).join('');
-            } else if (this.value === 'cuatrimestre') {
-                options += Array.from({length:8}, (_, i) => `<option value="${i+1}" ${current == i+1 ? 'selected' : ''}>${i+1}º</option>`).join('');
             }
             select.innerHTML = options;
         });
