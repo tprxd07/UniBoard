@@ -83,27 +83,6 @@ const SettingsPage = {
 
         <div class="card" style="margin-bottom: 20px;">
             <div class="card-header">
-                <span class="card-title">${Icons.clock} Pomodoro</span>
-            </div>
-            <div class="grid-3">
-                <div class="form-group">
-                    <label>Estudio (min)</label>
-                    <input type="number" id="settings-pomodoro-work" value="25" min="5" max="120">
-                </div>
-                <div class="form-group">
-                    <label>Descanso (min)</label>
-                    <input type="number" id="settings-pomodoro-break" value="5" min="1" max="30">
-                </div>
-                <div class="form-group">
-                    <label>Descanso largo (min)</label>
-                    <input type="number" id="settings-pomodoro-long" value="15" min="5" max="60">
-                </div>
-            </div>
-            <button class="btn btn-primary btn-sm" id="save-timer">Guardar temporizador</button>
-        </div>
-
-        <div class="card" style="margin-bottom: 20px;">
-            <div class="card-header">
                 <span class="card-title">${Icons.smartphone} Sincronización</span>
             </div>
             <div class="settings-item">
@@ -231,7 +210,6 @@ const SettingsPage = {
             });
         }
 
-        document.getElementById('save-timer').addEventListener('click', () => this.saveTimerSettings());
         document.getElementById('export-data').addEventListener('click', () => this.exportData());
         document.getElementById('btn-logout-settings').addEventListener('click', () => Auth.logout());
     },
@@ -350,11 +328,6 @@ const SettingsPage = {
                 statusEl.textContent = 'Modo demo';
                 statusEl.className = 'badge badge-warning';
             }
-
-            // Load timer settings
-            document.getElementById('settings-pomodoro-work').value = settings.pomodoroWork || 25;
-            document.getElementById('settings-pomodoro-break').value = settings.pomodoroBreak || 5;
-            document.getElementById('settings-pomodoro-long').value = settings.pomodoroLongBreak || 15;
         } catch (e) {
             console.log('Error loading settings:', e);
         }
@@ -367,19 +340,6 @@ const SettingsPage = {
             await DB.updateSettings(settings);
         } catch (e) {
             console.error('Error saving setting:', e);
-        }
-    },
-
-    async saveTimerSettings() {
-        try {
-            const settings = await DB.getSettings();
-            settings.pomodoroWork = parseInt(document.getElementById('settings-pomodoro-work').value) || 25;
-            settings.pomodoroBreak = parseInt(document.getElementById('settings-pomodoro-break').value) || 5;
-            settings.pomodoroLongBreak = parseInt(document.getElementById('settings-pomodoro-long').value) || 15;
-            await DB.updateSettings(settings);
-            Utils.showToast('Temporizador actualizado', 'success');
-        } catch (e) {
-            Utils.showToast('Error al guardar', 'error');
         }
     },
 

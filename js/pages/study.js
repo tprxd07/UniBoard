@@ -33,9 +33,9 @@ const StudyPage = {
         </div>`;
     },
 
-    init() {
+    async init() {
         this.activeTab = 'pomodoro';
-        this.loadSettings();
+        await this.loadSettings();
 
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
@@ -104,7 +104,28 @@ const StudyPage = {
                 <div class="card-header"><span class="card-title">Temas</span></div>
                 <textarea id="timer-topics" rows="2" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--bg-input);color:var(--text);font-family:var(--font-family);" placeholder="¿Qué estás estudiando?"></textarea>
             </div>
+
+            <div class="card" style="text-align: left; max-width: 400px; margin: 16px auto 0;">
+                <div class="card-header"><span class="card-title">${Icons.clock} Configurar temporizador</span></div>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label>Estudio (min)</label>
+                        <input type="number" id="study-pomodoro-work" value="${this.settings.work}" min="5" max="120">
+                    </div>
+                    <div class="form-group">
+                        <label>Descanso (min)</label>
+                        <input type="number" id="study-pomodoro-break" value="${this.settings.break}" min="1" max="30">
+                    </div>
+                    <div class="form-group">
+                        <label>Descanso largo (min)</label>
+                        <input type="number" id="study-pomodoro-long" value="${this.settings.longBreak}" min="5" max="60">
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-sm" id="save-study-timer">Guardar</button>
+            </div>
         </div>`;
+
+        document.getElementById('save-study-timer').addEventListener('click', () => this.savePomodoroSettings());
 
         // Mode tabs
         container.querySelectorAll('.tab[data-mode]').forEach(tab => {
@@ -238,6 +259,23 @@ const StudyPage = {
         if (el2) el2.textContent = (this.pomodoroCount * this.settings.work / 60).toFixed(1) + 'h';
     },
 
+    async savePomodoroSettings() {
+        this.settings.work = parseInt(document.getElementById('study-pomodoro-work').value) || 25;
+        this.settings.break = parseInt(document.getElementById('study-pomodoro-break').value) || 5;
+        this.settings.longBreak = parseInt(document.getElementById('study-pomodoro-long').value) || 15;
+        this.totalTime = this.settings.work * 60;
+        this.timeLeft = this.totalTime;
+        this.updateDisplay();
+        try {
+            await DB.updateSettings({
+                pomodoroWork: this.settings.work,
+                pomodoroBreak: this.settings.break,
+                pomodoroLongBreak: this.settings.longBreak
+            });
+            Utils.showToast('Temporizador actualizado', 'success');
+        } catch (e) { Utils.showToast('Error al guardar', 'error'); }
+    },
+
     async saveSession() {
         try {
             const subject = document.getElementById('timer-subject')?.value || '';
@@ -259,8 +297,8 @@ const StudyPage = {
         overlay.classList.remove('hidden');
         this.updateConcentrationModeLabel();
 
-        document.getElementById('concentration-toggle').addEventListener('click', () => this.toggleTimer());
-        document.getElementById('concentration-exit').addEventListener('click', () => this.exitConcentration());
+        document.getElementById('concentration-toggle').onclick = () => this.toggleTimer();
+        document.getElementById('concentration-exit').onclick = () => this.exitConcentration();
 
         try { document.documentElement.requestFullscreen(); } catch (e) {}
     },
