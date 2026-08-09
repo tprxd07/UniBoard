@@ -282,6 +282,7 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    padding-top: 10px;
 }
 
 .calendar-grid-container {
@@ -340,6 +341,7 @@
 .calendar-grid-body {
     position: relative;
     border-left: 1px solid var(--border);
+    padding-top: 8px;
 }
 
 .calendar-grid-row {
