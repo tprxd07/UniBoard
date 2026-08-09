@@ -6,15 +6,25 @@ const ContactsPage = {
 
     render() {
         return `
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <div class="tabs" style="max-width: 500px;">
-                <button class="tab active" data-tab="friends" onclick="ContactsPage.switchTab('friends')">Amigos</button>
-                <button class="tab" data-tab="staff" onclick="ContactsPage.switchTab('staff')">Personal del centro</button>
+        <div style="position:relative;min-height:400px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <div class="tabs" style="max-width: 500px;">
+                    <button class="tab active" data-tab="friends" onclick="ContactsPage.switchTab('friends')">Amigos</button>
+                    <button class="tab" data-tab="staff" onclick="ContactsPage.switchTab('staff')">Personal del centro</button>
+                </div>
+                <button class="btn btn-primary btn-sm" id="add-contact-btn">+ Añadir</button>
             </div>
-            <button class="btn btn-primary btn-sm" id="add-contact-btn">+ Añadir</button>
-        </div>
 
-        <div id="contacts-list"></div>`;
+            <div id="contacts-list"></div>
+
+            <div class="coming-soon-overlay">
+                <div class="coming-soon-card">
+                    <span class="coming-soon-icon">${Icons.users}</span>
+                    <h3>En proceso</h3>
+                    <p>Esta sección estará disponible pronto</p>
+                </div>
+            </div>
+        </div>`;
     },
 
     async init() {

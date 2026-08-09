@@ -9,15 +9,25 @@ const FriendsPage = {
 
     render() {
         return `
-        <div class="friends-stats" id="friends-stats"></div>
+        <div style="position:relative;min-height:400px;">
+            <div class="friends-stats" id="friends-stats"></div>
 
-        <div class="uni-life-tabs" style="margin-bottom:16px;">
-            <button class="tab active" data-tab="friends" onclick="FriendsPage.switchTab('friends',this)">Amigos</button>
-            <button class="tab" data-tab="requests" onclick="FriendsPage.switchTab('requests',this)">
-                Solicitudes ${this.requests.length > 0 ? `(${this.requests.length})` : ''}
-            </button>
-        </div>
-        <div id="friends-tab-content"></div>`;
+            <div class="uni-life-tabs" style="margin-bottom:16px;">
+                <button class="tab active" data-tab="friends" onclick="FriendsPage.switchTab('friends',this)">Amigos</button>
+                <button class="tab" data-tab="requests" onclick="FriendsPage.switchTab('requests',this)">
+                    Solicitudes ${this.requests.length > 0 ? `(${this.requests.length})` : ''}
+                </button>
+            </div>
+            <div id="friends-tab-content"></div>
+
+            <div class="coming-soon-overlay">
+                <div class="coming-soon-card">
+                    <span class="coming-soon-icon">${Icons.users}</span>
+                    <h3>En proceso</h3>
+                    <p>Esta sección estará disponible pronto</p>
+                </div>
+            </div>
+        </div>`;
     },
 
     async init() {

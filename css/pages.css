@@ -2644,3 +2644,48 @@
 .grade-row:hover {
     background: var(--primary-bg);
 }
+
+/* Coming Soon Overlay */
+.coming-soon-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: all;
+    border-radius: var(--radius);
+}
+
+.coming-soon-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px 40px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.coming-soon-icon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+    color: var(--primary);
+    font-size: 32px;
+}
+
+.coming-soon-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    color: var(--text);
+}
+
+.coming-soon-card p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+}
