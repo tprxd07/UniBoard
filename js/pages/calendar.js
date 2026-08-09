@@ -163,6 +163,52 @@ const CalendarPage = {
         return '#a8e6cf';
     },
 
+    _parseTime(str) {
+        if (!str) return null;
+        const parts = str.split(':').map(Number);
+        return parts[0] + (parts[1] || 0) / 60;
+    },
+
+    _layoutOverlapping(items) {
+        if (items.length === 0) return [];
+        items.sort((a, b) => a.start - b.start);
+        const columns = [];
+        let currentCol = [];
+        let colEnd = -1;
+
+        items.forEach(item => {
+            if (item.start >= colEnd) {
+                if (currentCol.length > 0) columns.push(currentCol);
+                currentCol = [item];
+                colEnd = item.end;
+            } else {
+                currentCol.push(item);
+                colEnd = Math.max(colEnd, item.end);
+            }
+        });
+        if (currentCol.length > 0) columns.push(currentCol);
+
+        columns.forEach(col => {
+            const totalCols = col.length;
+            col.forEach((ev, i) => {
+                ev._colIndex = i;
+                ev._totalCols = totalCols;
+            });
+        });
+
+        return columns;
+    },
+
+    _scrollToCurrentTime(container) {
+        const scroll = container.querySelector('.calendar-scroll-container');
+        if (!scroll) return;
+        const now = new Date();
+        const hour = now.getHours();
+        const minute = now.getMinutes();
+        const top = (hour + minute / 60) * 60;
+        setTimeout(() => { scroll.scrollTop = Math.max(0, top - 100); }, 50);
+    },
+
     // ============ MONTH VIEW ============
     renderMonth(container, title) {
         const year = this.currentDate.getFullYear();
@@ -245,48 +291,67 @@ const CalendarPage = {
         const days = [];
         for (let i = 0; i < 7; i++) days.push(Utils.addDays(weekStart, i));
 
-        const hours = [];
-        for (let h = 0; h <= 23; h++) hours.push(h);
+        const HOUR_HEIGHT = 60;
 
-        let html = '<div class="calendar-scroll-container"><div class="table-container"><table class="table"><thead><tr><th>Hora</th>';
-        days.forEach(d => {
-            const isToday = Utils.isToday(d);
-            html += `<th style="${isToday ? 'color: var(--primary); font-weight: 700;' : ''}">${Utils.getDayName(d, true)} ${d.getDate()}</th>`;
-        });
-        html += '</tr></thead><tbody>';
-
-        hours.forEach(h => {
-            html += `<tr><td style="font-weight: 600;">${String(h).padStart(2, '0')}:00</td>`;
-            days.forEach(d => {
-                const hourEvents = this.eventsOnDate(d).filter(e => {
-                    if (!e.startTime) return h === 0;
-                    const [eh] = e.startTime.split(':').map(Number);
-                    return eh === h;
-                });
-                const dayTasks = h === 23 ? this.tasksOnDate(d) : [];
-                const dayExams = h === 23 ? this.examsOnDate(d) : [];
-                html += '<td style="padding: 4px;">';
-                hourEvents.forEach(e => {
-                    const group = this.getGroupForEvent(e);
-                    const color = group ? group.color : 'var(--primary)';
-                    const emoji = group && group.emoji ? group.emoji + ' ' : '';
-                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer;" onclick="event.stopPropagation(); CalendarPage.openEventModal('${e.id}')">${emoji}${e.title}</div>`;
-                });
-                dayTasks.forEach(t => {
-                    const color = this.getTaskColor(t.priority);
-                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer;" onclick="event.stopPropagation(); CalendarPage.goToTask('${t.id}')"><span class="priority-dot" style="background:${color};"></span>${t.title}</div>`;
-                });
-                dayExams.forEach(ex => {
-                    const color = this.getSubjectColor(ex.subject);
-                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 2px; cursor: pointer;" onclick="event.stopPropagation(); CalendarPage.goToExam('${ex.id}')">${Icons.edit} ${ex.topics || ex.subject}</div>`;
-                });
-                html += '</td>';
+        const dayColumns = days.map(d => {
+            const items = [];
+            this.eventsOnDate(d).forEach(e => {
+                const group = this.getGroupForEvent(e);
+                const color = group ? group.color : 'var(--primary)';
+                const emoji = group && group.emoji ? group.emoji + ' ' : '';
+                const start = this._parseTime(e.startTime) || 0;
+                const end = this._parseTime(e.endTime) || start + 1;
+                items.push({ color, title: emoji + e.title, subtitle: e.startTime || '', start, end, type: 'event', id: e.id });
             });
-            html += '</tr>';
+            this.tasksOnDate(d).forEach(t => {
+                const color = this.getTaskColor(t.priority);
+                const start = this._parseTime(t.dueTime) || 9;
+                items.push({ color, title: t.title, subtitle: '', start, end: start + 1, type: 'task', id: t.id });
+            });
+            this.examsOnDate(d).forEach(ex => {
+                const color = this.getSubjectColor(ex.subject);
+                const start = this._parseTime(ex.startTime) || 8;
+                const end = this._parseTime(ex.endTime) || start + 1;
+                items.push({ color, title: ex.topics || ex.subject, subtitle: '', start, end: Math.max(end, start + 1), type: 'exam', id: ex.id });
+            });
+            return this._layoutOverlapping(items);
         });
 
-        html += '</tbody></table></div></div>';
+        let html = '<div class="calendar-scroll-container"><div class="calendar-grid-container" style="grid-template-columns: 60px repeat(7, 1fr);">';
+        html += '<div class="calendar-grid-hours">';
+        for (let h = 0; h <= 23; h++) {
+            html += `<div class="calendar-grid-hour-label">${String(h).padStart(2, '0')}:00</div>`;
+        }
+        html += '</div>';
+
+        days.forEach((d, di) => {
+            const isToday = Utils.isToday(d);
+            html += `<div class="calendar-grid-body" style="border-left:1px solid var(--border); ${isToday ? 'background:var(--primary-bg);' : ''}">`;
+            for (let h = 0; h <= 23; h++) {
+                html += `<div class="calendar-grid-row" data-hour="${h}"></div>`;
+            }
+            dayColumns[di].forEach(col => {
+                col.forEach(ev => {
+                    const top = ev.start * HOUR_HEIGHT;
+                    const height = Math.max((ev.end - ev.start) * HOUR_HEIGHT, 16);
+                    const widthPct = (100 / (ev._totalCols || 1));
+                    const leftPct = (ev._colIndex || 0) * widthPct;
+                    const clickAction = ev.type === 'event'
+                        ? `event.stopPropagation(); CalendarPage.openEventModal('${ev.id}')`
+                        : ev.type === 'task'
+                            ? `event.stopPropagation(); CalendarPage.goToTask('${ev.id}')`
+                            : `event.stopPropagation(); CalendarPage.goToExam('${ev.id}')`;
+                    html += `<div class="calendar-event-block" style="top:${top}px; height:${height}px; left:calc(${leftPct}% + 2px); width:calc(${widthPct}% - 4px); background:${ev.color}22; color:${ev.color}; border-left:3px solid ${ev.color}; font-size:11px; padding:3px 6px;" onclick="${clickAction}">
+                        <div class="event-title" style="font-size:11px;">${ev.title}</div>
+                    </div>`;
+                });
+            });
+            html += '</div>';
+        });
+
+        html += '</div></div>';
         container.innerHTML = html;
+        this._scrollToCurrentTime(container);
     },
 
     // ============ DAY VIEW ============
@@ -295,41 +360,63 @@ const CalendarPage = {
         const dayEvents = this.eventsOnDate(this.currentDate);
         const dayTasks = this.tasksOnDate(this.currentDate);
         const dayExams = this.examsOnDate(this.currentDate);
-        const hours = [];
-        for (let h = 0; h <= 23; h++) hours.push(h);
+        const HOUR_HEIGHT = 60;
 
-        let html = '<div class="calendar-scroll-container"><div class="table-container"><table class="table"><thead><tr><th>Hora</th><th>Eventos, tareas y exámenes</th></tr></thead><tbody>';
-
-        hours.forEach(h => {
-            const hourEvents = dayEvents.filter(e => {
-                if (!e.startTime) return h === 0;
-                const [eh] = e.startTime.split(':').map(Number);
-                return eh === h;
-            });
-            const showTasks = h === 23 && (dayTasks.length > 0 || dayExams.length > 0);
-            html += `<tr><td style="font-weight: 600; white-space: nowrap;">${String(h).padStart(2, '0')}:00</td>`;
-            html += '<td style="padding: 4px;">';
-            hourEvents.forEach(e => {
-                const group = this.getGroupForEvent(e);
-                const color = group ? group.color : 'var(--primary)';
-                const emoji = group && group.emoji ? group.emoji + ' ' : '';
-                html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer;" onclick="CalendarPage.openEventModal('${e.id}')">${emoji}${e.title} (${e.startTime} - ${e.endTime || ''})</div>`;
-            });
-            if (showTasks) {
-                dayTasks.forEach(t => {
-                    const color = this.getTaskColor(t.priority);
-                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer;" onclick="CalendarPage.goToTask('${t.id}')">${Icons.clipboard} ${t.title} (fecha límite)</div>`;
-                });
-                dayExams.forEach(ex => {
-                    const color = this.getSubjectColor(ex.subject);
-                    html += `<div class="calendar-event-inline" style="background: ${color}20; color: ${color}; padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 4px; cursor: pointer;" onclick="CalendarPage.goToExam('${ex.id}')">${Icons.edit} ${ex.topics || ex.subject} · ${ex.room || ''} (${ex.startTime || ''}${ex.endTime ? ' - ' + ex.endTime : ''})</div>`;
-                });
-            }
-            html += '</td></tr>';
+        const items = [];
+        dayEvents.forEach(e => {
+            const group = this.getGroupForEvent(e);
+            const color = group ? group.color : 'var(--primary)';
+            const emoji = group && group.emoji ? group.emoji + ' ' : '';
+            const start = this._parseTime(e.startTime) || 0;
+            const end = this._parseTime(e.endTime) || start + 1;
+            items.push({ color, title: emoji + e.title, subtitle: `${e.startTime || ''} - ${e.endTime || ''}`, start, end, type: 'event', id: e.id });
+        });
+        dayTasks.forEach(t => {
+            const color = this.getTaskColor(t.priority);
+            const start = this._parseTime(t.dueTime) || 9;
+            items.push({ color, title: t.title, subtitle: 'Fecha límite', start, end: start + 1, type: 'task', id: t.id });
+        });
+        dayExams.forEach(ex => {
+            const color = this.getSubjectColor(ex.subject);
+            const start = this._parseTime(ex.startTime) || 8;
+            const end = this._parseTime(ex.endTime) || start + 1;
+            items.push({ color, title: ex.topics || ex.subject, subtitle: [ex.subject, ex.room].filter(Boolean).join(' · '), start, end: Math.max(end, start + 1), type: 'exam', id: ex.id });
         });
 
-        html += '</tbody></table></div></div>';
+        const columns = this._layoutOverlapping(items);
+
+        let html = '<div class="calendar-scroll-container"><div class="calendar-grid-container">';
+        html += '<div class="calendar-grid-hours">';
+        for (let h = 0; h <= 23; h++) {
+            html += `<div class="calendar-grid-hour-label">${String(h).padStart(2, '0')}:00</div>`;
+        }
+        html += '</div><div class="calendar-grid-body">';
+        for (let h = 0; h <= 23; h++) {
+            html += `<div class="calendar-grid-row" data-hour="${h}"></div>`;
+        }
+
+        columns.forEach(col => {
+            col.forEach(ev => {
+                const top = ev.start * HOUR_HEIGHT;
+                const height = Math.max((ev.end - ev.start) * HOUR_HEIGHT, 20);
+                const widthPct = (100 / (ev._totalCols || 1));
+                const leftPct = (ev._colIndex || 0) * widthPct;
+                const page = ev.type === 'event' ? 'openEventModal' : ev.type === 'task' ? 'goToTask' : 'goToExam';
+                const clickAction = ev.type === 'event'
+                    ? `CalendarPage.openEventModal('${ev.id}')`
+                    : ev.type === 'task'
+                        ? `CalendarPage.goToTask('${ev.id}')`
+                        : `CalendarPage.goToExam('${ev.id}')`;
+                html += `<div class="calendar-event-block" style="top:${top}px; height:${height}px; left:calc(${leftPct}% + 2px); width:calc(${widthPct}% - 4px); background:${ev.color}22; color:${ev.color}; border-left:4px solid ${ev.color};" onclick="${clickAction}">
+                    <div class="event-title">${ev.title}</div>
+                    ${ev.subtitle ? `<div class="event-time">${ev.subtitle}</div>` : ''}
+                </div>`;
+            });
+        });
+
+        html += '</div></div></div>';
         container.innerHTML = html;
+        this._scrollToCurrentTime(container);
     },
 
     // ============ ALL (TODOS) VIEW ============
