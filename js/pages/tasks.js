@@ -222,7 +222,7 @@ const TasksPage = {
         const html = `
             <div class="form-group">
                 <label>Título</label>
-                <input type="text" id="task-title" value="${ev.title || ''}" placeholder="Ej: Hacer ejercicios del tema 3">
+                <input type="text" id="task-title" value="${ev.title || ''}" placeholder="Ej: Hacer ejercicios del tema 3" maxlength="100">
             </div>
             <div class="form-group">
                 <label>Asignatura</label>

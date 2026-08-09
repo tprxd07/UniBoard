@@ -238,7 +238,7 @@ const ActivitiesPage = {
         const html = `
             <div class="form-group">
                 <label>Título</label>
-                <input type="text" id="task-title" value="${ev.title || ''}" placeholder="Ej: Hacer ejercicios del tema 3">
+                <input type="text" id="task-title" value="${ev.title || ''}" placeholder="Ej: Hacer ejercicios del tema 3" maxlength="100">
             </div>
             <div class="form-group">
                 <label>Asignatura</label>
@@ -369,7 +369,7 @@ const ActivitiesPage = {
             </div>
             <div class="form-group">
                 <label>Temas</label>
-                <input type="text" id="exam-topics" value="${exam?.topics || ''}" placeholder="Ej: Temas 1-3">
+                <input type="text" id="exam-topics" value="${exam?.topics || ''}" placeholder="Ej: Temas 1-3" maxlength="500">
             </div>
             <div class="form-group">
                 <label>Fecha</label>
@@ -387,7 +387,7 @@ const ActivitiesPage = {
             </div>
             <div class="form-group">
                 <label>Aula</label>
-                <input type="text" id="exam-room" value="${exam?.room || ''}" placeholder="Ej: Aula 201">
+                <input type="text" id="exam-room" value="${exam?.room || ''}" placeholder="Ej: Aula 201" maxlength="50">
             </div>
             <div class="form-group">
                 <label>Descripción (opcional)</label>

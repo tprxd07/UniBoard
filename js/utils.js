@@ -35,6 +35,15 @@ const Utils = {
         return url;
     },
 
+    // Security: Validate photo URL (only http/https/data:image)
+    isValidPhotoURL(url) {
+        if (!url) return false;
+        const trimmed = url.trim();
+        if (trimmed.startsWith('data:image/')) return true;
+        if (trimmed.startsWith('https://') || trimmed.startsWith('http://')) return true;
+        return false;
+    },
+
     // Format date
     formatDate(date, format = 'short') {
         const d = new Date(date);

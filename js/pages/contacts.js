@@ -209,7 +209,7 @@ const ContactsPage = {
         return `
         <div class="form-group">
             <label>Nombre</label>
-            <input type="text" id="staff-name" value="${contact.name || ''}" placeholder="Nombre completo">
+            <input type="text" id="staff-name" value="${contact.name || ''}" placeholder="Nombre completo" maxlength="100">
         </div>
         <div class="form-group">
             <label>Profesión</label>
@@ -220,7 +220,7 @@ const ContactsPage = {
         </div>
         <div class="form-group staff-professor-fields ${profSubjectsClass}">
             <label>Asignaturas (separadas por coma)</label>
-            <input type="text" id="staff-subjects" value="${subjectsStr}" placeholder="Ej: Matemáticas, Física">
+            <input type="text" id="staff-subjects" value="${subjectsStr}" placeholder="Ej: Matemáticas, Física" maxlength="100">
         </div>
         <div class="form-group">
             <label>Correo electrónico</label>

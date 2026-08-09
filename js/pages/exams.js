@@ -108,7 +108,7 @@ const ExamsPage = {
         const html = `
             <div class="form-group">
                 <label>Asignatura</label>
-                <input type="text" id="exam-subject" value="${exam?.subject || ''}" placeholder="Nombre de la asignatura">
+                <input type="text" id="exam-subject" value="${exam?.subject || ''}" placeholder="Nombre de la asignatura" maxlength="100">
             </div>
             <div class="grid-2">
                 <div class="form-group">
@@ -117,7 +117,7 @@ const ExamsPage = {
                 </div>
                 <div class="form-group">
                     <label>Lugar</label>
-                    <input type="text" id="exam-room" value="${exam?.room || ''}" placeholder="Ej: Aula Magna">
+                    <input type="text" id="exam-room" value="${exam?.room || ''}" placeholder="Ej: Aula Magna" maxlength="50">
                 </div>
             </div>
             <div class="form-group">

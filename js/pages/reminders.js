@@ -87,7 +87,7 @@ const RemindersPage = {
             </div>
             <div class="form-group">
                 <label>Título</label>
-                <input type="text" id="reminder-title" placeholder="Ej: Beber agua cada 2 horas">
+                <input type="text" id="reminder-title" placeholder="Ej: Beber agua cada 2 horas" maxlength="100">
             </div>
             <div class="grid-2">
                 <div class="form-group">

@@ -670,7 +670,7 @@ const CalendarPage = {
         const bodyHtml = `
             <div class="form-group">
                 <label>Título</label>
-                <input type="text" id="ev-title" value="${ev.title || ''}" placeholder="Nombre del evento">
+                <input type="text" id="ev-title" value="${ev.title || ''}" placeholder="Nombre del evento" maxlength="100">
             </div>
             <div class="form-row">
                 <div class="form-group">
@@ -862,7 +862,7 @@ const CalendarPage = {
         const bodyHtml = `
             <div class="form-group">
                 <label>Nombre del grupo</label>
-                <input type="text" id="grp-name" value="${gr.name || ''}" placeholder="Nombre del grupo">
+                <input type="text" id="grp-name" value="${gr.name || ''}" placeholder="Nombre del grupo" maxlength="100">
             </div>
             <div class="form-group">
                 <label>Color</label>

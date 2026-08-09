@@ -414,15 +414,15 @@ const SubjectsPage = {
         const html = `
             <div class="form-group">
                 <label>Nombre</label>
-                <input type="text" id="subj-name" value="${s.name || ''}" placeholder="Ej: Matemáticas II">
+                <input type="text" id="subj-name" value="${s.name || ''}" placeholder="Ej: Matemáticas II" maxlength="100">
             </div>
             <div class="form-group">
                 <label>Profesores (separados por coma)</label>
-                <input type="text" id="subj-professors" value="${professors}" placeholder="Ej: Juan Pérez, María López">
+                <input type="text" id="subj-professors" value="${professors}" placeholder="Ej: Juan Pérez, María López" maxlength="100">
             </div>
             <div class="form-group">
                 <label>Aula</label>
-                <input type="text" id="subj-room" value="${s.room || ''}" placeholder="Ej: Aula 301">
+                <input type="text" id="subj-room" value="${s.room || ''}" placeholder="Ej: Aula 301" maxlength="50">
             </div>
             <div class="grid-2">
                 <div class="form-group">

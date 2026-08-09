@@ -144,7 +144,7 @@ const FinancesPage = {
             </div>
             <div class="form-group">
                 <label>Descripción</label>
-                <input type="text" id="tx-desc" placeholder="Ej: Fotocopias tema 4">
+                <input type="text" id="tx-desc" placeholder="Ej: Fotocopias tema 4" maxlength="200">
             </div>`;
 
         Utils.showModal('Nuevo Gasto', html, async () => {

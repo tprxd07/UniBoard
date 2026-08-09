@@ -54,7 +54,7 @@ const ProfilePage = {
                     </div>
                     <div class="form-group">
                         <label>Nombre</label>
-                        <input type="text" id="profile-name" placeholder="Tu nombre">
+                        <input type="text" id="profile-name" placeholder="Tu nombre" maxlength="50">
                     </div>
                     <div class="form-group">
                         <label>Usuario</label>
@@ -66,16 +66,16 @@ const ProfilePage = {
                     </div>
                     <div class="form-group">
                         <label>Descripción</label>
-                        <textarea id="profile-bio" rows="2" placeholder="Cuéntanos algo sobre ti..." style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--bg-input);color:var(--text);font-family:var(--font-family);resize:none;"></textarea>
+                        <textarea id="profile-bio" rows="2" maxlength="200" placeholder="Cuéntanos algo sobre ti..." style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--bg-input);color:var(--text);font-family:var(--font-family);resize:none;"></textarea>
                     </div>
                     <div class="grid-2">
                         <div class="form-group">
                             <label>Universidad</label>
-                            <input type="text" id="profile-university" placeholder="Tu universidad">
+                            <input type="text" id="profile-university" placeholder="Tu universidad" maxlength="100">
                         </div>
                         <div class="form-group">
                             <label>Grado</label>
-                            <input type="text" id="profile-degree" placeholder="Ej: Ingeniería">
+                            <input type="text" id="profile-degree" placeholder="Ej: Ingeniería" maxlength="100">
                         </div>
                     </div>
                     <button class="btn btn-primary" id="save-profile-page">Guardar perfil</button>
@@ -146,7 +146,7 @@ const ProfilePage = {
 
         // Photo display
         const display = document.getElementById('profile-photo-display');
-        if (profile.photoURL && Utils.isValidURL(profile.photoURL)) {
+        if (profile.photoURL && Utils.isValidPhotoURL(profile.photoURL)) {
             display.innerHTML = Utils.sanitize(`<img src="${Utils.escapeHTML(profile.photoURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`);
         }
 
@@ -158,7 +158,7 @@ const ProfilePage = {
 
         const bannerDisplay = document.getElementById('profile-banner-display');
         const removeBtn = document.getElementById('banner-remove-photo');
-        if (profile.bannerURL && Utils.isValidURL(profile.bannerURL)) {
+        if (profile.bannerURL && Utils.isValidPhotoURL(profile.bannerURL)) {
             bannerDisplay.innerHTML = Utils.sanitize(`<img src="${Utils.escapeHTML(profile.bannerURL)}" style="width:100%;height:100%;object-fit:cover;">`);
             if (removeBtn) removeBtn.style.display = '';
         } else {
@@ -281,6 +281,11 @@ const ProfilePage = {
         const university = document.getElementById('profile-university').value;
         const degree = document.getElementById('profile-degree').value;
 
+        if (newName.length > 50) { Utils.showToast('El nombre no puede tener más de 50 caracteres', 'error'); return; }
+        if (bio.length > 200) { Utils.showToast('La bio no puede tener más de 200 caracteres', 'error'); return; }
+        if (university.length > 100) { Utils.showToast('La universidad no puede tener más de 100 caracteres', 'error'); return; }
+        if (degree.length > 100) { Utils.showToast('El grado no puede tener más de 100 caracteres', 'error'); return; }
+
         let finalName = profile.name;
         const nameLastChanged = profile.nameLastChanged ? new Date(profile.nameLastChanged) : null;
         if (newName !== profile.name) {
@@ -316,8 +321,8 @@ const ProfilePage = {
             const updates = { name: finalName, username: finalUsername, usernameLower: finalUsername.toLowerCase(), bio, university, degree };
             if (newName !== profile.name) updates.nameLastChanged = new Date().toISOString();
             if (newUsername !== profile.username) updates.usernameLastChanged = new Date().toISOString();
-            if (this._pendingPhoto) updates.photoURL = this._pendingPhoto;
-            if (this._pendingBanner) updates.bannerURL = this._pendingBanner;
+            if (this._pendingPhoto && Utils.isValidPhotoURL(this._pendingPhoto)) updates.photoURL = this._pendingPhoto;
+            if (this._pendingBanner && Utils.isValidPhotoURL(this._pendingBanner)) updates.bannerURL = this._pendingBanner;
             if (this._pendingBannerColor) updates.bannerColor = this._pendingBannerColor;
             if (this._pendingBannerColorRemoval) updates.bannerURL = '';
 

@@ -209,7 +209,7 @@ const DocumentsPage = {
         const html = `
             <div class="form-group">
                 <label>Nombre</label>
-                <input type="text" id="doc-name" placeholder="Ej: Apuntes tema 3">
+                <input type="text" id="doc-name" placeholder="Ej: Apuntes tema 3" maxlength="100">
             </div>
             <div class="form-group">
                 <label>Asignatura</label>
@@ -251,7 +251,7 @@ const DocumentsPage = {
         const html = `
             <div class="form-group">
                 <label>Nombre</label>
-                <input type="text" id="doc-name" placeholder="Ej: Apuntes clase">
+                <input type="text" id="doc-name" placeholder="Ej: Apuntes clase" maxlength="100">
             </div>
             <div class="form-group">
                 <label>Asignatura</label>

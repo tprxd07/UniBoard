@@ -124,7 +124,7 @@ const GoalsPage = {
             </div>
             <div class="form-group">
                 <label>Título</label>
-                <input type="text" id="goal-title" placeholder="Ej: Estudiar tema 5">
+                <input type="text" id="goal-title" placeholder="Ej: Estudiar tema 5" maxlength="100">
             </div>
             <div class="form-group">
                 <label>Descripción</label>
