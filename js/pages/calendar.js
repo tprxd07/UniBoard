@@ -317,7 +317,12 @@ const CalendarPage = {
             return this._layoutOverlapping(items);
         });
 
-        let html = '<div class="calendar-scroll-container"><div class="calendar-grid-container" style="grid-template-columns: 60px repeat(7, 1fr);">';
+        let html = '<div class="calendar-scroll-container"><div class="calendar-grid-container week-view">';
+        html += '<div class="calendar-grid-header-corner" style="border-bottom:1px solid var(--border);"></div>';
+        days.forEach(d => {
+            const isToday = Utils.isToday(d);
+            html += `<div class="calendar-grid-header-day${isToday ? ' today' : ''}" style="border-bottom:1px solid var(--border);">${Utils.getDayName(d, true)} ${d.getDate()}</div>`;
+        });
         html += '<div class="calendar-grid-hours">';
         for (let h = 0; h <= 23; h++) {
             html += `<div class="calendar-grid-hour-label">${String(h).padStart(2, '0')}:00</div>`;

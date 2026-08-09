@@ -286,8 +286,36 @@
 
 .calendar-grid-container {
     display: grid;
-    grid-template-columns: 60px 1fr;
+    grid-template-columns: 70px 1fr;
     position: relative;
+}
+
+.calendar-grid-container.week-view {
+    grid-template-columns: 70px repeat(7, 1fr);
+}
+
+.calendar-grid-header {
+    display: contents;
+}
+
+.calendar-grid-header-corner {
+    height: 36px;
+}
+
+.calendar-grid-header-day {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-left: 1px solid var(--border);
+}
+
+.calendar-grid-header-day.today {
+    color: var(--primary);
+    font-weight: 700;
 }
 
 .calendar-grid-hours {
@@ -304,7 +332,9 @@
     font-weight: 600;
     color: var(--text-secondary);
     position: relative;
-    top: -6px;
+    top: -8px;
+    white-space: nowrap;
+    overflow: visible;
 }
 
 .calendar-grid-body {
