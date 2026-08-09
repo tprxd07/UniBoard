@@ -168,6 +168,7 @@ const StudyPage = {
         else this.totalTime = this.settings.longBreak * 60;
         this.timeLeft = this.totalTime;
         this.updateDisplay();
+        this.updateConcentrationModeLabel();
     },
 
     toggleTimer() {
@@ -278,14 +279,19 @@ const StudyPage = {
 
     async saveSession() {
         try {
-            const subject = document.getElementById('timer-subject')?.value || '';
+            const subjectSelect = document.getElementById('timer-subject');
+            const subject = subjectSelect?.value || '';
+            const subjectId = subjectSelect?.selectedOptions[0]?.dataset.id || '';
             const topics = document.getElementById('timer-topics')?.value || '';
             await DB.addStudySession({
-                subject, topics,
+                subject, subjectId, topics,
                 duration: this.settings.work,
                 date: new Date().toISOString().split('T')[0],
                 type: 'pomodoro'
             });
+            if (subjectId) {
+                await DB.addStudyMinutesToSubject(subjectId, this.settings.work);
+            }
             DB.updateStreak().catch(() => {});
         } catch (e) {}
     },
@@ -312,9 +318,13 @@ const StudyPage = {
     updateConcentrationModeLabel() {
         const label = document.getElementById('concentration-mode-label');
         if (!label) return;
-        if (this.mode === 'work') label.textContent = 'Modo estudio';
-        else if (this.mode === 'break') label.textContent = 'Descanso';
-        else label.textContent = 'Descanso largo';
+        const subject = document.getElementById('timer-subject')?.value;
+        let text;
+        if (this.mode === 'work') text = 'Modo estudio';
+        else if (this.mode === 'break') text = 'Descanso';
+        else text = 'Descanso largo';
+        if (subject && this.mode === 'work') text += ` — ${subject}`;
+        label.textContent = text;
     },
 
     // ============ SESSIONS ============
@@ -384,8 +394,10 @@ const StudyPage = {
             <div class="form-group"><label>Notas</label><textarea id="study-notes" rows="2" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--bg-input);color:var(--text);font-family:var(--font-family);" placeholder="Cómo me sentí..."></textarea></div>`;
 
         Utils.showModal('Nueva Sesión', html, async () => {
+            const subjectSelect = document.getElementById('study-subject');
             const data = {
-                subject: document.getElementById('study-subject').value,
+                subject: subjectSelect?.value || '',
+                subjectId: subjectSelect?.selectedOptions[0]?.dataset.id || '',
                 duration: parseInt(document.getElementById('study-duration').value) || 25,
                 date: document.getElementById('study-date').value,
                 topics: document.getElementById('study-topics').value,
@@ -393,6 +405,9 @@ const StudyPage = {
             };
             try {
                 await DB.addStudySession(data);
+                if (data.subjectId) {
+                    await DB.addStudyMinutesToSubject(data.subjectId, data.duration);
+                }
                 DB.updateStreak().catch(() => {});
                 Utils.showToast('Sesión registrada', 'success');
                 this.renderSessionsTab(document.getElementById('study-content'));
@@ -443,12 +458,13 @@ const StudyPage = {
     async loadSubjectsSelect() {
         try {
             const subjects = await DB.getSubjects();
-            const sel = document.getElementById('timer-subject') || document.getElementById('study-subject');
-            if (sel) {
+            const selects = [document.getElementById('timer-subject'), document.getElementById('study-subject')];
+            selects.forEach(sel => {
+                if (!sel) return;
                 const val = sel.value;
                 sel.innerHTML = '<option value="">Seleccionar asignatura</option>' +
-                    subjects.map(s => `<option value="${s.name}" ${s.name === val ? 'selected' : ''}>${s.name}</option>`).join('');
-            }
+                    subjects.map(s => `<option value="${s.name}" data-id="${s.id}" ${s.name === val ? 'selected' : ''}>${s.name}</option>`).join('');
+            });
         } catch (e) {}
     }
 };

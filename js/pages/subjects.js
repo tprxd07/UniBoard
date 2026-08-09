@@ -48,7 +48,10 @@ const SubjectsPage = {
                 <h4>${s.name}</h4>
                 <p style="font-size:12px;color:var(--text-secondary);">${s.professors && s.professors.length > 0 ? s.professors.join(', ') : (s.professor || 'Sin profesor')}</p>
                 ${periodLabel ? `<p style="font-size:11px;color:var(--text-muted);margin-top:4px;">${periodLabel}</p>` : ''}
-                ${gradeInfo ? `<p style="font-size:13px;font-weight:700;margin-top:8px;color:${Utils.getGradeColor(gradeInfo.avg)};">${gradeInfo.avg.toFixed(2)} · ${gradeInfo.count} eval</p>` : ''}
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;">
+                    ${gradeInfo ? `<p style="font-size:13px;font-weight:700;color:${Utils.getGradeColor(gradeInfo.avg)};">${gradeInfo.avg.toFixed(2)} · ${gradeInfo.count} eval</p>` : ''}
+                    ${s.studyMinutes ? `<span style="font-size:11px;color:var(--text-secondary);">${Icons.clock} ${(s.studyMinutes / 60).toFixed(1)}h</span>` : ''}
+                </div>
             </div>`;
         }).join('');
     },
@@ -144,7 +147,7 @@ const SubjectsPage = {
                 <div class="stat-card"><div class="stat-icon purple">${Icons.user}</div><div class="stat-info"><h4 style="font-size:13px;">${profList.length > 0 ? profList.join(', ') : '—'}</h4><p>Profesor${profList.length > 1 ? 'es' : ''}</p></div></div>
                 <div class="stat-card"><div class="stat-icon green">${Icons.backpack}</div><div class="stat-info"><h4 style="font-size:13px;">${s.room || '—'}</h4><p>Aula</p></div></div>
                 <div class="stat-card"><div class="stat-icon blue">${Icons.calendar}</div><div class="stat-info"><h4 style="font-size:13px;">${periodLabel}</h4><p>Período</p></div></div>
-                <div class="stat-card"><div class="stat-icon orange">${Icons.award}</div><div class="stat-info"><h4 style="font-size:13px;">${s.credits || 0}</h4><p>Créditos</p></div></div>
+                <div class="stat-card"><div class="stat-icon orange">${Icons.clock}</div><div class="stat-info"><h4 style="font-size:13px;">${s.studyMinutes ? (s.studyMinutes / 60).toFixed(1) + 'h' : '0h'}</h4><p>Estudiado</p></div></div>
             </div>
             ${s.guideUrl ? `<a href="${s.guideUrl}" target="_blank" class="btn btn-ghost btn-full" style="margin-bottom:12px;">${Icons.file} Ver guía docente</a>` : ''}
             <div style="display:flex;gap:8px;">

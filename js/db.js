@@ -67,6 +67,24 @@ const DB = {
         await this.collection('subjects').doc(id).delete();
     },
 
+    async addStudyMinutesToSubject(subjectId, minutes) {
+        try {
+            const subjects = this._getStore('subjects');
+            const idx = subjects.findIndex(s => s.id === subjectId);
+            if (idx >= 0) {
+                subjects[idx].studyMinutes = (subjects[idx].studyMinutes || 0) + minutes;
+                this._setStore('subjects', subjects);
+                return;
+            }
+        } catch (e) {}
+        try {
+            const ref = this.collection('subjects').doc(subjectId);
+            const doc = await ref.get();
+            const current = doc.exists ? (doc.data().studyMinutes || 0) : 0;
+            await ref.update({ studyMinutes: current + minutes });
+        } catch (e) { console.error('Error adding study minutes:', e); }
+    },
+
     // ============ TASKS ============
     async getTasks() {
         if (this.isDemo()) return this._getStore('tasks');
