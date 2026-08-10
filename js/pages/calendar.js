@@ -130,7 +130,25 @@ const CalendarPage = {
         if (event.repeat === 'monthly') { const ed = new Date(event.date); return date.getDate() === ed.getDate() && dateStr >= event.date; }
         if (event.repeat === 'yearly') { const ed = new Date(event.date); return date.getDate() === ed.getDate() && date.getMonth() === ed.getMonth() && dateStr >= event.date; }
         if (event.repeat === 'custom') return event.repeatDays && event.repeatDays.includes(date.getDay()) && dateStr >= event.date;
+        if (event.endDate && event.endDate > event.date) {
+            return dateStr >= event.date && dateStr <= event.endDate;
+        }
         return event.date === dateStr;
+    },
+
+    eventStartsOnDate(event, date) {
+        const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        return event.date === dateStr;
+    },
+
+    eventEndsOnDate(event, date) {
+        const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        const endDate = event.endDate || event.date;
+        return endDate === dateStr;
+    },
+
+    eventSpansMultipleDays(event) {
+        return event.endDate && event.endDate > event.date;
     },
 
     eventsOnDate(date) { return this.events.filter(e => this.eventOnDate(e, date)); },
@@ -227,63 +245,145 @@ const CalendarPage = {
         const firstDay = Utils.getFirstDayOfMonth(year, month);
         const startDay = firstDay === 0 ? 6 : firstDay - 1;
 
+        const allDays = [];
+        const prevMonth = month === 0 ? 11 : month - 1;
+        const prevYear = month === 0 ? year - 1 : year;
+        const daysInPrevMonth = Utils.getDaysInMonth(prevYear, prevMonth);
+        for (let i = startDay - 1; i >= 0; i--) {
+            allDays.push({ day: daysInPrevMonth - i, current: false, dateStr: '' });
+        }
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            allDays.push({ day, current: true, dateStr, date: new Date(year, month, day) });
+        }
+        const remaining = allDays.length % 7 === 0 ? 0 : 7 - (allDays.length % 7);
+        for (let i = 1; i <= remaining; i++) {
+            allDays.push({ day: i, current: false, dateStr: '' });
+        }
+
+        const multiDayEvents = this.events.filter(e => this.eventSpansMultipleDays(e));
+
         let html = '<div class="calendar-grid">';
         ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].forEach(d => {
             html += `<div class="calendar-day-header">${d}</div>`;
         });
 
-        const prevMonth = month === 0 ? 11 : month - 1;
-        const prevYear = month === 0 ? year - 1 : year;
-        const daysInPrevMonth = Utils.getDaysInMonth(prevYear, prevMonth);
-        for (let i = startDay - 1; i >= 0; i--) {
-            html += `<div class="calendar-day other-month">${daysInPrevMonth - i}</div>`;
-        }
-
-        for (let day = 1; day <= daysInMonth; day++) {
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            const date = new Date(year, month, day);
-            const isToday = Utils.isToday(date);
-            const dayEvents = this.eventsOnDate(date);
-            const dayTasks = this.tasksOnDate(date);
-            const dayExams = this.examsOnDate(date);
-            const total = dayEvents.length + dayTasks.length + dayExams.length;
-
-            let classes = 'calendar-day';
-            if (isToday) classes += ' today';
-            if (total > 0) classes += ' has-content';
-
-            let eventsHtml = '';
-            dayEvents.forEach(e => {
-                const group = this.getGroupForEvent(e);
-                const color = group ? group.color : 'var(--primary)';
-                const emoji = group && group.emoji ? group.emoji + ' ' : '';
-                eventsHtml += `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${e.title}">
-                    <span class="calendar-event-text">${emoji}${e.title}</span>
-                </div>`;
-            });
-            dayTasks.forEach(t => {
-                const color = this.getTaskColor(t.priority);
-                eventsHtml += `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${t.title}">
-                    <span class="calendar-event-text"><span class="priority-dot" style="background:${color};"></span>${t.title}</span>
-                </div>`;
-            });
-            dayExams.forEach(ex => {
-                const color = this.getSubjectColor(ex.subject);
-                eventsHtml += `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${ex.subject}">
-                    <span class="calendar-event-text">${Icons.edit} ${ex.topics || ex.subject}</span>
-                </div>`;
+        for (let w = 0; w < allDays.length; w += 7) {
+            const weekDays = allDays.slice(w, w + 7);
+            const weekMultiDay = [];
+            multiDayEvents.forEach(e => {
+                const eStart = e.date;
+                const eEnd = e.endDate;
+                const firstVisible = weekDays.find(d => d.current && d.dateStr);
+                const lastVisible = [...weekDays].reverse().find(d => d.current && d.dateStr);
+                if (!firstVisible || !lastVisible) return;
+                if (eStart <= lastVisible.dateStr && eEnd >= firstVisible.dateStr) {
+                    let startCol = 0;
+                    let endCol = 6;
+                    for (let i = 0; i < weekDays.length; i++) {
+                        if (weekDays[i].current && weekDays[i].dateStr >= eStart && startCol === 0 && i === 0 || (weekDays[i].current && weekDays[i].dateStr >= eStart && (i === 0 || !weekDays[i-1].current || weekDays[i-1].dateStr < eStart))) {
+                            startCol = i;
+                        }
+                    }
+                    for (let i = weekDays.length - 1; i >= 0; i--) {
+                        if (weekDays[i].current && weekDays[i].dateStr <= eEnd) {
+                            endCol = i;
+                            break;
+                        }
+                    }
+                    weekMultiDay.push({ event: e, startCol, endCol });
+                }
             });
 
-            html += `<div class="${classes}" data-date="${dateStr}" onclick="CalendarPage.goToDay('${dateStr}')" style="cursor:pointer;">
-                <div class="calendar-day-number">${day}</div>
-                <div class="calendar-day-events">${eventsHtml}</div>
-            </div>`;
-        }
+            weekMultiDay.sort((a, b) => {
+                const aSpan = a.endCol - a.startCol;
+                const bSpan = b.endCol - b.startCol;
+                return bSpan - aSpan;
+            });
+            const lanes = [];
+            weekMultiDay.forEach(item => {
+                let placed = false;
+                for (let l = 0; l < lanes.length; l++) {
+                    const conflict = lanes[l].some(existing => 
+                        item.startCol <= existing.endCol && item.endCol >= existing.startCol
+                    );
+                    if (!conflict) {
+                        item._lane = l;
+                        lanes[l].push(item);
+                        placed = true;
+                        break;
+                    }
+                }
+                if (!placed) {
+                    item._lane = lanes.length;
+                    lanes.push([item]);
+                }
+            });
+            const totalLanes = lanes.length;
 
-        const totalCells = startDay + daysInMonth;
-        const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
-        for (let i = 1; i <= remaining; i++) {
-            html += `<div class="calendar-day other-month">${i}</div>`;
+            weekDays.forEach((d, i) => {
+                if (!d.current) {
+                    html += `<div class="calendar-day other-month">${d.day}</div>`;
+                    return;
+                }
+                const date = d.date;
+                const isToday = Utils.isToday(date);
+                const dayEvents = this.eventsOnDate(date).filter(e => !this.eventSpansMultipleDays(e));
+                const dayTasks = this.tasksOnDate(date);
+                const dayExams = this.examsOnDate(date);
+
+                let classes = 'calendar-day';
+                if (isToday) classes += ' today';
+
+                let multiDayHtml = '';
+                weekMultiDay.forEach(item => {
+                    const e = item.event;
+                    const group = this.getGroupForEvent(e);
+                    const color = group ? group.color : 'var(--primary)';
+                    const emoji = group && group.emoji ? group.emoji + ' ' : '';
+                    const isStart = e.date === d.dateStr;
+                    const isEnd = (e.endDate || e.date) === d.dateStr;
+                    const laneCount = totalLanes || 1;
+                    const laneHeight = 22;
+                    const topOffset = item._lane * laneHeight;
+                    let barClasses = 'calendar-multiday-bar';
+                    if (isStart) barClasses += ' bar-start';
+                    if (isEnd) barClasses += ' bar-end';
+                    if (!isStart && !isEnd) barClasses += ' bar-mid';
+                    multiDayHtml += `<div class="${barClasses}" style="background:${color}28; color:${color}; border-color:${color}; top:${topOffset}px; z-index:${10 + item._lane};" onclick="event.stopPropagation(); CalendarPage.openEventModal('${e.id}')" title="${Utils.escapeHTML(e.title)}">
+                        <span class="calendar-multiday-text">${isStart ? emoji + Utils.escapeHTML(e.title) : ''}</span>
+                    </div>`;
+                });
+                const multiDayHeight = totalLanes * 22;
+
+                let eventsHtml = '';
+                dayEvents.forEach(e => {
+                    const group = this.getGroupForEvent(e);
+                    const color = group ? group.color : 'var(--primary)';
+                    const emoji = group && group.emoji ? group.emoji + ' ' : '';
+                    eventsHtml += `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${Utils.escapeHTML(e.title)}">
+                        <span class="calendar-event-text">${emoji}${Utils.escapeHTML(e.title)}</span>
+                    </div>`;
+                });
+                dayTasks.forEach(t => {
+                    const color = this.getTaskColor(t.priority);
+                    eventsHtml += `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${Utils.escapeHTML(t.title)}">
+                        <span class="calendar-event-text"><span class="priority-dot" style="background:${color};"></span>${Utils.escapeHTML(t.title)}</span>
+                    </div>`;
+                });
+                dayExams.forEach(ex => {
+                    const color = this.getSubjectColor(ex.subject);
+                    eventsHtml += `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${Utils.escapeHTML(ex.subject)}">
+                        <span class="calendar-event-text">${Icons.edit} ${Utils.escapeHTML(ex.topics || ex.subject)}</span>
+                    </div>`;
+                });
+
+                html += `<div class="${classes}" data-date="${d.dateStr}" onclick="CalendarPage.goToDay('${d.dateStr}')" style="cursor:pointer;${multiDayHeight ? 'padding-top:' + (multiDayHeight + 4) + 'px;' : ''}">
+                    <div class="calendar-multiday-container" style="height:${multiDayHeight}px;">${multiDayHtml}</div>
+                    <div class="calendar-day-number">${d.day}</div>
+                    <div class="calendar-day-events">${eventsHtml}</div>
+                </div>`;
+            });
         }
 
         html += '</div>';
@@ -301,9 +401,43 @@ const CalendarPage = {
 
         const HOUR_HEIGHT = 60;
 
+        const multiDayEvents = this.events.filter(e => {
+            if (!this.eventSpansMultipleDays(e)) return false;
+            const eEnd = e.endDate;
+            const wStart = days[0];
+            const wEnd = days[6];
+            const wStartStr = `${wStart.getFullYear()}-${String(wStart.getMonth()+1).padStart(2,'0')}-${String(wStart.getDate()).padStart(2,'0')}`;
+            const wEndStr = `${wEnd.getFullYear()}-${String(wEnd.getMonth()+1).padStart(2,'0')}-${String(wEnd.getDate()).padStart(2,'0')}`;
+            return e.date <= wEndStr && eEnd >= wStartStr;
+        });
+
+        const lanes = [];
+        multiDayEvents.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+        multiDayEvents.forEach(e => {
+            let placed = false;
+            for (let l = 0; l < lanes.length; l++) {
+                const conflict = lanes[l].some(existing => {
+                    const exEnd = existing.endDate || existing.date;
+                    const eEnd = e.endDate || e.date;
+                    return e.date <= exEnd && eEnd >= existing.date;
+                });
+                if (!conflict) {
+                    e._lane = l;
+                    lanes[l].push(e);
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed) {
+                e._lane = lanes.length;
+                lanes.push([e]);
+            }
+        });
+
         const dayColumns = days.map(d => {
             const items = [];
             this.eventsOnDate(d).forEach(e => {
+                if (this.eventSpansMultipleDays(e)) return;
                 const group = this.getGroupForEvent(e);
                 const color = group ? group.color : 'var(--primary)';
                 const emoji = group && group.emoji ? group.emoji + ' ' : '';
@@ -325,12 +459,46 @@ const CalendarPage = {
             return this._layoutOverlapping(items);
         });
 
+        const dayDateStrs = days.map(d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+
         let html = '<div class="calendar-scroll-container"><div class="calendar-grid-container week-view">';
         html += '<div class="calendar-grid-header-corner" style="border-bottom:1px solid var(--border);"></div>';
         days.forEach(d => {
             const isToday = Utils.isToday(d);
             html += `<div class="calendar-grid-header-day${isToday ? ' today' : ''}" style="border-bottom:1px solid var(--border);">${Utils.getDayName(d, true)} ${d.getDate()}</div>`;
         });
+
+        if (multiDayEvents.length > 0) {
+            const laneHeight = 24;
+            const totalHeight = lanes.length * laneHeight;
+            html += `<div class="calendar-grid-header-corner" style="height:${totalHeight}px;"></div>`;
+            days.forEach((d, di) => {
+                const dateStr = dayDateStrs[di];
+                let barsHtml = '';
+                multiDayEvents.forEach(e => {
+                    const eEnd = e.endDate || e.date;
+                    const isStart = e.date === dateStr;
+                    const isEnd = eEnd === dateStr;
+                    const wStartStr = dayDateStrs[0];
+                    const wEndStr = dayDateStrs[6];
+                    const visStart = e.date < wStartStr ? wStartStr : e.date;
+                    const visEnd = eEnd > wEndStr ? wEndStr : eEnd;
+                    const startIdx = dayDateStrs.indexOf(visStart);
+                    const endIdx = dayDateStrs.indexOf(visEnd);
+                    if (di === startIdx) {
+                        const spanCols = endIdx - startIdx + 1;
+                        const group = this.getGroupForEvent(e);
+                        const color = group ? group.color : 'var(--primary)';
+                        const emoji = group && group.emoji ? group.emoji + ' ' : '';
+                        barsHtml += `<div class="calendar-multiday-week-bar" style="background:${color}28; color:${color}; border-color:${color}; top:${e._lane * laneHeight}px; height:${laneHeight - 2}px; width:calc(${spanCols * 100}% - 4px); z-index:${10 + e._lane};" onclick="event.stopPropagation(); CalendarPage.openEventModal('${e.id}')" title="${Utils.escapeHTML(e.title)}">
+                            <span class="calendar-multiday-text">${Utils.escapeHTML(emoji + e.title)}</span>
+                        </div>`;
+                    }
+                });
+                html += `<div class="calendar-multiday-week-cell" style="height:${totalHeight}px; border-left:1px solid var(--border); position:relative;">${barsHtml}</div>`;
+            });
+        }
+
         html += '<div class="calendar-grid-hours">';
         for (let h = 0; h <= 23; h++) {
             html += `<div class="calendar-grid-hour-label">${String(h).padStart(2, '0')}:00</div>`;
@@ -355,7 +523,7 @@ const CalendarPage = {
                             ? `event.stopPropagation(); CalendarPage.goToTask('${ev.id}')`
                             : `event.stopPropagation(); CalendarPage.goToExam('${ev.id}')`;
                     html += `<div class="calendar-event-block" style="top:${top}px; height:${height}px; left:calc(${leftPct}% + 2px); width:calc(${widthPct}% - 4px); background:${ev.color}22; color:${ev.color}; border-left:3px solid ${ev.color}; font-size:11px; padding:3px 6px;" onclick="${clickAction}">
-                        <div class="event-title" style="font-size:11px;">${ev.title}</div>
+                        <div class="event-title" style="font-size:11px;">${Utils.escapeHTML(ev.title)}</div>
                     </div>`;
                 });
             });
@@ -380,9 +548,42 @@ const CalendarPage = {
             const group = this.getGroupForEvent(e);
             const color = group ? group.color : 'var(--primary)';
             const emoji = group && group.emoji ? group.emoji + ' ' : '';
-            const start = this._parseTime(e.startTime) || 0;
-            const end = this._parseTime(e.endTime) || start + 1;
-            items.push({ color, title: emoji + e.title, subtitle: `${e.startTime || ''} - ${e.endTime || ''}`, start, end, type: 'event', id: e.id });
+            const isMultiDay = this.eventSpansMultipleDays(e);
+            const isStart = e.date === `${this.currentDate.getFullYear()}-${String(this.currentDate.getMonth()+1).padStart(2,'0')}-${String(this.currentDate.getDate()).padStart(2,'0')}`;
+            const isEnd = (e.endDate || e.date) === `${this.currentDate.getFullYear()}-${String(this.currentDate.getMonth()+1).padStart(2,'0')}-${String(this.currentDate.getDate()).padStart(2,'0')}`;
+
+            let start, end;
+            if (isMultiDay && !isStart) {
+                start = 0;
+                end = 24;
+            } else if (isMultiDay && isStart && !isEnd) {
+                start = this._parseTime(e.startTime) || 0;
+                end = 24;
+            } else if (isMultiDay && isStart && isEnd) {
+                start = this._parseTime(e.startTime) || 0;
+                end = this._parseTime(e.endTime) || 24;
+            } else {
+                start = this._parseTime(e.startTime) || 0;
+                end = this._parseTime(e.endTime) || start + 1;
+            }
+
+            let subtitle = '';
+            if (isMultiDay) {
+                const dateObj = new Date(this.currentDate);
+                const endDateObj = new Date(e.endDate || e.date);
+                const startDateObj = new Date(e.date);
+                if (isStart) {
+                    subtitle = `${e.startTime || 'Todo el día'} → ${Utils.formatDate(endDateObj, 'short')}`;
+                } else if (isEnd) {
+                    subtitle = `${Utils.formatDate(startDateObj, 'short')} → ${e.endTime || 'Todo el día'}`;
+                } else {
+                    subtitle = `${Utils.formatDate(startDateObj, 'short')} → ${Utils.formatDate(endDateObj, 'short')}`;
+                }
+            } else {
+                subtitle = `${e.startTime || ''} - ${e.endTime || ''}`;
+            }
+
+            items.push({ color, title: (isMultiDay && !isStart ? '↳ ' : '') + emoji + e.title, subtitle, start, end, type: 'event', id: e.id });
         });
         dayTasks.forEach(t => {
             const color = this.getTaskColor(t.priority);
@@ -414,15 +615,14 @@ const CalendarPage = {
                 const height = Math.max((ev.end - ev.start) * HOUR_HEIGHT, 20);
                 const widthPct = (100 / (ev._totalCols || 1));
                 const leftPct = (ev._colIndex || 0) * widthPct;
-                const page = ev.type === 'event' ? 'openEventModal' : ev.type === 'task' ? 'goToTask' : 'goToExam';
                 const clickAction = ev.type === 'event'
                     ? `CalendarPage.openEventModal('${ev.id}')`
                     : ev.type === 'task'
                         ? `CalendarPage.goToTask('${ev.id}')`
                         : `CalendarPage.goToExam('${ev.id}')`;
                 html += `<div class="calendar-event-block" style="top:${top}px; height:${height}px; left:calc(${leftPct}% + 2px); width:calc(${widthPct}% - 4px); background:${ev.color}22; color:${ev.color}; border-left:4px solid ${ev.color};" onclick="${clickAction}">
-                    <div class="event-title">${ev.title}</div>
-                    ${ev.subtitle ? `<div class="event-time">${ev.subtitle}</div>` : ''}
+                    <div class="event-title">${Utils.escapeHTML(ev.title)}</div>
+                    ${ev.subtitle ? `<div class="event-time">${Utils.escapeHTML(ev.subtitle)}</div>` : ''}
                 </div>`;
             });
         });
@@ -448,7 +648,7 @@ const CalendarPage = {
             if (!e.date) return;
             const evDate = new Date(e.date + 'T00:00:00');
             const diff = Math.round((evDate - today) / dayMs);
-            if (diff < 0 && !e.repeat) return;
+            if (diff < 0 && !e.repeat && !(e.endDate && e.endDate >= `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`)) return;
             let displayDate;
             if (e.repeat) {
                 for (let i = 0; i < 365; i++) {
@@ -457,15 +657,27 @@ const CalendarPage = {
                     if (this.eventOnDate(e, d)) { displayDate = d; break; }
                 }
             } else {
-                displayDate = evDate;
+                if (e.endDate && e.endDate >= `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`) {
+                    displayDate = today;
+                } else {
+                    displayDate = evDate;
+                }
             }
             if (!displayDate) return;
             const dateStr = `${displayDate.getFullYear()}-${String(displayDate.getMonth() + 1).padStart(2, '0')}-${String(displayDate.getDate()).padStart(2, '0')}`;
             const group = this.getGroupForEvent(e);
+            let subtitle;
+            if (this.eventSpansMultipleDays(e)) {
+                const sd = new Date(e.date);
+                const ed = new Date(e.endDate);
+                subtitle = `${Utils.formatDate(sd, 'short')} → ${Utils.formatDate(ed, 'short')}${e.startTime ? ' · ' + e.startTime : ''}`;
+            } else {
+                subtitle = e.startTime ? `${e.startTime} - ${e.endTime || ''}` : '';
+            }
             items.push({
                 type: 'event', date: displayDate, dateStr, order: displayDate.getTime(),
                 data: e, color: group ? group.color : 'var(--primary)',
-                title: e.title, subtitle: e.startTime ? `${e.startTime} - ${e.endTime || ''}` : ''
+                title: e.title, subtitle
             });
         });
 
@@ -665,17 +877,32 @@ const CalendarPage = {
         const repeatSelect = repeatOptions.map(r => `<option value="${r}" ${ev.repeat === r ? 'selected' : ''}>${repeatLabels[r]}</option>`).join('');
 
         const groupEnabled = ev.groupId ? 'yes' : 'no';
-        const deleteBtn = isEdit ? `<button class="btn btn-danger btn-sm" onclick="CalendarPage.confirmDeleteEvent('${ev.id}')">Eliminar</button>` : '';
+        const deleteBtn = isEdit ? `<button class="btn btn-danger btn-sm" onclick="CalendarPage.confirmDeleteEvent('${ev.id}')">Eliminar</button>`;
+        const endDateValue = ev.endDate || ev.date || '';
+        const multiDayEnabled = ev.endDate && ev.endDate > ev.date ? 'yes' : 'no';
 
         const bodyHtml = `
             <div class="form-group">
                 <label>Título</label>
-                <input type="text" id="ev-title" value="${ev.title || ''}" placeholder="Nombre del evento" maxlength="100">
+                <input type="text" id="ev-title" value="${Utils.escapeHTML(ev.title || '')}" placeholder="Nombre del evento" maxlength="100">
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Fecha</label>
-                    <input type="date" id="ev-date" value="${ev.date || ''}" min="${today}">
+                    <label>Fecha inicio</label>
+                    <input type="date" id="ev-date" value="${ev.date || ''}" min="${today}" onchange="CalendarPage.onStartDateChange()">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>¿Varios días?</label>
+                <div class="pill-selector">
+                    <button class="pill ${multiDayEnabled === 'no' ? 'active' : ''}" data-multiday-toggle="no" onclick="CalendarPage.toggleMultiDay('no')">No</button>
+                    <button class="pill ${multiDayEnabled === 'yes' ? 'active' : ''}" data-multiday-toggle="yes" onclick="CalendarPage.toggleMultiDay('yes')">Sí</button>
+                </div>
+            </div>
+            <div class="form-row" id="ev-end-date-row" style="display:${multiDayEnabled === 'yes' ? 'flex' : 'none'};">
+                <div class="form-group">
+                    <label>Fecha fin</label>
+                    <input type="date" id="ev-end-date" value="${endDateValue}" min="${today}">
                 </div>
             </div>
             <div class="form-row">
@@ -750,6 +977,35 @@ const CalendarPage = {
         document.getElementById('repeat-days-wrapper').style.display = val === 'custom' ? 'flex' : 'none';
     },
 
+    onStartDateChange() {
+        const startDate = document.getElementById('ev-date').value;
+        const endDateInput = document.getElementById('ev-end-date');
+        if (endDateInput) {
+            endDateInput.min = startDate;
+            if (!endDateInput.value || endDateInput.value < startDate) {
+                endDateInput.value = startDate;
+            }
+        }
+    },
+
+    toggleMultiDay(val) {
+        document.querySelectorAll('[data-multiday-toggle]').forEach(b => b.classList.remove('active'));
+        document.querySelector(`[data-multiday-toggle="${val}"]`).classList.add('active');
+        const endDateRow = document.getElementById('ev-end-date-row');
+        const endDateInput = document.getElementById('ev-end-date');
+        const startDate = document.getElementById('ev-date').value;
+        if (val === 'yes') {
+            endDateRow.style.display = 'flex';
+            endDateInput.min = startDate;
+            if (!endDateInput.value || endDateInput.value < startDate) {
+                endDateInput.value = startDate;
+            }
+        } else {
+            endDateRow.style.display = 'none';
+            endDateInput.value = startDate;
+        }
+    },
+
     async saveEvent() {
         const title = document.getElementById('ev-title').value.trim();
         const date = document.getElementById('ev-date').value;
@@ -762,10 +1018,15 @@ const CalendarPage = {
             ? Array.from(document.querySelectorAll('.repeat-day:checked')).map(c => parseInt(c.value))
             : [];
 
+        const endDateInput = document.getElementById('ev-end-date');
+        const multiDayToggle = document.querySelector('[data-multiday-toggle="yes"]');
+        const isMultiDay = multiDayToggle && multiDayToggle.classList.contains('active');
+        const endDate = isMultiDay && endDateInput && endDateInput.value && endDateInput.value > date ? endDateInput.value : null;
+
         if (!title) { Utils.showToast('Introduce un título', 'error'); return; }
         if (!date) { Utils.showToast('Introduce una fecha', 'error'); return; }
 
-        const data = { title, date, startTime, endTime, groupId, notes, repeat, repeatDays };
+        const data = { title, date, endDate, startTime, endTime, groupId, notes, repeat, repeatDays };
 
         try {
             if (this.editingEvent) {

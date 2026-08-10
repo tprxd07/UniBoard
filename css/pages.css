@@ -406,14 +406,14 @@
 .calendar-day {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    align-items: stretch;
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: var(--transition);
     font-size: 14px;
     position: relative;
-    min-height: 0;
+    min-height: 80px;
+    overflow: hidden;
 }
 
 .calendar-day:hover {
@@ -454,6 +454,8 @@
     font-size: 13px;
     font-weight: 500;
     padding: 2px 0;
+    text-align: center;
+    z-index: 5;
 }
 
 .calendar-day-events {
@@ -503,6 +505,80 @@
 
 .calendar-event:hover {
     opacity: 0.85;
+}
+
+.calendar-multiday-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.calendar-multiday-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 20px;
+    border-radius: 4px;
+    border-left: 3px solid;
+    font-size: 11px;
+    line-height: 20px;
+    padding: 0 6px;
+    cursor: pointer;
+    pointer-events: auto;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.calendar-multiday-bar.bar-start {
+    border-radius: 4px 0 0 4px;
+    left: 0;
+}
+
+.calendar-multiday-bar.bar-end {
+    border-radius: 0 4px 4px 0;
+    right: 0;
+    left: 0;
+}
+
+.calendar-multiday-bar.bar-mid {
+    border-radius: 0;
+    border-left: none;
+    left: 0;
+    right: 0;
+}
+
+.calendar-multiday-bar.bar-start.bar-end {
+    border-radius: 4px;
+    border-left: 3px solid;
+}
+
+.calendar-multiday-text {
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.calendar-multiday-week-cell {
+    position: relative;
+    overflow: hidden;
+}
+
+.calendar-multiday-week-bar {
+    position: absolute;
+    left: 2px;
+    border-radius: 4px;
+    border-left: 3px solid;
+    font-size: 11px;
+    line-height: 22px;
+    padding: 0 6px;
+    cursor: pointer;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .calendar-event-inline {

@@ -147,6 +147,15 @@ const SettingsPage = {
 
         <div class="card" style="margin-bottom: 20px;">
             <div class="card-header">
+                <span class="card-title">${Icons.coffee} Apoya UniBoard</span>
+            </div>
+            <div style="text-align: center; padding: 20px;">
+                <p style="font-size: 13px; color: var(--text-secondary);">Si te gusta UniBoard, invítame a un café</p>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
                 <span class="card-title">${Icons.info} Acerca de</span>
             </div>
             <div style="text-align: center; padding: 20px;">
@@ -272,6 +281,13 @@ const SettingsPage = {
 
         document.getElementById('export-data').addEventListener('click', () => this.exportData());
         document.getElementById('btn-logout-settings').addEventListener('click', () => Auth.logout());
+
+        // Ko-fi widget
+        if (typeof kofiwidget2 !== 'undefined' && !this._kofiDrawn) {
+            this._kofiDrawn = true;
+            kofiwidget2.init('Apoyame en Ko-Fi', '#6f7dde', 'W0T124SLVT');
+            kofiwidget2.draw();
+        }
     },
 
     applyAccentColor(color) {
