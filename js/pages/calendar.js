@@ -877,7 +877,7 @@ const CalendarPage = {
         const repeatSelect = repeatOptions.map(r => `<option value="${r}" ${ev.repeat === r ? 'selected' : ''}>${repeatLabels[r]}</option>`).join('');
 
         const groupEnabled = ev.groupId ? 'yes' : 'no';
-        const deleteBtn = isEdit ? `<button class="btn btn-danger btn-sm" onclick="CalendarPage.confirmDeleteEvent('${ev.id}')">Eliminar</button>`;
+        const deleteBtn = isEdit ? `<button class="btn btn-danger btn-sm" onclick="CalendarPage.confirmDeleteEvent('${ev.id}')">Eliminar</button>` : '';
         const endDateValue = ev.endDate || ev.date || '';
         const multiDayEnabled = ev.endDate && ev.endDate > ev.date ? 'yes' : 'no';
 
