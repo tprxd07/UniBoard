@@ -860,11 +860,118 @@ const CalendarPage = {
     },
 
     // ============ EVENT MODAL ============
+    _rangePickerDate: null,
+    _rangeStart: null,
+    _rangeEnd: null,
+    _rangeStep: 0,
+
+    _initRangePicker(initialDate, initialEndDate) {
+        const d = initialDate || new Date().toISOString().split('T')[0];
+        this._rangePickerDate = new Date(d + 'T00:00:00');
+        this._rangeStart = initialDate || null;
+        this._rangeEnd = (initialEndDate && initialEndDate > initialDate) ? initialEndDate : null;
+        this._rangeStep = this._rangeEnd ? 2 : (this._rangeStart ? 1 : 0);
+        this._renderRangePicker();
+    },
+
+    _renderRangePicker() {
+        const container = document.getElementById('range-calendar');
+        if (!container) return;
+        const year = this._rangePickerDate.getFullYear();
+        const month = this._rangePickerDate.getMonth();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const firstDay = new Date(year, month, 1).getDay();
+        const startDay = firstDay === 0 ? 6 : firstDay - 1;
+        const today = new Date().toISOString().split('T')[0];
+        const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+        let html = `<div class="range-picker-header">
+            <button class="range-picker-nav" onclick="event.stopPropagation(); CalendarPage._rangeNav(-1)">◀</button>
+            <span class="range-picker-title">${monthNames[month]} ${year}</span>
+            <button class="range-picker-nav" onclick="event.stopPropagation(); CalendarPage._rangeNav(1)">▶</button>
+        </div>`;
+        html += '<div class="range-picker-grid">';
+        ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá', 'Do'].forEach(d => {
+            html += `<div class="range-picker-weekday">${d}</div>`;
+        });
+
+        const prevMonth = month === 0 ? 11 : month - 1;
+        const prevYear = month === 0 ? year - 1 : year;
+        const daysInPrev = new Date(prevYear, prevMonth + 1, 0).getDate();
+        for (let i = startDay - 1; i >= 0; i--) {
+            html += `<div class="range-picker-day other-month">${daysInPrev - i}</div>`;
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            let classes = 'range-picker-day';
+            if (dateStr === today) classes += ' today';
+            if (this._rangeStart && dateStr === this._rangeStart) classes += ' range-start';
+            if (this._rangeEnd && dateStr === this._rangeEnd) classes += ' range-end';
+            if (this._rangeStart && this._rangeEnd && dateStr > this._rangeStart && dateStr < this._rangeEnd) classes += ' in-range';
+            if (this._rangeStart && !this._rangeEnd && this._rangeStep === 1 && dateStr === this._rangeStart) classes += ' range-start';
+            html += `<div class="${classes}" onclick="event.stopPropagation(); CalendarPage._rangeSelect('${dateStr}')">${day}</div>`;
+        }
+
+        const totalCells = startDay + daysInMonth;
+        const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+        for (let i = 1; i <= remaining; i++) {
+            html += `<div class="range-picker-day other-month">${i}</div>`;
+        }
+        html += '</div>';
+
+        const hint = this._rangeStep === 0 ? 'Toca para seleccionar la fecha' :
+                     this._rangeStep === 1 ? 'Toca la fecha de fin' : '';
+        const isMultiDay = this._rangeStart && this._rangeEnd && this._rangeStart !== this._rangeEnd;
+        const displayText = this._rangeStart ? (isMultiDay ? `${this._rangeStart} → ${this._rangeEnd}` : this._rangeStart) : 'Sin fecha';
+
+        html += `<div class="range-picker-footer">
+            <span class="range-picker-hint">${hint}</span>
+            <span class="range-picker-selection">${displayText}</span>
+            ${isMultiDay ? '<span class="badge badge-primary" style="font-size:10px;">Varios días</span>' : ''}
+            ${this._rangeStart ? '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); CalendarPage._rangeClear()" style="font-size:11px;">Limpiar</button>' : ''}
+        </div>`;
+
+        container.innerHTML = html;
+    },
+
+    _rangeNav(dir) {
+        this._rangePickerDate.setMonth(this._rangePickerDate.getMonth() + dir);
+        this._renderRangePicker();
+    },
+
+    _rangeSelect(dateStr) {
+        if (this._rangeStep === 0 || (this._rangeStep === 2 && !this._rangeEnd)) {
+            this._rangeStart = dateStr;
+            this._rangeEnd = null;
+            this._rangeStep = 1;
+        } else if (this._rangeStep === 1) {
+            if (dateStr < this._rangeStart) {
+                this._rangeEnd = this._rangeStart;
+                this._rangeStart = dateStr;
+            } else {
+                this._rangeEnd = dateStr;
+            }
+            this._rangeStep = 2;
+        } else {
+            this._rangeStart = dateStr;
+            this._rangeEnd = null;
+            this._rangeStep = 1;
+        }
+        this._renderRangePicker();
+    },
+
+    _rangeClear() {
+        this._rangeStart = null;
+        this._rangeEnd = null;
+        this._rangeStep = 0;
+        this._renderRangePicker();
+    },
+
     openEventModal(eventId) {
         this.editingEvent = eventId ? this.events.find(e => e.id === eventId) : null;
         const isEdit = !!this.editingEvent;
         const ev = this.editingEvent || {};
-        const today = new Date().toISOString().split('T')[0];
         const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
         const dayChecks = [1, 2, 3, 4, 5, 6, 0].map(d => {
             const checked = ev.repeatDays && ev.repeatDays.includes(d) ? 'checked' : '';
@@ -878,32 +985,15 @@ const CalendarPage = {
 
         const groupEnabled = ev.groupId ? 'yes' : 'no';
         const deleteBtn = isEdit ? `<button class="btn btn-danger btn-sm" onclick="CalendarPage.confirmDeleteEvent('${ev.id}')">Eliminar</button>` : '';
-        const endDateValue = ev.endDate || ev.date || '';
-        const multiDayEnabled = ev.endDate && ev.endDate > ev.date ? 'yes' : 'no';
 
         const bodyHtml = `
             <div class="form-group">
                 <label>Título</label>
                 <input type="text" id="ev-title" value="${Utils.escapeHTML(ev.title || '')}" placeholder="Nombre del evento" maxlength="100">
             </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Fecha inicio</label>
-                    <input type="date" id="ev-date" value="${ev.date || ''}" min="${today}" onchange="CalendarPage.onStartDateChange()">
-                </div>
-            </div>
             <div class="form-group">
-                <label>¿Varios días?</label>
-                <div class="pill-selector">
-                    <button class="pill ${multiDayEnabled === 'no' ? 'active' : ''}" data-multiday-toggle="no" onclick="CalendarPage.toggleMultiDay('no')">No</button>
-                    <button class="pill ${multiDayEnabled === 'yes' ? 'active' : ''}" data-multiday-toggle="yes" onclick="CalendarPage.toggleMultiDay('yes')">Sí</button>
-                </div>
-            </div>
-            <div class="form-row" id="ev-end-date-row" style="display:${multiDayEnabled === 'yes' ? 'flex' : 'none'};">
-                <div class="form-group">
-                    <label>Fecha fin</label>
-                    <input type="date" id="ev-end-date" value="${endDateValue}" min="${today}">
-                </div>
+                <label>Fecha</label>
+                <div class="range-picker" id="range-calendar"></div>
             </div>
             <div class="form-row">
                 <div class="form-group">
@@ -952,6 +1042,8 @@ const CalendarPage = {
         document.querySelector('.modal-footer .btn-ghost').classList.add('hidden');
         modal.classList.remove('hidden');
 
+        this._initRangePicker(ev.date, ev.endDate);
+
         modal.querySelectorAll('.modal-close').forEach(btn => {
             btn.addEventListener('click', () => { modal.classList.add('hidden'); this.resetModalFooter(); });
         });
@@ -977,38 +1069,8 @@ const CalendarPage = {
         document.getElementById('repeat-days-wrapper').style.display = val === 'custom' ? 'flex' : 'none';
     },
 
-    onStartDateChange() {
-        const startDate = document.getElementById('ev-date').value;
-        const endDateInput = document.getElementById('ev-end-date');
-        if (endDateInput) {
-            endDateInput.min = startDate;
-            if (!endDateInput.value || endDateInput.value < startDate) {
-                endDateInput.value = startDate;
-            }
-        }
-    },
-
-    toggleMultiDay(val) {
-        document.querySelectorAll('[data-multiday-toggle]').forEach(b => b.classList.remove('active'));
-        document.querySelector(`[data-multiday-toggle="${val}"]`).classList.add('active');
-        const endDateRow = document.getElementById('ev-end-date-row');
-        const endDateInput = document.getElementById('ev-end-date');
-        const startDate = document.getElementById('ev-date').value;
-        if (val === 'yes') {
-            endDateRow.style.display = 'flex';
-            endDateInput.min = startDate;
-            if (!endDateInput.value || endDateInput.value < startDate) {
-                endDateInput.value = startDate;
-            }
-        } else {
-            endDateRow.style.display = 'none';
-            endDateInput.value = startDate;
-        }
-    },
-
     async saveEvent() {
         const title = document.getElementById('ev-title').value.trim();
-        const date = document.getElementById('ev-date').value;
         const startTime = document.getElementById('ev-start').value;
         const endTime = document.getElementById('ev-end').value;
         const groupId = document.getElementById('ev-group').value || null;
@@ -1018,13 +1080,11 @@ const CalendarPage = {
             ? Array.from(document.querySelectorAll('.repeat-day:checked')).map(c => parseInt(c.value))
             : [];
 
-        const endDateInput = document.getElementById('ev-end-date');
-        const multiDayToggle = document.querySelector('[data-multiday-toggle="yes"]');
-        const isMultiDay = multiDayToggle && multiDayToggle.classList.contains('active');
-        const endDate = isMultiDay && endDateInput && endDateInput.value && endDateInput.value > date ? endDateInput.value : null;
+        const date = this._rangeStart;
+        const endDate = this._rangeEnd && this._rangeEnd > this._rangeStart ? this._rangeEnd : null;
 
         if (!title) { Utils.showToast('Introduce un título', 'error'); return; }
-        if (!date) { Utils.showToast('Introduce una fecha', 'error'); return; }
+        if (!date) { Utils.showToast('Selecciona una fecha', 'error'); return; }
 
         const data = { title, date, endDate, startTime, endTime, groupId, notes, repeat, repeatDays };
 

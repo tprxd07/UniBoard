@@ -600,6 +600,125 @@
     display: inline;
 }
 
+/* Date range picker */
+.range-picker {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    user-select: none;
+}
+
+.range-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.range-picker-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.range-picker-nav {
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+}
+
+.range-picker-nav:hover {
+    background: var(--primary-bg);
+}
+
+.range-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.range-picker-weekday {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 4px 0;
+}
+
+.range-picker-day {
+    text-align: center;
+    padding: 8px 0;
+    font-size: 13px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text);
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.range-picker-day:hover:not(.other-month):not(.range-start):not(.range-end) {
+    background: var(--primary-bg);
+}
+
+.range-picker-day.other-month {
+    color: var(--text-muted);
+    opacity: 0.4;
+    cursor: default;
+}
+
+.range-picker-day.today {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.range-picker-day.range-start,
+.range-picker-day.range-end {
+    background: var(--primary) !important;
+    color: #fff !important;
+    font-weight: 700;
+    border-radius: 50%;
+}
+
+.range-picker-day.in-range {
+    background: var(--primary-bg);
+    color: var(--primary);
+    border-radius: 0;
+}
+
+.range-picker-day.range-start.range-end {
+    border-radius: 50%;
+}
+
+.range-picker-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+}
+
+.range-picker-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.range-picker-selection {
+    font-size: 12px;
+    color: var(--primary);
+    font-weight: 600;
+}
+
 /* Modal additions */
 .modal-lg {
     max-width: 520px;
