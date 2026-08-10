@@ -150,7 +150,8 @@ const SettingsPage = {
                 <span class="card-title">${Icons.coffee} Apoya UniBoard</span>
             </div>
             <div style="text-align: center; padding: 20px;">
-                <p style="font-size: 13px; color: var(--text-secondary);">Si te gusta UniBoard, invítame a un café</p>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Si te gusta UniBoard, invítame a un café</p>
+                <div id="kofi-widget-container"></div>
             </div>
         </div>
 
@@ -285,7 +286,7 @@ const SettingsPage = {
         // Ko-fi widget
         if (typeof kofiwidget2 !== 'undefined' && !this._kofiDrawn) {
             this._kofiDrawn = true;
-            kofiwidget2.init('Apoyame en Ko-Fi', '#6f7dde', 'W0T124SLVT');
+            kofiwidget2.init('Apóyame en Ko-fi', '#a071d6', 'W0T124SLVT');
             kofiwidget2.draw();
         }
     },
