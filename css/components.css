@@ -540,6 +540,43 @@
     .task-meta {
         font-size: 11px;
     }
+
+    /* Bigger touch targets */
+    .tab {
+        padding: 10px 16px;
+        min-height: 40px;
+        font-size: 14px;
+    }
+
+    .pill {
+        padding: 8px 16px;
+        min-height: 36px;
+        font-size: 13px;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        width: 24px;
+        height: 24px;
+    }
+
+    .list-item-icon {
+        width: 44px;
+        height: 44px;
+    }
+
+    .color-option {
+        width: 40px;
+        height: 40px;
+    }
+
+    .quick-action {
+        padding: 16px 10px;
+        min-height: 80px;
+    }
+
+    .table-container {
+        -webkit-overflow-scrolling: touch;
+    }
 }
 
 /* Skeleton loading */

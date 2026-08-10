@@ -282,6 +282,8 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     padding-top: 10px;
 }
 
@@ -1650,6 +1652,123 @@
     /* Dashboard events scroll */
     .dashboard-events-scroll {
         max-height: 260px !important;
+    }
+
+    /* Calendar event edit buttons visible on touch */
+    .calendar-event-edit {
+        display: block !important;
+        min-width: 32px;
+        min-height: 32px;
+        padding: 4px !important;
+    }
+
+    /* Week view: horizontal scroll */
+    .calendar-grid-container.week-view {
+        grid-template-columns: 50px repeat(7, minmax(70px, 1fr));
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .calendar-grid-hour-label {
+        font-size: 10px;
+        padding-right: 4px;
+    }
+
+    /* Range picker bigger touch targets */
+    .range-picker-nav {
+        min-width: 40px;
+        min-height: 40px;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .range-picker-day {
+        min-height: 40px;
+        font-size: 14px;
+    }
+
+    /* Habit days bigger touch targets */
+    .habit-day {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 12px !important;
+    }
+
+    /* Color options bigger touch targets */
+    .color-option {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    /* Emoji options bigger */
+    .emoji-option {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* Suggestion buttons */
+    .suggestion-btn {
+        font-size: 12px !important;
+        padding: 8px 14px !important;
+    }
+
+    /* Grade table inputs touch-friendly */
+    .grade-table input,
+    .grade-table select {
+        font-size: 14px !important;
+        padding: 8px !important;
+        min-height: 36px;
+    }
+
+    /* Profile banner photo overlay always visible on touch */
+    .profile-page-banner-overlay {
+        opacity: 1 !important;
+    }
+    .profile-page-photo-overlay {
+        opacity: 1 !important;
+    }
+
+    /* Profile banner color options */
+    .profile-page-banner-colors .color-option {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    /* Day check bigger */
+    .day-check {
+        padding: 8px 12px;
+    }
+
+    .day-check input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Coming soon card */
+    .coming-soon-card {
+        padding: 20px 16px !important;
+    }
+
+    /* Calendar multiday bars mobile */
+    .calendar-multiday-bar {
+        font-size: 10px;
+        height: 18px;
+        line-height: 18px;
+    }
+
+    /* Todos item bigger touch */
+    .todos-item {
+        min-height: 44px;
+    }
+
+    .todos-arrow {
+        min-width: 32px;
+        min-height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }
 
