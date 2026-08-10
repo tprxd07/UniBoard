@@ -175,8 +175,8 @@ const UniLifePage = {
         container.innerHTML = Utils.sanitize(links.map(link => {
             const icon = Icons[link.icon] || Icons.link;
             return `<div class="list-item" style="cursor:pointer;">
-                <div class="list-item-icon" onclick="Utils.openExternalLink('${link.url}')">${icon}</div>
-                <div class="list-item-content" onclick="Utils.openExternalLink('${link.url}')">
+                <div class="list-item-icon" onclick="Utils.openExternalLink(decodeURIComponent('${encodeURIComponent(link.url)}'))">${icon}</div>
+                <div class="list-item-content" onclick="Utils.openExternalLink(decodeURIComponent('${encodeURIComponent(link.url)}'))">
                     <div class="list-item-title">${link.name}</div>
                     <div class="list-item-subtitle" style="font-size:11px;color:var(--text-muted);">${link.url}</div>
                 </div>

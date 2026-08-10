@@ -82,17 +82,23 @@ const DashboardPage = {
             events.forEach(event => {
                 for (let d = new Date(today); d < nextWeek; d.setDate(d.getDate() + 1)) {
                     const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                    const eventDate = new Date(event.date);
-                    const diffFromStart = Math.round((d - eventDate) / dayMs);
-                    if (diffFromStart < 0) continue;
 
                     let match = false;
-                    if (event.repeat === 'daily') match = true;
-                    else if (event.repeat === 'weekly') match = d.getDay() === eventDate.getDay();
-                    else if (event.repeat === 'monthly') match = d.getDate() === eventDate.getDate();
-                    else if (event.repeat === 'yearly') match = d.getDate() === eventDate.getDate() && d.getMonth() === eventDate.getMonth();
-                    else if (event.repeat === 'custom' && event.repeatDays) match = event.repeatDays.includes(d.getDay());
-                    else match = dateStr === event.date;
+                    if (event.repeat) {
+                        const eventDate = new Date(event.date + 'T00:00:00');
+                        const diffFromStart = Math.round((d - eventDate) / dayMs);
+                        if (diffFromStart >= 0) {
+                            if (event.repeat === 'daily') match = true;
+                            else if (event.repeat === 'weekly') match = d.getDay() === eventDate.getDay();
+                            else if (event.repeat === 'monthly') match = d.getDate() === eventDate.getDate();
+                            else if (event.repeat === 'yearly') match = d.getDate() === eventDate.getDate() && d.getMonth() === eventDate.getMonth();
+                            else if (event.repeat === 'custom' && event.repeatDays) match = event.repeatDays.includes(d.getDay());
+                        }
+                    } else if (event.endDate && event.endDate > event.date) {
+                        match = dateStr >= event.date && dateStr <= event.endDate;
+                    } else {
+                        match = dateStr === event.date;
+                    }
 
                     if (match) {
                         const group = groups.find(g => g.id === event.groupId);

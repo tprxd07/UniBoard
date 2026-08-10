@@ -95,7 +95,7 @@ const DocumentsPage = {
 
         return `<div class="doc-grid">
             ${Object.entries(groups).map(([name, docs]) => `
-                <div class="doc-folder" onclick="DocumentsPage.showFolder('${name}')">
+                <div class="doc-folder" onclick="DocumentsPage.showFolder(decodeURIComponent('${encodeURIComponent(name)}'))">
                     <div class="doc-folder-icon">${Icons.folder}</div>
                     <div class="doc-folder-name">${name}</div>
                     <div class="doc-folder-count">${docs.length} archivos</div>
@@ -120,7 +120,7 @@ const DocumentsPage = {
                     <div class="list-item-subtitle">${doc.subject || 'Sin asignatura'} · ${doc.type || 'Enlace'}</div>
                 </div>
                 <div class="list-item-actions">
-                    <button class="btn btn-ghost btn-sm" onclick="Utils.openExternalLink('${doc.url}')">${Icons.externalLink} Abrir</button>
+                    <button class="btn btn-ghost btn-sm" onclick="Utils.openExternalLink(decodeURIComponent('${encodeURIComponent(doc.url)}'))">${Icons.externalLink} Abrir</button>
                     <button class="btn-icon" style="font-size: 14px;" onclick="DocumentsPage.deleteDocument('${doc.id}')">${Icons.trash}</button>
                 </div>
             </div>
