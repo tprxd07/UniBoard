@@ -219,6 +219,10 @@ a {
     transform: translateY(-1px);
 }
 
+.btn-primary:active {
+    transform: scale(0.97);
+}
+
 .btn-ghost {
     background: transparent;
     color: var(--text-secondary);
@@ -236,6 +240,12 @@ a {
 .btn-danger {
     background: var(--danger);
     color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
 }
 
 .btn-danger:hover {
@@ -803,7 +813,7 @@ a {
     /* Sidebar - full overlay */
     .sidebar {
         transform: translateX(-100%);
-        width: 280px;
+        width: 260px;
     }
 
     .sidebar.open {
@@ -856,7 +866,7 @@ a {
 
     .current-date,
     .current-time {
-        font-size: 11px;
+        font-size: 12px;
     }
 
     /* Page content */
@@ -874,7 +884,7 @@ a {
     }
 
     .btn-sm {
-        min-height: 36px;
+        min-height: 40px;
         padding: 8px 14px;
         font-size: 13px;
     }
@@ -934,9 +944,18 @@ a {
         margin: 10px auto 4px;
     }
 
+    .modal-header {
+        padding: 16px 20px;
+    }
+
     .modal-body {
         max-height: calc(90vh - 140px);
-        padding-bottom: env(safe-area-inset-bottom, 0px);
+        padding: 16px 20px;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .modal-footer {
+        padding: 12px 20px;
     }
 
     @keyframes slideUp {
@@ -1264,21 +1283,6 @@ a {
 .doc-dropzone-content p {
     font-size: 14px;
     margin: 0;
-}
-
-.btn-danger {
-    background: #e74c3c;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    font-weight: 600;
-    transition: var(--transition);
-}
-
-.btn-danger:hover {
-    background: #c0392b;
 }
 
 /* Focus visible for keyboard accessibility */
