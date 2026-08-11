@@ -48,7 +48,11 @@ const App = {
             document.title = document.title.replace('UniBoard', 'UniBoard Beta');
             const banner = document.createElement('div');
             banner.style.cssText = 'background:linear-gradient(135deg,#a071d6,#6C5CE7);color:white;text-align:center;padding:6px 8px;font-size:12px;font-weight:600;position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;gap:12px;';
-            banner.innerHTML = '<span style="flex:1;text-align:center;">🧪 Versión Beta — Funciones en prueba</span><button onclick="this.parentElement.remove();document.getElementById(\'app\').style.marginTop=\'0\'" style="background:none;border:none;color:white;cursor:pointer;font-size:16px;padding:0 8px;line-height:1;flex-shrink:0;" title="Cerrar">×</button>';
+            banner.innerHTML = '<span style="flex:1;text-align:center;">🧪 Versión Beta — Funciones en prueba</span><button style="background:none;border:none;color:white;cursor:pointer;font-size:16px;padding:0 8px;line-height:1;flex-shrink:0;" title="Cerrar">×</button>';
+            banner.querySelector('button').addEventListener('click', () => {
+                banner.remove();
+                document.getElementById('app').style.marginTop = '0';
+            });
             document.body.prepend(banner);
             document.getElementById('app').style.marginTop = '32px';
         }
