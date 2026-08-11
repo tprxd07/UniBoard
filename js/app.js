@@ -47,8 +47,8 @@ const App = {
         if (this.isBeta()) {
             document.title = document.title.replace('UniBoard', 'UniBoard Beta');
             const banner = document.createElement('div');
-            banner.style.cssText = 'background:linear-gradient(135deg,#a071d6,#6C5CE7);color:white;text-align:center;padding:6px 8px;font-size:12px;font-weight:600;position:fixed;top:0;left:0;right:0;z-index:1000;';
-            banner.textContent = '🧪 Versión Beta — Funciones en prueba';
+            banner.style.cssText = 'background:linear-gradient(135deg,#a071d6,#6C5CE7);color:white;text-align:center;padding:6px 8px;font-size:12px;font-weight:600;position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:center;gap:12px;';
+            banner.innerHTML = '<span>🧪 Versión Beta — Funciones en prueba</span><button onclick="this.parentElement.remove();document.getElementById(\'app\').style.marginTop=\'0\'" style="background:none;border:none;color:white;cursor:pointer;font-size:16px;padding:0 4px;line-height:1;" title="Cerrar">×</button>';
             document.body.prepend(banner);
             document.getElementById('app').style.marginTop = '32px';
         }
