@@ -1,0 +1,18 @@
+{
+    "name": "UniBoard",
+    "short_name": "UniBoard",
+    "description": "Planificador universitario",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#F8F9FE",
+    "theme_color": "#6C5CE7",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "assets/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        }
+    ]
+}
