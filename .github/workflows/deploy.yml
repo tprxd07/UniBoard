@@ -1,0 +1,36 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main, beta]
+
+permissions:
+  contents: write
+
+jobs:
+  deploy-main:
+    if: github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to root
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          keep_files: true
+          exclude_files: '.git/** .github/** .firebaserc firebase.json firestore.rules CHANGELOG.md README.md'
+
+  deploy-beta:
+    if: github.ref_name == 'beta'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to /beta/
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          destination_dir: beta
+          keep_files: true
+          exclude_files: '.git/** .github/** .firebaserc firebase.json firestore.rules CHANGELOG.md README.md'

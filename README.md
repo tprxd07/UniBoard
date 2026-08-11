@@ -1,86 +1,118 @@
-# 🎓 UniBoard - Tu Compañera Universitaria
+# UniBoard
 
-Una aplicación web completa para organizar tu vida universitaria, sincronizada entre Mac y iPhone.
+Planificador universitario Progressive Web App (PWA) construido con vanilla JavaScript y Firebase.
 
-## Características
+## Funcionalidades
 
-- 📅 **Calendario** - Vista diaria, semanal y mensual
-- 📚 **Asignaturas** - Profesor, notas, calculadora de nota final
-- ✅ **Tareas** - Por prioridad, fecha límite, repetitivas
-- 📝 **Exámenes** - Cuenta atrás, temario, plan de estudio
-- 📖 **Planificador** - Sesiones de estudio, estadísticas
-- ⏱️ **Temporizador Pomodoro** - Con música ambiente
-- 📄 **Documentos** - Organizados por asignatura
-- 💰 **Finanzas** - Control de gastos mensual
-- 🎒 **Vida universitaria** - Horarios y enlaces
-- 📊 **Progreso** - Créditos, nota media, predicciones
-- 🎯 **Objetivos** - Metas semanales y hábitos
-- 🔔 **Recordatorios** - Estudio, agua, entregas
-- 👥 **Contactos** - Profesores, tutores, compañeros
-- ⚙️ **Ajustes** - Temas (claro/oscuro/rosa), sincronización
+- **Dashboard** — Saludo personalizado, tareas próximas, eventos combinados
+- **Calendario** — Vistas mes, semana, día y Todos; eventos de múltiples días
+- **Asignaturas** — Gestión de materias con tabla de calificaciones por período
+- **Estudio** — Pomodoro con seguimiento por materia, sesiones y estadísticas
+- **Documentos** — Archivos y enlaces organizados por materia
+- **Mi Universidad** — Resumen, metas, horario y progreso
+- **Exámenes** — Registro con campo de calificación
+- **Metas y Hábitos** — Seguimiento de objetivos diarios
+- **Finanzas** — Control de gastos e ingresos
+- **Recordatorios** — Alertas personalizables
+- **Perfil** — Banner, foto con recorte, información personal
+- **Amigos** — Sistema de amistad con solicitudes
+- **Ajustes** — Colores de tema, modo lectura, modo iconos
 
-## Configuración
+## Stack Tecnológico
 
-### 1. Crear proyecto en Firebase
+- **Frontend:** Vanilla JavaScript (sin framework)
+- **Backend:** Firebase (Auth + Firestore)
+- **Hosting:** GitHub Pages
+- **PWA:** Service Worker para offline
+- **Seguridad:** DOMPurify, CSP, Firestore rules, App Check
 
-1. Ve a [Firebase Console](https://console.firebase.google.com)
-2. Crea un nuevo proyecto
-3. Ve a **Settings** > **General** > **Your apps** > **Web app**
-4. Registra una nueva app web
-5. Copia la configuración
+## Estructura del Proyecto
 
-### 2. Configurar Firestore
-
-1. En Firebase Console, ve a **Firestore Database**
-2. Crea una base de datos
-3. Selecciona un location cercano
-4. Comienza en **modo de prueba**
-
-### 3. Configurar Authentication
-
-1. En Firebase Console, ve to **Authentication**
-2. Ve a **Sign-in method**
-3. Habilita **Email/Password**
-
-### 4. Actualizar configuración
-
-Abre `js/firebase-config.js` y reemplaza los valores:
-
-```javascript
-const firebaseConfig = {
-    apiKey: "TU_API_KEY",
-    authDomain: "TU_PROYECTO.firebaseapp.com",
-    projectId: "TU_PROYECTO",
-    storageBucket: "TU_PROYECTO.appspot.com",
-    messagingSenderId: "TU_SENDER_ID",
-    appId: "TU_APP_ID"
-};
+```
+uni-guide-app/
+├── index.html              # Entry point
+├── css/
+│   ├── main.css            # Layout, sidebar, modals, responsive
+│   ├── pages.css           # Estilos de páginas específicas
+│   └── components.css      # Componentes reutilizables
+├── js/
+│   ├── app.js              # Inicialización, navegación, reloj
+│   ├── auth.js             # Autenticación Firebase
+│   ├── db.js               # CRUD Firestore
+│   ├── utils.js            # Utilidades (sanitize, escape, validación)
+│   ├── icons.js            # Sistema dual SVG/emojis
+│   ├── firebase-config.js  # Configuración Firebase
+│   └── pages/
+│       ├── dashboard.js    # Inicio
+│       ├── calendar.js     # Calendario
+│       ├── subjects.js     # Asignaturas
+│       ├── study.js        # Estudio/Pomodoro
+│       ├── documents.js    # Documentos
+│       ├── uni-life.js     # Mi Universidad
+│       ├── exams.js        # Exámenes
+│       ├── tasks.js        # Tareas
+│       ├── activities.js   # Actividades
+│       ├── goals.js        # Metas y hábitos
+│       ├── finances.js     # Finanzas
+│       ├── reminders.js    # Recordatorios
+│       ├── friends.js      # Amigos
+│       ├── contacts.js     # Contactos
+│       ├── profile.js      # Perfil
+│       ├── progress.js     # Progreso
+│       └── settings.js     # Ajustes
+├── sw.js                   # Service Worker
+├── manifest.json           # PWA manifest
+└── firestore.rules         # Reglas de seguridad Firestore
 ```
 
-### 5. Desplegar en GitHub Pages
+## Despliegue
+
+### Requisitos
+
+- Cuenta de Firebase (proyecto `uniguide7878`)
+- GitHub repository `tprxd07/UniBoard`
+- GitHub Pages activado
+
+### Configuración Firebase
+
+1. Crear proyecto en [Firebase Console](https://console.firebase.google.com/)
+2. Habilitar Authentication (Email/Password, Google, Apple)
+3. Crear Firestore Database
+4. Habilitar App Check con reCAPTCHA v3
+5. Configurar hosting (opcional, se usa GitHub Pages)
+
+### Ramas
+
+- **`main`** → Producción estable → `https://tprxd07.github.io/UniBoard/`
+- **`beta`** → Testing → `https://tprxd07.github.io/UniBoard/beta/`
+
+La rama `beta` tiene control de acceso: solo usuarios autorizados pueden usarla.
+
+### Deploy
 
 ```bash
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/TU_USUARIO/TU_REPO.git
-git push -u origin main
+# Estable
+git push origin main
+
+# Beta
+git push origin beta
 ```
 
-Luego ve a **Settings** > **Pages** > selecciona la rama `main`.
+GitHub Actions despliega automáticamente a GitHub Pages.
 
-## Uso en iPhone
+## Versiones
 
-1. Abre Safari en el iPhone
-2. Ve a la URL de tu GitHub Pages
-3. Toca el botón de compartir
-4. Selecciona "Añadir a pantalla de inicio"
+- **Estable** (`main`): Versión pública, probada
+- **Beta** (`beta`): En desarrollo, solo para testers autorizados
 
-Ahora tienes la app en tu iPhone con sincronización automática.
+## Contribuir
 
-## Tecnologías
+1. Fork el proyecto
+2. Crear branch (`git checkout -b feature/nueva-feature`)
+3. Commit (`git commit -m 'Add nueva feature'`)
+4. Push (`git push origin feature/nueva-feature`)
+5. Abrir Pull Request
 
-- HTML5 / CSS3 / JavaScript vanilla
-- Firebase (Auth + Firestore)
-- PWA (Progressive Web App)
-- Responsive design
+## Licencia
+
+Uso personal. No distribuir sin permiso.
