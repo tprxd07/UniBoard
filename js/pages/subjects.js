@@ -2,6 +2,7 @@ const SubjectsPage = {
     subjects: [],
     selectedSubject: null,
     currentDetailTab: 'info',
+    _delegationSetup: false,
 
     render() {
         return `
@@ -25,7 +26,71 @@ const SubjectsPage = {
 
     init() {
         document.getElementById('add-subject-btn').addEventListener('click', () => this.showAddModal());
+        if (!this._delegationSetup) {
+            this._delegationSetup = true;
+            this.setupEventDelegation();
+        }
         this.loadSubjects();
+    },
+
+    setupEventDelegation() {
+        document.getElementById('subjects-grid').addEventListener('click', (e) => {
+            const editBtn = e.target.closest('[data-click="edit-subject"]');
+            if (editBtn) {
+                e.stopPropagation();
+                const id = editBtn.dataset.subjectId;
+                const subject = this.subjects.find(x => x.id === id);
+                this.showAddModal(subject);
+                return;
+            }
+            const card = e.target.closest('[data-click="show-detail"]');
+            if (card) {
+                this.showDetail(card.dataset.subjectId);
+            }
+        });
+
+        document.getElementById('modal-body').addEventListener('click', (e) => {
+            const tab = e.target.closest('[data-detail-tab]');
+            if (tab) {
+                this.switchDetailTab(tab.dataset.detailTab);
+                return;
+            }
+            const colorOpt = e.target.closest('[data-click="select-color"]');
+            if (colorOpt) {
+                document.querySelectorAll('#subj-colors .color-option').forEach(o => o.classList.remove('active'));
+                colorOpt.classList.add('active');
+                return;
+            }
+            const action = e.target.closest('[data-click]');
+            if (!action) return;
+            switch(action.dataset.click) {
+                case 'open-guide':
+                    Utils.openExternalLink(decodeURIComponent(action.dataset.url));
+                    break;
+                case 'edit-from-detail':
+                    Utils.closeModal();
+                    setTimeout(() => this.showAddModal(this.selectedSubject), 200);
+                    break;
+                case 'delete-subject':
+                    this.deleteSubject(action.dataset.subjectId);
+                    break;
+                case 'add-grade-item':
+                    this.addGradeItem();
+                    break;
+                case 'remove-grade-item':
+                    this.removeGradeItem(parseInt(action.dataset.idx));
+                    break;
+            }
+        });
+
+        document.getElementById('modal-body').addEventListener('change', (e) => {
+            const target = e.target;
+            if (target.id === 'gt-use-periods') {
+                this.togglePeriods();
+            } else if (target.closest('#gt-items-body')) {
+                this.saveGradeTable();
+            }
+        });
     },
 
     async loadSubjects() {
@@ -47,12 +112,12 @@ const SubjectsPage = {
             const periodLabel = this.getPeriodLabel(s);
             const gradeInfo = this.getSubjectGradeInfo(s);
             return `
-            <div class="subject-card" onclick="SubjectsPage.showDetail('${s.id}')">
+            <div class="subject-card" data-click="show-detail" data-subject-id="${s.id}">
                 <div class="subject-card-header">
                     <div class="subject-color" style="background: ${s.color || '#6C5CE7'};"></div>
                     <div style="display:flex;gap:4px;">
                         <span class="badge badge-primary">${s.credits || 0} créditos</span>
-                        <button class="btn-icon btn-sm" onclick="event.stopPropagation(); SubjectsPage.showAddModal(SubjectsPage.subjects.find(x=>x.id==='${s.id}'))" title="Editar">
+                        <button class="btn-icon btn-sm" data-click="edit-subject" data-subject-id="${s.id}" title="Editar">
                             ${Icons.edit}
                         </button>
                     </div>
@@ -148,8 +213,8 @@ const SubjectsPage = {
 
         headerHTML += `
         <div class="uni-life-tabs" style="margin-bottom:16px;">
-            <button class="tab ${this.currentDetailTab === 'info' ? 'active' : ''}" onclick="SubjectsPage.switchDetailTab('info')">Info</button>
-            <button class="tab ${this.currentDetailTab === 'grades' ? 'active' : ''}" onclick="SubjectsPage.switchDetailTab('grades')">Calificaciones</button>
+            <button class="tab ${this.currentDetailTab === 'info' ? 'active' : ''}" data-detail-tab="info">Info</button>
+            <button class="tab ${this.currentDetailTab === 'grades' ? 'active' : ''}" data-detail-tab="grades">Calificaciones</button>
         </div>`;
 
         let bodyHTML = '';
@@ -161,12 +226,12 @@ const SubjectsPage = {
                 <div class="stat-card"><div class="stat-icon blue">${Icons.calendar}</div><div class="stat-info"><h4 style="font-size:13px;">${periodLabel}</h4><p>Período</p></div></div>
                 <div class="stat-card"><div class="stat-icon orange">${Icons.clock}</div><div class="stat-info"><h4 style="font-size:13px;">${s.studyMinutes ? (s.studyMinutes / 60).toFixed(1) + 'h' : '0h'}</h4><p>Estudiado</p></div></div>
             </div>
-            ${s.guideUrl ? `<button class="btn btn-ghost btn-full" style="margin-bottom:12px;" onclick="Utils.openExternalLink(decodeURIComponent('${encodeURIComponent(s.guideUrl)}'))">${Icons.file} Ver guía docente</button>` : ''}
+            ${s.guideUrl ? `<button class="btn btn-ghost btn-full" style="margin-bottom:12px;" data-click="open-guide" data-url="${encodeURIComponent(s.guideUrl)}">${Icons.file} Ver guía docente</button>` : ''}
             <div style="display:flex;gap:8px;">
-                <button class="btn btn-ghost" style="flex:1;" onclick="Utils.closeModal(); setTimeout(() => SubjectsPage.showAddModal(SubjectsPage.selectedSubject), 200);">
+                <button class="btn btn-ghost" style="flex:1;" data-click="edit-from-detail">
                     ${Icons.edit} Editar
                 </button>
-                <button class="btn btn-danger" style="flex:1;" onclick="SubjectsPage.deleteSubject('${s.id}')">${Icons.trash} Eliminar</button>
+                <button class="btn btn-danger" style="flex:1;" data-click="delete-subject" data-subject-id="${s.id}">${Icons.trash} Eliminar</button>
             </div>`;
         } else {
             bodyHTML = this.renderGradeTable(s);
@@ -200,7 +265,7 @@ const SubjectsPage = {
                 <div class="card-header" style="padding:12px 14px;">
                     <span class="card-title" style="font-size:13px;">${Icons.percent} Peso por ${subject.periodType}</span>
                     <label class="toggle" style="flex-shrink:0;">
-                        <input type="checkbox" id="gt-use-periods" ${usePeriods ? 'checked' : ''} onchange="SubjectsPage.togglePeriods()">
+                        <input type="checkbox" id="gt-use-periods" ${usePeriods ? 'checked' : ''}>
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
@@ -225,7 +290,7 @@ const SubjectsPage = {
         <div class="card">
             <div class="card-header" style="padding:12px 14px;">
                 <span class="card-title" style="font-size:13px;">${Icons.clipboard} Evaluaciones</span>
-                <button class="btn btn-primary btn-sm" onclick="SubjectsPage.addGradeItem()" style="font-size:12px;padding:5px 10px;">+ Añadir</button>
+                <button class="btn btn-primary btn-sm" data-click="add-grade-item" style="font-size:12px;padding:5px 10px;">+ Añadir</button>
             </div>
             <div class="grade-table-wrapper">
                 <table class="grade-table">
@@ -267,20 +332,20 @@ const SubjectsPage = {
 
         return `
         <tr class="grade-row">
-            <td><input type="text" class="gt-name" value="${item.name || ''}" placeholder="Nombre" onchange="SubjectsPage.saveGradeTable()"></td>
+            <td><input type="text" class="gt-name" value="${item.name || ''}" placeholder="Nombre"></td>
             <td>
-                <select class="gt-type" onchange="SubjectsPage.saveGradeTable()" style="padding:6px 8px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-input);color:var(--text);width:100%;">
+                <select class="gt-type" style="padding:6px 8px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-input);color:var(--text);width:100%;">
                     ${types.map(t => `<option value="${t.value}" ${item.type === t.value ? 'selected' : ''}>${t.label}</option>`).join('')}
                 </select>
             </td>
-            <td><input type="number" class="gt-weight" value="${item.weight || ''}" min="0" max="100" placeholder="%" style="width:100%;text-align:center;" onchange="SubjectsPage.saveGradeTable()"></td>
+            <td><input type="number" class="gt-weight" value="${item.weight || ''}" min="0" max="100" placeholder="%" style="width:100%;text-align:center;"></td>
             ${usePeriods ? `<td>
-                <select class="gt-period" onchange="SubjectsPage.saveGradeTable()" style="padding:6px 8px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-input);color:var(--text);width:100%;">
+                <select class="gt-period" style="padding:6px 8px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-input);color:var(--text);width:100%;">
                     ${Array.from({length: periodCount}, (_, i) => `<option value="${i + 1}" ${item.period == i + 1 ? 'selected' : ''}>${typeLabel.charAt(0)}${i + 1}</option>`).join('')}
                 </select>
             </td>` : ''}
-            <td><input type="number" class="gt-grade" value="${item.grade !== null && item.grade !== undefined ? item.grade : ''}" min="0" max="10" step="0.1" placeholder="—" style="width:100%;text-align:center;font-weight:700;" onchange="SubjectsPage.saveGradeTable()"></td>
-            <td><button class="btn-icon" onclick="SubjectsPage.removeGradeItem(${idx})" style="font-size:14px;padding:4px;" title="Eliminar">✕</button></td>
+            <td><input type="number" class="gt-grade" value="${item.grade !== null && item.grade !== undefined ? item.grade : ''}" min="0" max="10" step="0.1" placeholder="—" style="width:100%;text-align:center;font-weight:700;"></td>
+            <td><button class="btn-icon" data-click="remove-grade-item" data-idx="${idx}" style="font-size:14px;padding:4px;" title="Eliminar">✕</button></td>
         </tr>`;
     },
 
@@ -463,7 +528,7 @@ const SubjectsPage = {
                     ${presetColors.map(c =>
                         `<div class="color-option ${currentColor === c ? 'active' : ''}"
                               style="background:${c};"
-                              onclick="document.querySelectorAll('#subj-colors .color-option').forEach(e=>e.classList.remove('active'));this.classList.add('active');"
+                              data-click="select-color"
                               data-color="${c}"></div>`
                     ).join('')}
                 </div>
