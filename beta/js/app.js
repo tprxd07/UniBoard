@@ -7,9 +7,10 @@ const App = {
     pendingPhotoCallback: null,
 
     BETA_ALLOWED_UIDS: [
-        // Agrega aquí los UIDs de Firebase autorizados para beta
-        // Para encontrar tu UID: Firebase Console > Authentication > Users
-        // Ejemplo: 'abc123-def456-ghi789'
+        //UID de Azzy
+        'rEbHFC4BecPzxJJvoqFDiRZATxT2',
+        //UID de Tom
+        'sKlfGavgtFdbiTEgfUy6d5GpMrT2'
     ],
 
     isBeta() {
