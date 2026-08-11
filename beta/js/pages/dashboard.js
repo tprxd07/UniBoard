@@ -1,0 +1,313 @@
+// Dashboard Page
+const DashboardPage = {
+    userName: '',
+
+    render() {
+        const name = this.userName;
+        const greeting = Utils.getGreeting();
+        return `
+        <div class="dashboard-greeting">
+            <h2>${greeting}, ${Utils.escapeHTML(name)}</h2>
+            <p>Aquí tienes tu resumen de la semana</p>
+        </div>
+
+        <div class="dashboard-events-section">
+            <div class="card" style="margin-bottom: 16px;">
+                <div class="card-header">
+                    <span class="card-title">${Icons.check} Tareas de hoy</span>
+                    <a href="#" onclick="App.loadPage('tasks'); return false;" class="badge badge-primary">Ver todas</a>
+                </div>
+                <div id="dashboard-tasks">
+                    ${Array.from({length: 3}, () => `
+                    <div class="skeleton-task-card">
+                        <div class="skeleton skeleton-circle"></div>
+                        <div style="flex:1;">
+                            <div class="skeleton skeleton-text-sm" style="width:40%;"></div>
+                            <div class="skeleton skeleton-text" style="width:80%;"></div>
+                        </div>
+                    </div>`).join('')}
+                </div>
+            </div>
+
+            <div class="card dashboard-events-scroll">
+                <div class="card-header">
+                    <span class="card-title">${Icons.flag} Examenes y eventos</span>
+                </div>
+                <div id="dashboard-events">
+                    ${Array.from({length: 4}, () => `
+                    <div class="skeleton-list-item">
+                        <div class="skeleton skeleton-icon"></div>
+                        <div style="flex:1;">
+                            <div class="skeleton skeleton-text" style="width:70%;"></div>
+                            <div class="skeleton skeleton-text-sm" style="width:50%;"></div>
+                        </div>
+                        <div class="skeleton skeleton-badge"></div>
+                    </div>`).join('')}
+                </div>
+            </div>
+        </div>`;
+    },
+
+    async init() {
+        try {
+            const profile = await DB.getProfile();
+            this.userName = profile.name || Auth.currentUser?.displayName || '';
+        } catch (e) {
+            this.userName = Auth.currentUser?.displayName || '';
+        }
+        // Re-render with name
+        document.getElementById('page-content').innerHTML = this.render();
+        this.loadUpcomingItems();
+        this.loadTodayTasks();
+    },
+
+    async loadUpcomingItems() {
+        try {
+            const [events, groups, exams, subjects] = await Promise.all([
+                DB.getEvents(), DB.getGroups(), DB.getExams(), DB.getSubjects()
+            ]);
+            const subjectColors = {};
+            subjects.forEach(s => { subjectColors[s.name] = s.color || '#6C5CE7'; });
+
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const nextWeek = new Date(today);
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            const dayMs = 1000 * 60 * 60 * 24;
+            const dayLabels = { 0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado' };
+            const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+            const items = [];
+
+            events.forEach(event => {
+                for (let d = new Date(today); d < nextWeek; d.setDate(d.getDate() + 1)) {
+                    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+                    let match = false;
+                    if (event.repeat) {
+                        const eventDate = new Date(event.date + 'T00:00:00');
+                        const diffFromStart = Math.round((d - eventDate) / dayMs);
+                        if (diffFromStart >= 0) {
+                            if (event.repeat === 'daily') match = true;
+                            else if (event.repeat === 'weekly') match = d.getDay() === eventDate.getDay();
+                            else if (event.repeat === 'monthly') match = d.getDate() === eventDate.getDate();
+                            else if (event.repeat === 'yearly') match = d.getDate() === eventDate.getDate() && d.getMonth() === eventDate.getMonth();
+                            else if (event.repeat === 'custom' && event.repeatDays) match = event.repeatDays.includes(d.getDay());
+                        }
+                    } else if (event.endDate && event.endDate > event.date) {
+                        match = dateStr >= event.date && dateStr <= event.endDate;
+                    } else {
+                        match = dateStr === event.date;
+                    }
+
+                    if (match) {
+                        const group = groups.find(g => g.id === event.groupId);
+                        items.push({
+                            date: dateStr,
+                            time: event.startTime || '',
+                            title: event.title,
+                            subtitle: event.startTime ? event.startTime + (group ? ' · ' + group.name : '') : (group ? group.name : ''),
+                            color: group ? group.color : 'var(--primary)',
+                            page: 'calendar',
+                            _type: 'event'
+                        });
+                    }
+                }
+            });
+
+            exams.filter(exam => {
+                if (!exam.date) return false;
+                const examDate = new Date(exam.date + 'T00:00:00');
+                return examDate >= today && examDate < nextWeek;
+            }).forEach(exam => {
+                items.push({
+                    date: exam.date,
+                    time: exam.time || '',
+                    title: exam.topics || exam.name || exam.subject,
+                    subtitle: [exam.subject, exam.time, exam.room].filter(Boolean).join(' · '),
+                    color: subjectColors[exam.subject] || '#6C5CE7',
+                    page: 'activities',
+                    _type: 'exam'
+                });
+            });
+
+            items.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+
+            const container = document.getElementById('dashboard-events');
+            if (!container) return;
+
+            if (items.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 13px;">No hay exámenes ni eventos próximos</p>';
+                return;
+            }
+
+            let html = '';
+            let lastDate = '';
+
+            items.forEach(item => {
+                if (item.date !== lastDate) {
+                    const d = new Date(item.date + 'T00:00:00');
+                    const diffDays = Math.round((d - today) / dayMs);
+                    let label;
+                    if (diffDays === 0) label = 'Hoy';
+                    else if (diffDays === 1) label = 'Mañana';
+                    else label = dayLabels[d.getDay()];
+                    html += `<div class="event-date-label">${label} · ${d.getDate()} de ${monthNames[d.getMonth()]}</div>`;
+                    lastDate = item.date;
+                }
+
+                const days = Math.round((new Date(item.date + 'T00:00:00') - today) / dayMs);
+                let badge = '';
+                if (item._type === 'exam') {
+                    if (days === 0) badge = '<span class="badge" style="background: var(--danger, #e74c3c); color: white; font-size: 11px;">Hoy</span>';
+                    else if (days === 1) badge = '<span class="badge" style="background: var(--warning, #f39c12); color: white; font-size: 11px;">Mañana</span>';
+                    else badge = `<span class="badge badge-primary" style="font-size: 11px;">${days}d</span>`;
+                }
+
+                html += `
+                    <div class="list-item" style="margin-bottom: 6px; cursor: pointer;" onclick="App.loadPage('${item.page}');">
+                        <div style="width: 4px; height: 32px; border-radius: 2px; background: ${item.color}; flex-shrink: 0; margin-right: 10px;"></div>
+                        <div class="list-item-content">
+                            <div class="list-item-title" style="font-size: 14px;">${item.title}</div>
+                            <div class="list-item-subtitle" style="font-size: 12px;">${item.subtitle}</div>
+                        </div>
+                        ${badge}
+                    </div>`;
+            });
+
+            container.innerHTML = Utils.sanitize(html);
+        } catch (e) {
+            console.error('Error loading upcoming items:', e);
+        }
+    },
+
+    async loadTodayTasks() {
+        try {
+            const [tasks, subjects] = await Promise.all([DB.getTasks(), DB.getSubjects()]);
+            const subjectColors = {};
+            subjects.forEach(s => { subjectColors[s.name] = s.color || '#6C5CE7'; });
+
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const dayMs = 1000 * 60 * 60 * 24;
+            const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const monthNames = ['de Enero', 'de Febrero', 'de Marzo', 'de Abril', 'de Mayo', 'de Junio', 'de Julio', 'de Agosto', 'de Septiembre', 'de Octubre', 'de Noviembre', 'de Diciembre'];
+
+            const pending = tasks.filter(t => !t.completed);
+
+            // Expand recurring tasks for next 7 days
+            const expanded = [];
+            const maxDays = 7;
+            pending.forEach(task => {
+                if (task.repeat && task.dueDate) {
+                    for (let i = 0; i < maxDays; i++) {
+                        const d = new Date(today);
+                        d.setDate(d.getDate() + i);
+                        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                        const taskDate = new Date(task.dueDate + 'T00:00:00');
+                        const diffFromStart = Math.round((d - taskDate) / dayMs);
+                        if (diffFromStart < 0) continue;
+
+                        let match = false;
+                        if (task.repeat === 'daily') match = true;
+                        else if (task.repeat === 'weekly') match = d.getDay() === taskDate.getDay();
+                        else if (task.repeat === 'monthly') match = d.getDate() === taskDate.getDate();
+                        else if (task.repeat === 'custom' && task.repeatDays) match = task.repeatDays.includes(d.getDay());
+
+                        if (match) expanded.push({ ...task, _displayDate: dateStr });
+                    }
+                } else {
+                    expanded.push(task);
+                }
+            });
+
+            const groups = {};
+            expanded.forEach(task => {
+                const dateStr = task._displayDate || task.dueDate;
+                if (!dateStr) {
+                    if (!groups['no-date']) groups['no-date'] = { label: 'Sin fecha', order: 9999, tasks: [] };
+                    groups['no-date'].tasks.push(task);
+                    return;
+                }
+                const due = new Date(dateStr + 'T00:00:00');
+                const diffDays = Math.round((due - today) / dayMs);
+                let label, order;
+                if (diffDays < 0) { label = 'Atrasadas'; order = -1; }
+                else if (diffDays === 0) { label = 'Hoy'; order = 0; }
+                else if (diffDays === 1) { label = 'Mañana'; order = 1; }
+                else { label = `${dayNames[due.getDay()]}, ${due.getDate()} ${monthNames[due.getMonth()]}`; order = diffDays; }
+
+                if (!groups[dateStr]) groups[dateStr] = { label, order, tasks: [] };
+                groups[dateStr].tasks.push(task);
+            });
+
+            const pOrder = { high: 0, medium: 1, low: 2 };
+
+            const grouped = Object.entries(groups)
+                .map(([key, g]) => {
+                    g.tasks.sort((a, b) => {
+                        if ((pOrder[a.priority] || 1) !== (pOrder[b.priority] || 1)) return (pOrder[a.priority] || 1) - (pOrder[b.priority] || 1);
+                        return (a.subject || 'zzz').localeCompare(b.subject || 'zzz');
+                    });
+                    return g;
+                })
+                .sort((a, b) => a.order - b.order)
+                .slice(0, 5);
+
+            const container = document.getElementById('dashboard-tasks');
+            if (!container) return;
+
+            if (grouped.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 13px;">Sin eventos ni tareas pendientes.</p>';
+                return;
+            }
+
+            let html = '';
+            grouped.forEach(group => {
+                const isCollapsed = DashboardPage._collapsedDays && DashboardPage._collapsedDays[group.label];
+                const arrowSvg = isCollapsed
+                    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>'
+                    : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>';
+
+                html += `<div class="task-group">
+                    <div class="task-group-header" onclick="DashboardPage.toggleTaskGroup('${group.label}')">
+                        <span class="task-group-label">${group.label}</span>
+                        <span class="task-group-count">${group.tasks.length}</span>
+                        <span class="task-group-arrow">${arrowSvg}</span>
+                    </div>`;
+
+                if (!isCollapsed) {
+                    html += '<div class="task-group-items">';
+                    group.tasks.forEach(task => {
+                        const color = subjectColors[task.subject] || '#6C5CE7';
+                        const timeStr = task.dueTime || '';
+                        html += `
+                        <div class="task-card" style="border-left: 4px solid ${color}; cursor: pointer;" onclick="App.loadPage('tasks');">
+                            <div class="task-card-info">
+                                <div class="task-card-subject" style="color: ${color};">${task.subject || 'Sin asignatura'}</div>
+                                <div class="task-card-title">${task.title}</div>
+                                ${timeStr ? `<div class="task-card-time">Hora de entrega: ${timeStr}</div>` : ''}
+                            </div>
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+
+                html += '</div>';
+            });
+
+            container.innerHTML = Utils.sanitize(html);
+        } catch (e) {
+            console.error('Error loading tasks:', e);
+        }
+    },
+
+    _collapsedDays: {},
+
+    toggleTaskGroup(label) {
+        this._collapsedDays[label] = !this._collapsedDays[label];
+        this.loadTodayTasks();
+    },
+
+    destroy() {}
+};
