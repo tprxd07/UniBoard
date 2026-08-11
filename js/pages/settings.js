@@ -22,7 +22,6 @@ const SettingsPage = {
     render() {
         const recentAccent = this.getRecentColors('accent');
         const recentBg = this.getRecentColors('bg');
-
         const accentHTML = this.accentColors.map(c =>
             `<div class="color-option" style="background:${c};" data-color="${c}" title="${c}"></div>`
         ).join('');
@@ -151,7 +150,9 @@ const SettingsPage = {
             </div>
             <div style="text-align: center; padding: 20px;">
                 <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Si te gusta UniBoard, invítame a un café</p>
-                <div id="kofi-widget-container"></div>
+                <a href="https://ko-fi.com/W0T124SLVT" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;background:#a071d6;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;transition:background 0.2s;">
+                    ☕ Apóyame en Ko-fi
+                </a>
             </div>
         </div>
 
@@ -282,13 +283,6 @@ const SettingsPage = {
 
         document.getElementById('export-data').addEventListener('click', () => this.exportData());
         document.getElementById('btn-logout-settings').addEventListener('click', () => Auth.logout());
-
-        // Ko-fi widget
-        if (typeof kofiwidget2 !== 'undefined' && !this._kofiDrawn) {
-            this._kofiDrawn = true;
-            kofiwidget2.init('Apóyame en Ko-fi', '#a071d6', 'W0T124SLVT');
-            kofiwidget2.draw();
-        }
     },
 
     applyAccentColor(color) {
