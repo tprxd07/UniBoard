@@ -188,6 +188,7 @@ const StudyPage = {
     startTimer() {
         this.isRunning = true;
         this.isPaused = false;
+        clearInterval(this.timer);
         const btn = document.getElementById('timer-start');
         if (btn) btn.textContent = '⏸ Pausar';
         const cBtn = document.getElementById('concentration-toggle');
