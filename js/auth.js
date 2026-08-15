@@ -54,7 +54,7 @@ const Auth = {
 
                     if (!profile) {
                         const defaultProfile = {
-                            name: user.displayName || user.email.split('@')[0],
+                            name: user.displayName || (user.email || '').split('@')[0] || 'Usuario',
                             username: '',
                             email: user.email || '',
                             provider: user.providerData[0]?.providerId || 'password',
@@ -75,19 +75,19 @@ const Auth = {
                     this.currentUser = {
                         uid: user.uid,
                         email: user.email,
-                        displayName: profile?.name || user.displayName || user.email.split('@')[0]
+                        displayName: profile?.name || user.displayName || (user.email || '').split('@')[0] || 'Usuario'
                     };
 
                     // Force username completion for social logins
                     if (!profile.username) {
-                        this.showCompleteProfile(user.displayName || user.email.split('@')[0]);
+                        this.showCompleteProfile(user.displayName || (user.email || '').split('@')[0] || 'Usuario');
                         return;
                     }
                 } catch (e) {
                     this.currentUser = {
                         uid: user.uid,
                         email: user.email,
-                        displayName: user.displayName || user.email.split('@')[0]
+                        displayName: user.displayName || (user.email || '').split('@')[0] || 'Usuario'
                     };
                 }
                 this.onLogin(this.currentUser);
@@ -303,7 +303,7 @@ const Auth = {
     onLogin(user) {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
-        document.getElementById('user-name').textContent = user.displayName || user.email.split('@')[0];
+        document.getElementById('user-name').textContent = user.displayName || (user.email || '').split('@')[0] || 'Usuario';
         App.init();
     },
 

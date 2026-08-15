@@ -153,6 +153,7 @@ const TimerPage = {
     startTimer() {
         this.isRunning = true;
         this.isPaused = false;
+        clearInterval(this.timer);
         document.getElementById('timer-start').textContent = '⏸ Pausar';
 
         this.timer = setInterval(() => {
