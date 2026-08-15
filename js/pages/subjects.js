@@ -2,7 +2,7 @@ const SubjectsPage = {
     subjects: [],
     selectedSubject: null,
     currentDetailTab: 'info',
-    _delegationSetup: false,
+    _modalDelegationSetup: false,
 
     render() {
         return `
@@ -26,14 +26,15 @@ const SubjectsPage = {
 
     init() {
         document.getElementById('add-subject-btn').addEventListener('click', () => this.showAddModal());
-        if (!this._delegationSetup) {
-            this._delegationSetup = true;
-            this.setupEventDelegation();
+        this.setupGridDelegation();
+        if (!this._modalDelegationSetup) {
+            this._modalDelegationSetup = true;
+            this.setupModalDelegation();
         }
         this.loadSubjects();
     },
 
-    setupEventDelegation() {
+    setupGridDelegation() {
         document.getElementById('subjects-grid').addEventListener('click', (e) => {
             const editBtn = e.target.closest('[data-click="edit-subject"]');
             if (editBtn) {
@@ -48,7 +49,9 @@ const SubjectsPage = {
                 this.showDetail(card.dataset.subjectId);
             }
         });
+    },
 
+    setupModalDelegation() {
         document.getElementById('modal-body').addEventListener('click', (e) => {
             const tab = e.target.closest('[data-detail-tab]');
             if (tab) {

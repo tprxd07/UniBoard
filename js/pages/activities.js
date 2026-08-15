@@ -62,7 +62,7 @@ const ActivitiesPage = {
     setupEventDelegation() {
         document.getElementById('page-content').addEventListener('click', (e) => {
             const tabBtn = e.target.closest('[data-tab]');
-            if (tabBtn && tabBtn.closest('.tabs') === document.querySelector('#page-content > div > .tabs')) {
+            if (tabBtn && !tabBtn.dataset.filter && tabBtn.closest('#page-content > div > .tabs')) {
                 this.switchTab(tabBtn.dataset.tab);
                 return;
             }
