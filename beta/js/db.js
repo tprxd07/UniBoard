@@ -17,12 +17,15 @@ const DB = {
 
     // Get user document reference
     userDoc() {
+        if (!Auth.currentUser) return null;
         return db.collection('users').doc(Auth.currentUser.uid);
     },
 
     // Get a collection reference
     collection(name) {
-        return this.userDoc().collection(name);
+        const doc = this.userDoc();
+        if (!doc) return null;
+        return doc.collection(name);
     },
 
     // ============ SUBJECTS ============

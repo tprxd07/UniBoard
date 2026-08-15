@@ -3,7 +3,7 @@ const Utils = {
     // Security: Sanitize HTML with DOMPurify
     sanitize(html) {
         if (typeof DOMPurify !== 'undefined') {
-            return DOMPurify.sanitize(html, { ALLOWED_TAGS: ['b','i','em','strong','span','br','p','div','a','ul','ol','li','h1','h2','h3','h4','h5','h6','label','button','input','select','option','textarea','svg','path','polyline','line','circle','rect','img','table','thead','tbody','tr','td','th'], ALLOWED_ATTR: ['class','style','id','href','target','src','alt','width','height','viewBox','fill','stroke','stroke-width','stroke-linecap','stroke-linejoin','d','points','x','y','cx','cy','r','rx','ry','x1','y1','x2','y2','data-id','data-color','data-page','data-tab','data-filter','data-mode','data-view','data-reading','data-icon-mode','data-period','data-emoji-toggle','data-color-bg','data-click','data-subject-id','data-task-id','data-exam-id','data-url','data-idx','data-group','data-detail-tab','data-stab','data-day','data-music','data-group-toggle','onclick','onchange','oninput','placeholder','value','type','min','max','step','rows','checked','selected','disabled','accept','for','rel'] });
+            return DOMPurify.sanitize(html, { ALLOWED_TAGS: ['b','i','em','strong','span','br','p','div','a','ul','ol','li','h1','h2','h3','h4','h5','h6','label','button','input','select','option','textarea','svg','path','polyline','line','circle','rect','img','table','thead','tbody','tr','td','th'], ALLOWED_ATTR: ['class','style','id','href','target','src','alt','width','height','viewBox','fill','stroke','stroke-width','stroke-linecap','stroke-linejoin','d','points','x','y','cx','cy','r','rx','ry','x1','y1','x2','y2','data-id','data-color','data-page','data-tab','data-filter','data-mode','data-view','data-reading','data-icon-mode','data-period','data-emoji-toggle','data-color-bg','data-click','data-subject-id','data-task-id','data-exam-id','data-url','data-idx','data-group','data-detail-tab','data-stab','data-day','data-music','data-group-toggle','placeholder','value','type','min','max','step','rows','checked','selected','disabled','accept','for','rel'] });
         }
         return html;
     },
@@ -229,7 +229,7 @@ const Utils = {
     showModal(title, bodyHTML, onConfirm) {
         const modal = document.getElementById('modal');
         document.getElementById('modal-title').textContent = title;
-        document.getElementById('modal-body').innerHTML = bodyHTML;
+        document.getElementById('modal-body').innerHTML = this.sanitize(bodyHTML);
         modal.classList.remove('hidden');
 
         const confirmBtn = document.getElementById('modal-confirm');
