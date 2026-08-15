@@ -1688,13 +1688,6 @@
     .dashboard-greeting h2 {
         font-size: 20px;
     }
-        min-width: 40px;
-        min-height: 40px;
-        padding: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
 
     .range-picker-day {
         min-height: 40px;
