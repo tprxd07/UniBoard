@@ -5,6 +5,7 @@ const ActivitiesPage = {
     filter: 'all',
     collapsedDays: {},
     activeTab: 'tasks',
+    _delegationSetup: false,
 
     render() {
         const skeletonTasks = Array.from({length: 4}, () => `
@@ -21,17 +22,17 @@ const ActivitiesPage = {
         return `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
             <div class="tabs" style="max-width: 400px;">
-                <button class="tab active" data-tab="tasks" onclick="ActivitiesPage.switchTab('tasks')">Tareas</button>
-                <button class="tab" data-tab="exams" onclick="ActivitiesPage.switchTab('exams')">Exámenes</button>
+                <button class="tab active" data-tab="tasks">Tareas</button>
+                <button class="tab" data-tab="exams">Exámenes</button>
             </div>
             <button class="btn btn-primary btn-sm" id="add-activity-btn">+ Añadir</button>
         </div>
 
         <div id="tasks-tab">
             <div class="tabs" style="max-width: 400px; margin-bottom: 12px;">
-                <button class="tab active" data-filter="all" onclick="ActivitiesPage.setFilter('all', this)">Todas</button>
-                <button class="tab" data-filter="pending" onclick="ActivitiesPage.setFilter('pending', this)">Pendientes</button>
-                <button class="tab" data-filter="completed" onclick="ActivitiesPage.setFilter('completed', this)">Completadas</button>
+                <button class="tab active" data-filter="all">Todas</button>
+                <button class="tab" data-filter="pending">Pendientes</button>
+                <button class="tab" data-filter="completed">Completadas</button>
             </div>
             <div id="tasks-list">${skeletonTasks}</div>
         </div>
@@ -49,7 +50,53 @@ const ActivitiesPage = {
             if (this.activeTab === 'tasks') this.showAddTaskModal();
             else this.showAddExamModal();
         });
+
+        if (!this._delegationSetup) {
+            this._delegationSetup = true;
+            this.setupEventDelegation();
+        }
+
         await this.loadData();
+    },
+
+    setupEventDelegation() {
+        document.getElementById('page-content').addEventListener('click', (e) => {
+            const tabBtn = e.target.closest('[data-tab]');
+            if (tabBtn && !tabBtn.dataset.filter && tabBtn.closest('#page-content > div > .tabs')) {
+                this.switchTab(tabBtn.dataset.tab);
+                return;
+            }
+            const filterBtn = e.target.closest('[data-filter]');
+            if (filterBtn && filterBtn.closest('#tasks-tab')) {
+                this.setFilter(filterBtn.dataset.filter, filterBtn);
+                return;
+            }
+            const groupHeader = e.target.closest('.task-group-header');
+            if (groupHeader) {
+                const groupLabel = groupHeader.dataset.group;
+                if (groupLabel) this.toggleGroup(groupLabel);
+                return;
+            }
+            const action = e.target.closest('[data-click]');
+            if (!action) return;
+            switch(action.dataset.click) {
+                case 'toggle-task':
+                    this.toggleTask(action.dataset.taskId);
+                    break;
+                case 'edit-task':
+                    this.showEditTaskModal(action.dataset.taskId);
+                    break;
+                case 'delete-task':
+                    this.deleteTask(action.dataset.taskId);
+                    break;
+                case 'edit-exam':
+                    this.showEditExamModal(action.dataset.examId);
+                    break;
+                case 'delete-exam':
+                    this.deleteExam(action.dataset.examId);
+                    break;
+            }
+        });
     },
 
     switchTab(tab) {
@@ -114,7 +161,7 @@ const ActivitiesPage = {
                 : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>';
 
             html += `<div class="task-group">
-                <div class="task-group-header" onclick="ActivitiesPage.toggleGroup('${group.label}')">
+                <div class="task-group-header" data-group="${group.label}">
                     <span class="task-group-label">${group.label}</span>
                     <span class="task-group-count">${group.tasks.length}</span>
                     <span class="task-group-arrow">${arrowSvg}</span>
@@ -132,7 +179,7 @@ const ActivitiesPage = {
                     html += `
                     <div class="task-card" style="${completedStyle} border-left: 4px solid ${color};">
                         <div class="task-card-top">
-                            <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="ActivitiesPage.toggleTask('${task.id}')">${task.completed ? '✓' : ''}</div>
+                            <div class="task-checkbox ${task.completed ? 'checked' : ''}" data-click="toggle-task" data-task-id="${task.id}">${task.completed ? '✓' : ''}</div>
                             <div class="task-card-info">
                                 <div class="task-card-subject" style="color: ${color};">${task.subject || 'Sin asignatura'}</div>
                                 <div class="task-card-title" style="${lineStyle}">${priorityDot}${task.title}</div>
@@ -140,8 +187,8 @@ const ActivitiesPage = {
                             </div>
                         </div>
                         <div class="task-card-actions">
-                            <button class="btn-icon" onclick="ActivitiesPage.showEditTaskModal('${task.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
-                            <button class="btn-icon" onclick="ActivitiesPage.deleteTask('${task.id}')">${Icons.trash}</button>
+                            <button class="btn-icon" data-click="edit-task" data-task-id="${task.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+                            <button class="btn-icon" data-click="delete-task" data-task-id="${task.id}">${Icons.trash}</button>
                         </div>
                     </div>`;
                 });
@@ -353,8 +400,8 @@ const ActivitiesPage = {
                 <div class="task-card-actions">
                     ${!isPast ? `<span class="badge badge-primary" style="font-size:11px;">${days}d</span>` : '<span class="badge" style="font-size:11px;background:var(--border);">Finalizado</span>'}
                     <span style="font-size:13px;font-weight:700;color:${exam.grade != null ? Utils.getGradeColor(exam.grade) : 'var(--text-secondary)'};">${exam.grade != null ? exam.grade.toFixed(2) : '-.--'}</span>
-                    <button class="btn-icon" onclick="ActivitiesPage.showEditExamModal('${exam.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
-                    <button class="btn-icon" onclick="ActivitiesPage.deleteExam('${exam.id}')">${Icons.trash}</button>
+                    <button class="btn-icon" data-click="edit-exam" data-exam-id="${exam.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+                    <button class="btn-icon" data-click="delete-exam" data-exam-id="${exam.id}">${Icons.trash}</button>
                 </div>
             </div>`;
         }).join(''));

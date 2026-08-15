@@ -6,9 +6,57 @@ const App = {
     cropper: null,
     pendingPhotoCallback: null,
 
-    init() {
+    BETA_ALLOWED_UIDS: [
+        //UID de Azzy
+        'rEbHFC4BecPzxJJvoqFDiRZATxT2',
+        //UID de Tom
+        'sKlfGavgtFdbiTEgfUy6d5GpMrT2'
+    ],
+
+    isBeta() {
+        return window.location.pathname.includes('/beta/');
+    },
+
+    async checkBetaAccess() {
+        if (!this.isBeta()) return true;
+        if (this.BETA_ALLOWED_UIDS.length === 0) return true;
+        const user = Auth.currentUser;
+        if (!user) return true;
+        return this.BETA_ALLOWED_UIDS.includes(user.uid);
+    },
+
+    async showAccessDenied() {
+        const container = document.getElementById('page-content');
+        container.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:20px;">
+                <div>
+                    <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+                    <h2 style="font-size:20px;font-weight:700;margin-bottom:8px;">Acceso restringido</h2>
+                    <p style="color:var(--text-secondary);font-size:14px;">Esta es la versión beta de UniBoard.<br>Solo usuarios autorizados pueden acceder.</p>
+                    <a href="https://tprxd07.github.io/UniBoard/" style="display:inline-block;margin-top:20px;padding:10px 20px;background:var(--primary);color:white;border-radius:8px;text-decoration:none;font-weight:600;">Ir a la versión estable</a>
+                </div>
+            </div>`;
+        document.getElementById('sidebar').style.display = 'none';
+        document.getElementById('sidebar-backdrop')?.remove();
+    },
+
+    async init() {
         if (this.initialized) return;
         this.initialized = true;
+
+        if (this.isBeta()) {
+            document.title = document.title.replace('UniBoard', 'UniBoard Beta');
+            const banner = document.createElement('div');
+            banner.style.cssText = 'background:linear-gradient(135deg,#a071d6,#6C5CE7);color:white;text-align:center;padding:6px 8px;font-size:12px;font-weight:600;position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;gap:12px;';
+            banner.innerHTML = '<span style="flex:1;text-align:center;">🧪 Versión Beta — Funciones en prueba</span><button style="background:none;border:none;color:white;cursor:pointer;font-size:16px;padding:0 8px;line-height:1;flex-shrink:0;" title="Cerrar">×</button>';
+            banner.querySelector('button').addEventListener('click', () => {
+                banner.remove();
+                document.getElementById('app').style.marginTop = '0';
+            });
+            document.body.prepend(banner);
+            document.getElementById('app').style.marginTop = '32px';
+        }
+
         this.registerPages();
         this.setupNavigation();
         this.setupSidebar();
@@ -16,6 +64,13 @@ const App = {
         this.loadSidebarAvatar();
         this.updateNavIcons();
         this.startClock();
+
+        const hasAccess = await this.checkBetaAccess();
+        if (!hasAccess) {
+            this.showAccessDenied();
+            return;
+        }
+
         this.loadPage('dashboard');
         this.loadSettings();
     },

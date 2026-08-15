@@ -164,7 +164,7 @@ const SettingsPage = {
                 <div style="font-size: 32px; margin-bottom: 8px;">${Icons.graduationCap}</div>
                 <h3 style="font-size: 18px; font-weight: 700; color: var(--primary);">UniBoard</h3>
                 <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Planificador universitario</p>
-                <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Versión 1.0.0</p>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">${App.isBeta() ? 'Versión 1.1.0-beta.1' : 'Versión 1.0.0'}</p>
             </div>
         </div>
 
