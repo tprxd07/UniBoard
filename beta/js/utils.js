@@ -292,6 +292,11 @@ const Utils = {
             modal.classList.add('hidden');
             window.open(url, '_blank');
         });
+
+        modal.querySelectorAll('.modal-close').forEach(btn => {
+            btn.addEventListener('click', () => modal.classList.add('hidden'));
+        });
+        modal.querySelector('.modal-overlay').addEventListener('click', () => modal.classList.add('hidden'));
     },
 
     closeExternalLinkModal() {
