@@ -233,8 +233,14 @@ const TimerPage = {
         const el = document.getElementById('timer-display');
         if (el) el.textContent = display;
 
-        // Update page title
-        document.title = `${display} - UniBoard`;
+        // Update page title only while running
+        document.title = this.isRunning ? `${display} - UniBoard` : 'UniBoard';
+    },
+
+    destroy() {
+        clearInterval(this.timer);
+        this.isRunning = false;
+        this.isPaused = false;
     },
 
     updateStats() {
