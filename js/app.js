@@ -272,6 +272,11 @@ const App = {
     },
 
     loadPage(pageName) {
+        const prevPage = this.pages[this.currentPage];
+        if (prevPage && this.currentPage !== pageName && typeof prevPage.destroy === 'function') {
+            try { prevPage.destroy(); } catch (e) { console.error('Page cleanup error:', e); }
+        }
+
         this.currentPage = pageName;
         const page = this.pages[pageName];
 
