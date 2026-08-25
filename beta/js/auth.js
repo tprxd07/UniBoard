@@ -252,17 +252,30 @@ const Auth = {
         }
     },
 
+    _socialErrorMessage(error, provider) {
+        switch (error.code) {
+            case 'auth/popup-closed-by-user': return 'Cancelado';
+            case 'auth/popup-blocked': return 'Popup bloqueado. Permite popups para este sitio';
+            case 'auth/account-exists-with-different-credential':
+                return 'Ya existe una cuenta con este email usando otro método de inicio de sesión';
+            case 'auth/unauthorized-domain':
+                return `El dominio ${location.hostname} no está autorizado. Añádelo en Firebase Console > Authentication > Settings > Authorized domains`;
+            case 'auth/operation-not-allowed':
+                return `${provider} no está habilitado. Actívalo en Firebase Console > Authentication > Sign-in method`;
+            case 'auth/network-request-failed':
+                return 'Error de red. Comprueba tu conexión';
+            default:
+                console.error('Social login error:', error);
+                return `Error al iniciar sesión con ${provider}`;
+        }
+    },
+
     async loginWithGoogle() {
         try {
             const provider = new firebase.auth.GoogleAuthProvider();
             await auth.signInWithPopup(provider);
         } catch (error) {
-            let msg = 'Error al iniciar sesión con Google';
-            if (error.code === 'auth/popup-closed-by-user') msg = 'Cancelado';
-            if (error.code === 'auth/popup-blocked') msg = 'Popup bloqueado. Permite popups para este sitio';
-            if (error.code === 'auth/account-exists-with-different-credential') {
-                msg = 'Ya existe una cuenta con este email usando otro método de inicio de sesión';
-            }
+            const msg = this._socialErrorMessage(error, 'Google');
             if (msg !== 'Cancelado') {
                 const errorEl = document.getElementById('login-error');
                 errorEl.textContent = msg;
@@ -278,12 +291,7 @@ const Auth = {
             provider.addScope('name');
             await auth.signInWithPopup(provider);
         } catch (error) {
-            let msg = 'Error al iniciar sesión con Apple';
-            if (error.code === 'auth/popup-closed-by-user') msg = 'Cancelado';
-            if (error.code === 'auth/popup-blocked') msg = 'Popup bloqueado. Permite popups para este sitio';
-            if (error.code === 'auth/account-exists-with-different-credential') {
-                msg = 'Ya existe una cuenta con este email usando otro método de inicio de sesión';
-            }
+            const msg = this._socialErrorMessage(error, 'Apple');
             if (msg !== 'Cancelado') {
                 const errorEl = document.getElementById('login-error');
                 errorEl.textContent = msg;
