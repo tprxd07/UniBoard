@@ -260,7 +260,13 @@ const StudyPage = {
         if (el) el.textContent = display;
         const cEl = document.getElementById('concentration-time');
         if (cEl) cEl.textContent = display;
-        document.title = `${display} - UniBoard`;
+        document.title = this.isRunning ? `${display} - UniBoard` : 'UniBoard';
+    },
+
+    destroy() {
+        clearInterval(this.timer);
+        this.isRunning = false;
+        this.isPaused = false;
     },
 
     updateStats() {
