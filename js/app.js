@@ -51,9 +51,11 @@ const App = {
             banner.innerHTML = '<span style="flex:1;text-align:center;">🧪 Versión Beta — Funciones en prueba</span><button style="background:none;border:none;color:white;cursor:pointer;font-size:16px;padding:0 8px;line-height:1;flex-shrink:0;" title="Cerrar">×</button>';
             banner.querySelector('button').addEventListener('click', () => {
                 banner.remove();
+                document.body.classList.remove('has-beta-banner');
                 document.getElementById('app').style.marginTop = '0';
             });
             document.body.prepend(banner);
+            document.body.classList.add('has-beta-banner');
             document.getElementById('app').style.marginTop = '32px';
         }
 
