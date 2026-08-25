@@ -45,6 +45,13 @@ const Auth = {
             document.getElementById('reg-username-status').textContent = '';
         });
 
+        // Surface errors coming back from a previous signInWithRedirect attempt
+        auth.getRedirectResult().catch((error) => {
+            const msg = this._socialErrorMessage(error, this._pendingSocialProvider || 'Google');
+            if (msg !== 'Cancelado') Utils.showToast(msg, 'error');
+            this._pendingSocialProvider = null;
+        });
+
         // Listen for auth state changes
         auth.onAuthStateChanged(async (user) => {
             if (user) {
@@ -254,7 +261,8 @@ const Auth = {
 
     _socialErrorMessage(error, provider) {
         switch (error.code) {
-            case 'auth/popup-closed-by-user': return 'Cancelado';
+            case 'auth/popup-closed-by-user':
+            case 'auth/cancelled-popup-request': return 'Cancelado';
             case 'auth/popup-blocked': return 'Popup bloqueado. Permite popups para este sitio';
             case 'auth/account-exists-with-different-credential':
                 return 'Ya existe una cuenta con este email usando otro método de inicio de sesión';
@@ -270,12 +278,40 @@ const Auth = {
         }
     },
 
-    async loginWithGoogle() {
+    // Error codes that mean the environment blocks popups -> fall back to redirect
+    _POPUP_FALLBACK_CODES: [
+        'auth/popup-blocked',
+        'auth/cancelled-popup-request',
+        'auth/operation-not-supported-in-this-environment'
+    ],
+
+    async _signInWithSocial(providerName) {
+        let provider;
+        if (providerName === 'Google') {
+            provider = new firebase.auth.GoogleAuthProvider();
+        } else {
+            provider = new firebase.auth.OAuthProvider('apple.com');
+            provider.addScope('email');
+            provider.addScope('name');
+        }
+
         try {
-            const provider = new firebase.auth.GoogleAuthProvider();
             await auth.signInWithPopup(provider);
         } catch (error) {
-            const msg = this._socialErrorMessage(error, 'Google');
+            // Some environments (iOS standalone PWA, strict browsers) block popups:
+            // retry with a full-page redirect instead
+            if (this._POPUP_FALLBACK_CODES.includes(error.code)) {
+                try {
+                    this._pendingSocialProvider = providerName;
+                    await auth.signInWithRedirect(provider);
+                    return; // page reloads after redirect
+                } catch (e2) {
+                    console.error('Redirect login error:', e2);
+                    Utils.showToast(this._socialErrorMessage(e2, providerName), 'error');
+                    return;
+                }
+            }
+            const msg = this._socialErrorMessage(error, providerName);
             if (msg !== 'Cancelado') {
                 const errorEl = document.getElementById('login-error');
                 errorEl.textContent = msg;
@@ -284,20 +320,12 @@ const Auth = {
         }
     },
 
+    async loginWithGoogle() {
+        await this._signInWithSocial('Google');
+    },
+
     async loginWithApple() {
-        try {
-            const provider = new firebase.auth.OAuthProvider('apple.com');
-            provider.addScope('email');
-            provider.addScope('name');
-            await auth.signInWithPopup(provider);
-        } catch (error) {
-            const msg = this._socialErrorMessage(error, 'Apple');
-            if (msg !== 'Cancelado') {
-                const errorEl = document.getElementById('login-error');
-                errorEl.textContent = msg;
-                errorEl.classList.remove('hidden');
-            }
-        }
+        await this._signInWithSocial('Apple');
     },
 
     async logout() {
