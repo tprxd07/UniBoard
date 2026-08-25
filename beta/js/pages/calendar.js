@@ -77,6 +77,18 @@ const CalendarPage = {
         document.getElementById('btn-add-event').addEventListener('click', () => this.openEventModal());
         document.getElementById('btn-manage-groups').addEventListener('click', () => this.openGroupModal());
 
+        // Delegated clicks for rendered grids (DOMPurify strips inline onclick)
+        document.getElementById('calendar-container').addEventListener('click', (e) => {
+            const evEl = e.target.closest('[data-open-event]');
+            if (evEl) {
+                e.stopPropagation();
+                this.openEventModal(evEl.dataset.openEvent);
+                return;
+            }
+            const dayEl = e.target.closest('[data-goto-day]');
+            if (dayEl) this.goToDay(dayEl.dataset.gotoDay);
+        });
+
         await this.renderCalendar();
     },
 
@@ -268,8 +280,7 @@ const CalendarPage = {
             html += `<div class="calendar-day-header">${d}</div>`;
         });
 
-        for (let w = 0; w < allDays.length; w += 7) {
-            const weekDays = allDays.slice(w, w + 7);
+        for (let w = 0; w < allDays.length; w += 7) {            const weekDays = allDays.slice(w, w + 7);
             const weekMultiDay = [];
             multiDayEvents.forEach(e => {
                 const eStart = e.date;
@@ -323,7 +334,7 @@ const CalendarPage = {
 
             weekDays.forEach((d, i) => {
                 if (!d.current) {
-                    html += `<div class="calendar-day other-month">${d.day}</div>`;
+                    html += `<div class="calendar-day other-month"><div class="calendar-day-number">${d.day}</div></div>`;
                     return;
                 }
                 const date = d.date;
@@ -350,7 +361,7 @@ const CalendarPage = {
                     if (isStart) barClasses += ' bar-start';
                     if (isEnd) barClasses += ' bar-end';
                     if (!isStart && !isEnd) barClasses += ' bar-mid';
-                    multiDayHtml += `<div class="${barClasses}" style="background:${color}28; color:${color}; border-color:${color}; top:${topOffset}px; z-index:${10 + item._lane};" onclick="event.stopPropagation(); CalendarPage.openEventModal('${e.id}')" title="${Utils.escapeHTML(e.title)}">
+                    multiDayHtml += `<div class="${barClasses}" style="background:${color}28; color:${color}; border-color:${color}; top:${topOffset}px; z-index:${10 + item._lane};" data-open-event="${e.id}" title="${Utils.escapeHTML(e.title)}">
                         <span class="calendar-multiday-text">${isStart ? emoji + Utils.escapeHTML(e.title) : ''}</span>
                     </div>`;
                 });
@@ -378,9 +389,9 @@ const CalendarPage = {
                     </div>`;
                 });
 
-                html += `<div class="${classes}" data-date="${d.dateStr}" onclick="CalendarPage.goToDay('${d.dateStr}')" style="cursor:pointer;${multiDayHeight ? 'padding-top:' + (multiDayHeight + 4) + 'px;' : ''}">
+                html += `<div class="${classes}" data-date="${d.dateStr}" data-goto-day="${d.dateStr}" style="cursor:pointer;${multiDayHeight ? 'padding-top:' + (multiDayHeight + 4) + 'px;' : ''}">
                     <div class="calendar-multiday-container" style="height:${multiDayHeight}px;">${multiDayHtml}</div>
-                    <div class="calendar-day-number">${d.day}</div>
+                    <div class="calendar-day-number"><span class="calendar-day-num">${d.day}</span></div>
                     <div class="calendar-day-events">${eventsHtml}</div>
                 </div>`;
             });
