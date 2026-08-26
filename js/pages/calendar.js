@@ -304,9 +304,11 @@ const CalendarPage = {
                 let classes = 'calendar-day';
                 if (isToday) classes += ' today';
 
-                // Build event chips: number stays at the top, chips flow below.
-                // Max MAX_CHIPS per day - anything that does not fit is not added.
+                // Build event chips: number stays at the top, chips flow below
+                // sorted chronologically. Max MAX_CHIPS per day - anything that
+                // does not fit is not added.
                 const chips = [];
+                const push = (key, html) => chips.push({ key, html });
 
                 weekMultiDay.forEach(e => {
                     const eEnd = e.endDate || e.date;
@@ -315,7 +317,7 @@ const CalendarPage = {
                     const group = this.getGroupForEvent(e);
                     const color = group ? group.color : defaultColor;
                     const emoji = group && group.emoji ? group.emoji + ' ' : '';
-                    chips.push(`<div class="calendar-event" style="background:${color}28; color:${color}; border-left:3px solid ${color};" data-open-event="${e.id}" title="${Utils.escapeHTML(e.title)}">
+                    push(-2, `<div class="calendar-event" style="background:${color}28; color:${color}; border-left:3px solid ${color};" data-open-event="${e.id}" title="${Utils.escapeHTML(e.title)}">
                         <span class="calendar-event-text">${emoji}${Utils.escapeHTML(e.title)}</span>
                     </div>`);
                 });
@@ -325,26 +327,28 @@ const CalendarPage = {
                     const group = this.getGroupForEvent(e);
                     const color = group ? group.color : defaultColor;
                     const emoji = group && group.emoji ? group.emoji + ' ' : '';
-                    chips.push(`<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" data-open-event="${e.id}" title="${Utils.escapeHTML(e.title)}">
+                    const key = (e.startTime || e.endTime) ? (this._parseTime(e.startTime) || 0) : -1;
+                    push(key, `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" data-open-event="${e.id}" title="${Utils.escapeHTML(e.title)}">
                         <span class="calendar-event-text">${emoji}${Utils.escapeHTML(e.title)}</span>
                     </div>`);
                 });
 
                 this.tasksOnDate(date).forEach(t => {
                     const color = this.getTaskColor(t.priority);
-                    chips.push(`<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${Utils.escapeHTML(t.title)}">
+                    push(100 + (this._parseTime(t.dueTime) || 9), `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${Utils.escapeHTML(t.title)}">
                         <span class="calendar-event-text"><span class="priority-dot" style="background:${color};"></span>${Utils.escapeHTML(t.title)}</span>
                     </div>`);
                 });
 
                 this.examsOnDate(date).forEach(ex => {
                     const color = this.getSubjectColor(ex.subject);
-                    chips.push(`<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${Utils.escapeHTML(ex.subject)}">
+                    push(200 + (this._parseTime(ex.startTime) || 8), `<div class="calendar-event" style="background: ${color}20; color: ${color}; border-left: 3px solid ${color};" title="${Utils.escapeHTML(ex.subject)}">
                         <span class="calendar-event-text">${Icons.edit} ${Utils.escapeHTML(ex.topics || ex.subject)}</span>
                     </div>`);
                 });
 
-                const eventsHtml = chips.slice(0, MAX_CHIPS).join('');
+                chips.sort((a, b) => a.key - b.key);
+                const eventsHtml = chips.slice(0, MAX_CHIPS).map(c => c.html).join('');
 
                 html += `<div class="${classes}" data-date="${d.dateStr}" data-goto-day="${d.dateStr}">
                     <div class="calendar-day-number"><span class="calendar-day-num">${d.day}</span></div>
@@ -462,23 +466,21 @@ const CalendarPage = {
                 let barsHtml = '';
                 multiDayEvents.forEach(e => {
                     const eEnd = e.endDate || e.date;
+                    // One segment per covered day (a single wide bar would be
+                    // clipped by the cell's overflow:hidden)
+                    if (dateStr < e.date || dateStr > eEnd) return;
                     const isStart = e.date === dateStr;
                     const isEnd = eEnd === dateStr;
-                    const wStartStr = dayDateStrs[0];
-                    const wEndStr = dayDateStrs[6];
-                    const visStart = e.date < wStartStr ? wStartStr : e.date;
-                    const visEnd = eEnd > wEndStr ? wEndStr : eEnd;
-                    const startIdx = dayDateStrs.indexOf(visStart);
-                    const endIdx = dayDateStrs.indexOf(visEnd);
-                    if (di === startIdx) {
-                        const spanCols = endIdx - startIdx + 1;
-                        const group = this.getGroupForEvent(e);
-                        const color = group ? group.color : 'var(--primary)';
-                        const emoji = group && group.emoji ? group.emoji + ' ' : '';
-                        barsHtml += `<div class="calendar-multiday-week-bar" style="background:${color}28; color:${color}; border-color:${color}; top:${e._lane * laneHeight}px; height:${laneHeight - 2}px; width:calc(${spanCols * 100}% - 4px); z-index:${10 + e._lane};" onclick="event.stopPropagation(); CalendarPage.openEventModal('${e.id}')" title="${Utils.escapeHTML(e.title)}">
-                            <span class="calendar-multiday-text">${Utils.escapeHTML(emoji + e.title)}</span>
-                        </div>`;
-                    }
+                    const group = this.getGroupForEvent(e);
+                    const color = group ? group.color : Utils.getComplementaryColor();
+                    const emoji = group && group.emoji ? group.emoji + ' ' : '';
+                    let barClasses = 'calendar-multiday-bar';
+                    if (isStart) barClasses += ' bar-start';
+                    if (isEnd) barClasses += ' bar-end';
+                    if (!isStart && !isEnd) barClasses += ' bar-mid';
+                    barsHtml += `<div class="${barClasses}" style="background:${color}28; color:${color}; border-color:${color}; top:${e._lane * laneHeight}px; height:${laneHeight - 2}px; z-index:${10 + e._lane};" onclick="event.stopPropagation(); CalendarPage.openEventModal('${e.id}')" title="${Utils.escapeHTML(e.title)}">
+                        <span class="calendar-multiday-text">${isStart ? Utils.escapeHTML(emoji + e.title) : ''}</span>
+                    </div>`;
                 });
                 html += `<div class="calendar-multiday-week-cell" style="height:${totalHeight}px; border-left:1px solid var(--border); position:relative;">${barsHtml}</div>`;
             });
