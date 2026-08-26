@@ -1,5 +1,5 @@
 // UniBoard Service Worker - offline support + app updates
-const VERSION = 'v1';
+const VERSION = 'v2';
 const STATIC_CACHE = `uniboard-static-${VERSION}`;
 const RUNTIME_CACHE = `uniboard-runtime-${VERSION}`;
 
@@ -120,22 +120,20 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Same-origin static assets: stale-while-revalidate
+    // Same-origin static assets: network-first so updates apply immediately,
+    // cached copy as offline fallback
     // ignoreSearch so 'js/app.js?v=9' matches the precached 'js/app.js'
     if (url.origin === self.location.origin) {
         event.respondWith(
-            caches.match(request, { ignoreSearch: true }).then((cached) => {
-                const networkFetch = fetch(request)
-                    .then((response) => {
-                        if (response.ok) {
-                            const copy = response.clone();
-                            caches.open(STATIC_CACHE).then((cache) => cache.put(request, copy));
-                        }
-                        return response;
-                    })
-                    .catch(() => cached);
-                return cached || networkFetch;
-            })
+            fetch(request)
+                .then((response) => {
+                    if (response.ok) {
+                        const copy = response.clone();
+                        caches.open(STATIC_CACHE).then((cache) => cache.put(request, copy));
+                    }
+                    return response;
+                })
+                .catch(() => caches.match(request, { ignoreSearch: true }))
         );
     }
 });
