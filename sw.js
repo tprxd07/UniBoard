@@ -1,5 +1,5 @@
 // UniBoard Service Worker - offline support + app updates
-const VERSION = 'v2';
+const VERSION = 'v3';
 const STATIC_CACHE = `uniboard-static-${VERSION}`;
 const RUNTIME_CACHE = `uniboard-runtime-${VERSION}`;
 
@@ -20,6 +20,7 @@ const PRECACHE_URLS = [
     './js/icons.js',
     './js/auth.js',
     './js/db.js',
+    './js/drive.js',
     './js/app.js',
     // Pages
     './js/pages/dashboard.js',
@@ -46,6 +47,8 @@ const PRECACHE_URLS = [
 const CDN_ORIGINS = [
     'https://www.gstatic.com',
     'https://apis.google.com',
+    'https://accounts.google.com',
+    'https://docs.google.com',
     'https://cdnjs.cloudflare.com',
     'https://fonts.googleapis.com',
     'https://fonts.gstatic.com'

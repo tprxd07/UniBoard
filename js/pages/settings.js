@@ -127,6 +127,35 @@ const SettingsPage = {
 
         <div class="card" style="margin-bottom: 20px;">
             <div class="card-header">
+                <span class="card-title">${Icons.users} Cuentas conectadas</span>
+            </div>
+            <div class="settings-item">
+                <div class="settings-item-info">
+                    <h4>Google</h4>
+                    <p id="google-session-info">Sesión de Google usada para iniciar sesión</p>
+                </div>
+                <span class="badge" id="google-session-badge">—</span>
+            </div>
+            <div class="settings-item">
+                <div class="settings-item-info">
+                    <h4>Apple</h4>
+                    <p>Sesión de Apple usada para iniciar sesión</p>
+                </div>
+                <span class="badge" id="apple-session-badge">—</span>
+            </div>
+            <div class="settings-item">
+                <div class="settings-item-info">
+                    <h4>Google Drive</h4>
+                    <p id="drive-info">Permite guardar los archivos de Documentos en tu Drive (carpeta UniBoard)</p>
+                </div>
+                <div id="drive-actions"></div>
+            </div>
+            ${!Drive.isConfigured() ? `
+            <p style="font-size:12px;color:var(--warning);padding:0 0 8px;">⚠️ La integración con Drive aún no está configurada (falta el Client ID en js/drive.js)</p>` : ''}
+        </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
                 <span class="card-title">${Icons.barChart} Datos</span>
             </div>
             <div class="settings-item">
@@ -177,6 +206,7 @@ const SettingsPage = {
 
     init() {
         this.loadSettings();
+        this.renderAccounts();
 
         // Reading mode pills
         document.querySelectorAll('.pill[data-reading]').forEach(pill => {
@@ -423,6 +453,66 @@ const SettingsPage = {
             }
         } catch (e) {
             console.log('Error loading settings:', e);
+        }
+    },
+
+    renderAccounts() {
+        // Session providers from Firebase Auth
+        const user = firebase.auth().currentUser;
+        const providers = user?.providerData?.map(p => p.providerId) || [];
+
+        const googleBadge = document.getElementById('google-session-badge');
+        if (googleBadge) {
+            const googleSession = providers.includes('google.com');
+            googleBadge.textContent = googleSession ? 'Conectada' : (user ? 'No usada' : 'Sin sesión');
+            googleBadge.className = 'badge ' + (googleSession ? 'badge-success' : 'badge-warning');
+            if (googleSession && user.email) {
+                const info = document.getElementById('google-session-info');
+                if (info) info.textContent = user.email;
+            }
+        }
+
+        const appleBadge = document.getElementById('apple-session-badge');
+        if (appleBadge) {
+            const appleSession = providers.includes('apple.com');
+            appleBadge.textContent = appleSession ? 'Conectada' : (user ? 'No usada' : 'Sin sesión');
+            appleBadge.className = 'badge ' + (appleSession ? 'badge-success' : 'badge-warning');
+        }
+
+        // Google Drive connection
+        const actions = document.getElementById('drive-actions');
+        if (!actions) return;
+
+        if (!Drive.isConfigured()) {
+            actions.innerHTML = '<span class="badge badge-warning">Sin configurar</span>';
+            return;
+        }
+
+        if (Drive.isConnected()) {
+            actions.innerHTML = `
+                <span class="badge badge-success" style="margin-right:8px;">Conectado</span>
+                <button class="btn btn-ghost btn-sm" id="drive-disconnect">Desconectar</button>`;
+            actions.querySelector('#drive-disconnect').addEventListener('click', () => {
+                Drive.disconnect();
+                Utils.showToast('Google Drive desconectado', 'info');
+                this.renderAccounts();
+            });
+        } else {
+            actions.innerHTML = '<button class="btn btn-primary btn-sm" id="drive-connect">Conectar</button>';
+            actions.querySelector('#drive-connect').addEventListener('click', async (e) => {
+                const btn = e.target;
+                btn.disabled = true;
+                btn.textContent = 'Conectando...';
+                try {
+                    await Drive.connect();
+                    Utils.showToast('Google Drive conectado', 'success');
+                } catch (err) {
+                    if (err.message !== 'Cancelado') {
+                        Utils.showToast(err.message || 'Error al conectar Drive', 'error');
+                    }
+                }
+                this.renderAccounts();
+            });
         }
     },
 
