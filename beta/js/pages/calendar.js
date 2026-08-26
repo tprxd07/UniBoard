@@ -452,8 +452,15 @@ const CalendarPage = {
                 const group = this.getGroupForEvent(e);
                 const color = group ? group.color : 'var(--primary)';
                 const emoji = group && group.emoji ? group.emoji + ' ' : '';
-                const start = this._parseTime(e.startTime) || 0;
-                const end = this._parseTime(e.endTime) || start + 1;
+                let start, end;
+                if (!e.startTime && !e.endTime) {
+                    // No times -> all-day: occupy the whole day
+                    start = 0;
+                    end = 24;
+                } else {
+                    start = this._parseTime(e.startTime) || 0;
+                    end = this._parseTime(e.endTime) || Math.min(start + 1, 24);
+                }
                 items.push({ color, title: emoji + e.title, subtitle: e.startTime || '', start, end, type: 'event', id: e.id });
             });
             this.tasksOnDate(d).forEach(t => {
@@ -574,8 +581,14 @@ const CalendarPage = {
                 start = this._parseTime(e.startTime) || 0;
                 end = this._parseTime(e.endTime) || 24;
             } else {
-                start = this._parseTime(e.startTime) || 0;
-                end = this._parseTime(e.endTime) || start + 1;
+                if (!e.startTime && !e.endTime) {
+                    // No times -> all-day: occupy the whole day
+                    start = 0;
+                    end = 24;
+                } else {
+                    start = this._parseTime(e.startTime) || 0;
+                    end = this._parseTime(e.endTime) || Math.min(start + 1, 24);
+                }
             }
 
             let subtitle = '';
@@ -591,7 +604,7 @@ const CalendarPage = {
                     subtitle = `${Utils.formatDate(startDateObj, 'short')} → ${Utils.formatDate(endDateObj, 'short')}`;
                 }
             } else {
-                subtitle = `${e.startTime || ''} - ${e.endTime || ''}`;
+                subtitle = (e.startTime || e.endTime) ? `${e.startTime || ''} - ${e.endTime || ''}` : 'Todo el día';
             }
 
             items.push({ color, title: (isMultiDay && !isStart ? '↳ ' : '') + emoji + e.title, subtitle, start, end, type: 'event', id: e.id });
