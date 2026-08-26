@@ -461,7 +461,7 @@
     font-size: 13px;
     font-weight: 500;
     padding: 4px 0 2px;
-    z-index: 5;
+    z-index: 30;
 }
 
 .calendar-day-events {
