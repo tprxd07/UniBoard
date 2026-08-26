@@ -349,14 +349,17 @@ const CalendarPage = {
                 let multiDayHtml = '';
                 weekMultiDay.forEach(item => {
                     const e = item.event;
+                    const eEnd = e.endDate || e.date;
+                    // Only render on days actually covered by the event
+                    if (d.dateStr < e.date || d.dateStr > eEnd) return;
                     const group = this.getGroupForEvent(e);
                     const color = group ? group.color : 'var(--primary)';
                     const emoji = group && group.emoji ? group.emoji + ' ' : '';
                     const isStart = e.date === d.dateStr;
-                    const isEnd = (e.endDate || e.date) === d.dateStr;
-                    const laneCount = totalLanes || 1;
+                    const isEnd = eEnd === d.dateStr;
                     const laneHeight = 22;
-                    const topOffset = item._lane * laneHeight;
+                    // Bars sit below the day-number row so the number stays visible
+                    const topOffset = 22 + item._lane * laneHeight;
                     let barClasses = 'calendar-multiday-bar';
                     if (isStart) barClasses += ' bar-start';
                     if (isEnd) barClasses += ' bar-end';
@@ -365,7 +368,7 @@ const CalendarPage = {
                         <span class="calendar-multiday-text">${isStart ? emoji + Utils.escapeHTML(e.title) : ''}</span>
                     </div>`;
                 });
-                const multiDayHeight = totalLanes * 22;
+                const multiDayHeight = totalLanes > 0 ? 22 + totalLanes * 22 : 0;
 
                 let eventsHtml = '';
                 dayEvents.forEach(e => {
@@ -412,8 +415,11 @@ const CalendarPage = {
 
         const HOUR_HEIGHT = 60;
 
+        // Lane bars at the top: only for multi-day events WITH times.
+        // All-day (no-time) multi-day events render as full-day blocks instead.
         const multiDayEvents = this.events.filter(e => {
             if (!this.eventSpansMultipleDays(e)) return false;
+            if (!e.startTime && !e.endTime) return false;
             const eEnd = e.endDate;
             const wStart = days[0];
             const wEnd = days[6];
@@ -448,10 +454,17 @@ const CalendarPage = {
         const dayColumns = days.map(d => {
             const items = [];
             this.eventsOnDate(d).forEach(e => {
-                if (this.eventSpansMultipleDays(e)) return;
                 const group = this.getGroupForEvent(e);
                 const color = group ? group.color : 'var(--primary)';
                 const emoji = group && group.emoji ? group.emoji + ' ' : '';
+                const isMultiDay = this.eventSpansMultipleDays(e);
+                if (isMultiDay) {
+                    // No-time multi-day events occupy the full day, every day they cover
+                    if (!e.startTime && !e.endTime) {
+                        items.push({ color, title: emoji + e.title, subtitle: '', start: 0, end: 24, type: 'event', id: e.id });
+                    }
+                    return; // timed multi-day events use the lane bars above
+                }
                 let start, end;
                 if (!e.startTime && !e.endTime) {
                     // No times -> all-day: occupy the whole day
