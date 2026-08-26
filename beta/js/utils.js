@@ -20,6 +20,57 @@ const Utils = {
             .replace(/`/g, '&#96;');
     },
 
+    // Default event color: complementary to the accent color chosen in settings
+    // (hue + 180), tuned for readability on the current theme
+    getComplementaryColor() {
+        const primary = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+        let hex = primary;
+        if (primary.startsWith('rgb')) {
+            const m = primary.match(/\d+/g);
+            if (m && m.length >= 3) {
+                hex = '#' + m.slice(0, 3).map(n => (+n).toString(16).padStart(2, '0')).join('');
+            }
+        }
+        const m = /^#?([0-9a-f]{6})$/i.exec(hex);
+        if (!m) return '#E17055';
+
+        const num = parseInt(m[1], 16);
+        let r = ((num >> 16) & 255) / 255;
+        let g = ((num >> 8) & 255) / 255;
+        let b = (num & 255) / 255;
+
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        const l = (max + min) / 2;
+        let h = 0, s = 0;
+        if (max !== min) {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+            else if (max === g) h = (b - r) / d + 2;
+            else h = (r - g) / d + 4;
+            h /= 6;
+        }
+
+        // Complementary hue; soften so it looks good as a chip color
+        h = (h + 0.5) % 1;
+        s = Math.min(s * 0.85, 0.7);
+        const isDark = document.documentElement.dataset.theme === 'dark';
+        const nl = isDark ? Math.min(Math.max(l, 0.62), 0.74) : Math.min(Math.max(l, 0.34), 0.44);
+
+        const hue2rgb = (p, q, t) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1 / 6) return p + (q - p) * 6 * t;
+            if (t < 1 / 2) return q;
+            if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+            return p;
+        };
+        const q = nl < 0.5 ? nl * (1 + s) : nl + s - nl * s;
+        const p = 2 * nl - q;
+        const toHex = v => Math.round(v * 255).toString(16).padStart(2, '0');
+        return '#' + toHex(hue2rgb(p, q, h + 1 / 3)) + toHex(hue2rgb(p, q, h)) + toHex(hue2rgb(p, q, h - 1 / 3));
+    },
+
     // Security: Validate URL scheme (reject javascript:, data: except images, vbscript:)
     isValidURL(url) {
         if (!url) return false;
