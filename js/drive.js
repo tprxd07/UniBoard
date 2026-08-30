@@ -4,7 +4,7 @@
 //   DRIVE_API_KEY:   API key (only needed for the Drive file Picker)
 const Drive = {
     CLIENT_ID: '772007794127-5rqhdusi5f9t7h3a1fbjgg5osj7m22l2.apps.googleusercontent.com',
-    API_KEY: '',
+    API_KEY: 'AIzaSyBQ4f-13AE5Iw2Bj8YVfeJD--2ANmzbe5I',
     SCOPE: 'https://www.googleapis.com/auth/drive.file',
     FOLDER_NAME: 'UniBoard',
 
