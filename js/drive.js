@@ -21,11 +21,11 @@ const Drive = {
     },
 
     isConnected() {
-        return !!(this._token && Date.now() < this._expiresAt);
+        return this._loadStoredToken();
     },
 
     _loadStoredToken() {
-        if (this.isConnected()) return true;
+        if (this._token && Date.now() < this._expiresAt) return true;
         try {
             const stored = JSON.parse(localStorage.getItem('uniguide_drive') || 'null');
             if (stored && stored.token && Date.now() < stored.expiresAt) {
