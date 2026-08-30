@@ -182,9 +182,26 @@ const Drive = {
     _loadPicker() {
         return new Promise((resolve, reject) => {
             if (this._pickerLoaded && window.google?.picker) return resolve();
+            const loadPickerModule = () => {
+                if (!window.gapi?.load) return reject(new Error('No se pudo cargar el selector de Drive'));
+                window.gapi.load('picker', {
+                    callback: () => { this._pickerLoaded = true; resolve(); },
+                    onerror: () => reject(new Error('No se pudo cargar el selector de Drive'))
+                });
+            };
+            if (window.gapi?.load) { loadPickerModule(); return; }
+            const existing = document.getElementById('gapi-script');
+            if (existing) {
+                existing.addEventListener('load', loadPickerModule);
+                existing.addEventListener('error', () => reject(new Error('No se pudo cargar el selector de Drive')));
+                return;
+            }
             const s = document.createElement('script');
-            s.src = 'https://docs.google.com/picker.js';
-            s.onload = () => { this._pickerLoaded = true; resolve(); };
+            s.id = 'gapi-script';
+            s.src = 'https://apis.google.com/js/api.js';
+            s.async = true;
+            s.defer = true;
+            s.onload = loadPickerModule;
             s.onerror = () => reject(new Error('No se pudo cargar el selector de Drive'));
             document.head.appendChild(s);
         });
