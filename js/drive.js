@@ -3,7 +3,7 @@
 //   DRIVE_CLIENT_ID: OAuth 2.0 Client ID (web application)
 //   DRIVE_API_KEY:   API key (only needed for the Drive file Picker)
 const Drive = {
-    CLIENT_ID: '',
+    CLIENT_ID: '772007794127-5rqhdusi5f9t7h3a1fbjg5osj7m22l2.apps.googleusercontent.com',
     API_KEY: '',
     SCOPE: 'https://www.googleapis.com/auth/drive.file',
     FOLDER_NAME: 'UniBoard',
